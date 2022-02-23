@@ -21,8 +21,8 @@ class OffenceController(
   @GetMapping(value = ["/code/{offenceCode}"])
   @ResponseBody
   @Operation(
-    summary = "Get confirmed release dates for a prisoner's specific booking",
-    description = "This endpoint will return the confirmed release dates based on a prisoners booking"
+    summary = "Get all offences matching a offence code",
+    description = "This endpoint will return the the offences that match an offence code"
   )
   fun getOffencesByOffenceCode(
     @Parameter(required = true, example = "AA1256A", description = "The offence code")
