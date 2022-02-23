@@ -4,10 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 
 class OffencesControllerIntTest : IntegrationTestBase() {
   @Autowired
@@ -23,6 +22,6 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .expectBodyList(ModelOffence::class.java)
       .returnResult().responseBody
 
-    assertThat(result).isEqualTo(listOf( ModelOffence(id = entity.id, code = "ABC")))
+    assertThat(result).isEqualTo(listOf(ModelOffence(id = entity.id, code = "ABC")))
   }
 }
