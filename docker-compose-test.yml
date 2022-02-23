@@ -1,0 +1,30 @@
+version: "3"
+services:
+  manage-offences-db:
+    image: postgres
+    networks:
+      - hmpps
+    container_name: manage-offences-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=manage-offences
+      - POSTGRES_USER=manage-offences
+      - POSTGRES_DB=manage_offences
+
+  hmpps-auth:
+    image: quay.io/hmpps/hmpps-auth:latest
+    networks:
+      - hmpps
+    container_name: hmpps-auth
+    ports:
+      - "9090:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DELIUS_ENABLED=false
+
+networks:
+  hmpps:
