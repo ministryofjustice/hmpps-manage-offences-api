@@ -43,3 +43,8 @@ server:
 management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
+
+api:
+  base:
+    url:
+      sdrs: http://localhost:8332
