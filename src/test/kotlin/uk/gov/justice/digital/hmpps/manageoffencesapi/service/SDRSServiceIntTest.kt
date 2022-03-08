@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.GatewayOper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.GetOffenceResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.MessageBody
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.Offence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.SDRSResponse
 import java.time.LocalDate
 
 class SDRSServiceIntTest : IntegrationTestBase() {
