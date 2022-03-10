@@ -12,7 +12,6 @@ class SDRSApiClient(@Qualifier("standingDataReferenceServiceApiWebClient") priva
   private inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
 
   fun getAllOffences(sdrsRequest: SDRSRequest): SDRSResponse {
-    //    TODO Replace URL with correct one when known
     return webClient.post()
       .uri("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
       .bodyValue(sdrsRequest)
