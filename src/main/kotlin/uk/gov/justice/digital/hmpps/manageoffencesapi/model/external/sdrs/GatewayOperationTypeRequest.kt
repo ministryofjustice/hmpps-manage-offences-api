@@ -5,5 +5,5 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 
 @JsonNaming(UpperCamelCaseStrategy::class)
 data class GatewayOperationTypeRequest(
-    val getOffenceRequest: GetOffenceRequest
+  val getOffenceRequest: GetOffenceRequest
 )

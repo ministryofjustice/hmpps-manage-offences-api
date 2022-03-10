@@ -2,8 +2,6 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.http.HttpHeader
@@ -15,7 +13,6 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
   }
 
   fun stubGetAllOffences() {
-    //    TODO Replace URL with correct one when known
     stubFor(
       post("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetOffence')]"))
