@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.manageoffencesapi.model.external
+package uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
