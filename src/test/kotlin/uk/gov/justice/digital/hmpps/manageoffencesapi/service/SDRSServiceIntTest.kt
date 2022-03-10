@@ -4,10 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.GatewayOperationType
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.GetOffenceResponse
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.MessageBody
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetOffenceResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageBodyResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence
 import java.time.LocalDate
 
 class SDRSServiceIntTest : IntegrationTestBase() {
@@ -17,10 +17,10 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   @Test
   fun `Get all offences`() {
     sdrsApiMockServer.stubGetAllOffences()
-    val sdrsResponse = sdrsService.findOffences()
+    val sdrsResponse = sdrsService.findAllOffences()
     assertThat(sdrsResponse.messageBody).isEqualTo(
-      MessageBody(
-        GatewayOperationType(
+      MessageBodyResponse(
+        GatewayOperationTypeResponse(
           GetOffenceResponse(
             listOf(
               Offence(
