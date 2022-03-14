@@ -30,7 +30,7 @@ dependencies {
 
   // Test dependencies
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.29")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.30")
   testImplementation("com.h2database:h2")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
 }
