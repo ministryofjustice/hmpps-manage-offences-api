@@ -10,11 +10,12 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Messag
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageID
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import java.time.ZonedDateTime
 import java.util.UUID
 
 @Service
-class SDRSService(private val sdrsApiClient: SDRSApiClient) {
+class SDRSService(private val sdrsApiClient: SDRSApiClient, private val offenceRepository: OffenceRepository) {
   fun findAllOffences(): SDRSResponse {
     log.info("Fetching all offences from SDRS")
     val sdrsRequest = SDRSRequest(
@@ -39,6 +40,12 @@ class SDRSService(private val sdrsApiClient: SDRSApiClient) {
       )
     )
     return sdrsApiClient.getAllOffences(sdrsRequest)
+  }
+
+  fun findAllOffencesAndSave() {
+    val sdrsResponse = findAllOffences()
+    transform(sdrsResponse)
+    offenceRepository.saveAll(transform(sdrsResponse))
   }
 
   companion object {
