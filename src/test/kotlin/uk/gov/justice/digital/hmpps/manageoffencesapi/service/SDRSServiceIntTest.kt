@@ -54,6 +54,9 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql"
+  )
   fun `Save all offences retrieved from SDRS`() {
     sdrsApiMockServer.stubGetAllOffences()
     sdrsService.findAllOffencesAndSave()
