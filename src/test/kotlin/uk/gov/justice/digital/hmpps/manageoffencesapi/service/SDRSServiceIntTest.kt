@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
@@ -20,6 +21,9 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   lateinit var offenceRepository: OffenceRepository
 
   @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql"
+  )
   fun `Get all offences`() {
     sdrsApiMockServer.stubGetAllOffences()
     val sdrsResponse = sdrsService.findAllOffences()
