@@ -10,6 +10,7 @@ data class Offence(
   val offenceRevisionId: Int,
   @JsonProperty("code")
   val code: String,
+  val description: String,
   val offenceStartDate: LocalDate,
   val offenceEndDate: LocalDate?
 )

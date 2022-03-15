@@ -31,12 +31,14 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                               "OffenceRevisionId": 410082,
                               "OffenceStartDate": "2013-03-01",
 						                  "OffenceEndDate": "2013-03-02",
+                              "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                               "code": "XX99001"
                             },
                             {
                               "OffenceRevisionId": 354116,
 						                  "OffenceStartDate": "2005-09-02",
 						                  "OffenceEndDate": "2005-09-03",
+                              "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                               "code": "XX99001"
                             }
                           ]

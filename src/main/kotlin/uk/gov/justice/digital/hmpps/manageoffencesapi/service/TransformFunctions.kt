@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 
 /*
@@ -12,4 +13,10 @@ fun transform(offence: Offence): ModelOffence {
     code = offence.code,
     description = offence.description,
   )
+}
+
+fun transform(sdrsResponse: SDRSResponse): List<Offence> {
+  return sdrsResponse.messageBody.gatewayOperationType.getOffenceResponse.offences.map {
+    Offence(code = it.code, description = it.description)
+  }
 }
