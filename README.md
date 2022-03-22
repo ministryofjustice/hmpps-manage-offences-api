@@ -31,3 +31,12 @@ that is seeded with data specific to each test suite.
 # OWASP Dependency Checking scanning
 
 `$ ./gradlew dependencyCheckAnalyze`
+
+# Running the service locally using run-local.sh
+## Start the postgres database and auth
+This will run the service locally. It starts the database and auth using docker compose then runs manage-offences-api via a bash script.
+Run the following commands from the root directory of the project:
+1. docker-compose -f docker-compose-test.yml pull
+2. docker-compose -f docker-compose-test.yml up --no-start
+3. docker-compose -f docker-compose-test.yml start hmpps-auth manage-offences-db
+4. ./run-local.sh
