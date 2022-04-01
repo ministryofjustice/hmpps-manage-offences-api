@@ -11,7 +11,8 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRe
 class SDRSApiClient(@Qualifier("standingDataReferenceServiceApiWebClient") private val webClient: WebClient) {
   private inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
 
-  fun getAllOffences(sdrsRequest: SDRSRequest): SDRSResponse {
+  // This one endpoint in the SDRS API serves all variations of offence lookup
+  fun callSDRS(sdrsRequest: SDRSRequest): SDRSResponse {
     return webClient.post()
       .uri("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
       .bodyValue(sdrsRequest)

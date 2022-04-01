@@ -39,7 +39,7 @@ class SDRSService(private val sdrsApiClient: SDRSApiClient, private val offenceR
         )
       )
     )
-    return sdrsApiClient.getAllOffences(sdrsRequest)
+    return sdrsApiClient.callSDRS(sdrsRequest)
   }
 
   fun findAllOffencesAndSave() {
@@ -47,6 +47,33 @@ class SDRSService(private val sdrsApiClient: SDRSApiClient, private val offenceR
     transform(sdrsResponse)
     offenceRepository.saveAll(transform(sdrsResponse))
   }
+
+  fun findOffenceByOffenceCode(offenceCode: String): SDRSResponse {
+    val sdrsRequest = createSDRSRequest(offenceCode)
+    return sdrsApiClient.callSDRS(sdrsRequest)
+  }
+
+  private fun createSDRSRequest(offenceCode: String) = SDRSRequest(
+    messageHeader = MessageHeader(
+      messageID = MessageID(
+        uuid = UUID.randomUUID(),
+        relatesTo = ""
+      ),
+      timeStamp = ZonedDateTime.now(),
+      messageType = "GetOffence",
+      from = "CONSUMER_APPLICATION",
+      to = "SDRS_AZURE"
+    ),
+    messageBody = MessageBodyRequest(
+      GatewayOperationTypeRequest(
+        GetOffenceRequest(
+          cjsCode = offenceCode,
+          alphaChar = "",
+          allOffences = "CURRENT",
+        )
+      )
+    )
+  )
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
