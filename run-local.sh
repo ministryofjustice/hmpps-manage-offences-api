@@ -19,11 +19,11 @@ export DB_PASS=manage-offences
 
 # Provide URLs to other local container-based dependent services
 # Match with ports defined in docker-compose.yml
-export HMPPS_AUTH_URL=http://localhost:9090/auth
-export HMPPS_AUTH_URL=http://localhost:9090/auth
+# export HMPPS_AUTH_URL=http://localhost:9090/auth
+export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 
 # TODO Update API_BASE_URL_SDRS with the a locally running service - to be provided by sdrs
-export API_BASE_URL_SDRS=http://localhost:8332
+export API_BASE_URL_SDRS=https://crime-reference-data-api.staging.service.justice.gov.uk
 
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'

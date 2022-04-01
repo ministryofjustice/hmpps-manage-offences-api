@@ -40,3 +40,14 @@ Run the following commands from the root directory of the project:
 2. docker-compose -f docker-compose-test.yml up --no-start
 3. docker-compose -f docker-compose-test.yml start hmpps-auth manage-offences-db
 4. ./run-local.sh
+
+## Connecting to the SDRS staging API
+The SDRS Staging api is publicly open api with root URL at
+https://api-dev.prison.service.justice.gov.uk
+However, in order for it to work with java you have to add it to the truststore, locally this can be achieved by doing the following and using the default password of changeit
+1. Download the cert from https://api-dev.prison.service.justice.gov.uk using a browser or the following command
+   openssl s_client -servername crime-reference-data-api.staging.service.justice.gov.uk -connect crime-reference-data-api.staging.service.justice.gov.uk:443 </dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >sdrs-certificate.pem
+2. keytool -importcert -trustcacerts -keystore /etc/ssl/certs/java/cacerts -file sdrs-certificate.pem -alias sdrs_staging_cert
+
+### To delete 
+keytool -delete -alias sdrs_staging_cert -keystore /etc/ssl/certs/java/cacerts

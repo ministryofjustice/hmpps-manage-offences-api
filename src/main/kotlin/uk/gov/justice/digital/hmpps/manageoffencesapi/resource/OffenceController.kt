@@ -11,12 +11,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.OffenceService
+import uk.gov.justice.digital.hmpps.manageoffencesapi.service.SDRSService
 
 @RestController
 @RequestMapping("/offences", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OffenceController(
-  private val offenceService: OffenceService
+  private val offenceService: OffenceService,
+  private val sdrsService: SDRSService
 ) {
   @GetMapping(value = ["/code/{offenceCode}"])
   @ResponseBody
@@ -31,6 +34,21 @@ class OffenceController(
   ): List<Offence> {
     log.info("Request received to fetch offences with offenceCode {}", offenceCode)
     return offenceService.findOffencesByCode(offenceCode)
+  }
+
+  @GetMapping(value = ["/sdrs/code/{offenceCode}"])
+  @ResponseBody
+  @Operation(
+    summary = "Lookup an offence from the SDRS service",
+    description = "This endpoint will return the the offence that matches the passed in offence code"
+  )
+  fun getOffenceFromSDRS(
+    @Parameter(required = true, example = "AA1256A", description = "The offence code")
+    @PathVariable("offenceCode")
+    offenceCode: String
+  ): SDRSResponse {
+    log.info("Lookup offence from SDRS")
+    return sdrsService.findOffenceByOffenceCode(offenceCode)
   }
 
   companion object {

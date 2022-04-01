@@ -10,8 +10,7 @@ generic-service:
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
     HMPPS_AUTH_URL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
-    # TODO Update API_BASE_URL_SDRS with the test service URL (currently unknown)
-    API_BASE_URL_SDRS: http://localhost:8332
+    API_BASE_URL_SDRS: https://crime-reference-data-api.staging.service.justice.gov.uk
 
   # Switches off the allowlist in the DEV env only.
   allowlist: null
