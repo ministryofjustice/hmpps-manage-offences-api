@@ -42,12 +42,20 @@ Run the following commands from the root directory of the project:
 4. ./run-local.sh
 
 ## Connecting to the SDRS staging API
+
+### keytool usage
+Use the keytool command. if modifying cacerts pass in the option `-cacerts`, otherwise the following can modify any truststore `-keystore /etc/ssl/certs/java/cacerts`
+
+### add cert
 The SDRS Staging api is publicly open api with root URL at
 https://api-dev.prison.service.justice.gov.uk
 However, in order for it to work with java you have to add it to the truststore, locally this can be achieved by doing the following and using the default password of changeit
 1. Download the cert from https://api-dev.prison.service.justice.gov.uk using a browser or the following command
    openssl s_client -servername crime-reference-data-api.staging.service.justice.gov.uk -connect crime-reference-data-api.staging.service.justice.gov.uk:443 </dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >sdrs-certificate.pem
-2. keytool -importcert -trustcacerts -keystore /etc/ssl/certs/java/cacerts -file sdrs-certificate.pem -alias sdrs_staging_cert
+2. keytool -noprompt -storepass changeit -importcert -trustcacerts -cacerts -file sdrs-certificate.pem -alias sdrs_staging_cert
 
-### To delete 
-keytool -delete -alias sdrs_staging_cert -keystore /etc/ssl/certs/java/cacerts
+### list cert
+1. keytool -noprompt -storepass changeit -list -v -cacerts
+
+#### delete cert
+keytool -noprompt -storepass changeit -delete -alias sdrs_staging_cert -cacerts
