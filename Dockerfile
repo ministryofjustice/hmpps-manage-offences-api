@@ -35,6 +35,9 @@ COPY --from=builder --chown=appuser:appgroup /app/build/libs/applicationinsights
 COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.json /app
 COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.dev.json /app
 
+COPY --chown=appuser:appgroup certificates/sdrs-certificate.pem /app
+RUN keytool -noprompt -storepass changeit -importcert -trustcacerts -cacerts -file sdrs-certificate.pem -alias sdrs_staging_cert
+
 USER 2000
 
 ENTRYPOINT ["java", "-javaagent:/app/agent.jar", "-jar", "/app/app.jar"]
