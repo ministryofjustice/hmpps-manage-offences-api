@@ -16,8 +16,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
     stubFor(
       post("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetOffence')]"))
-        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'MANAGE_OFFENCES')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'CONSUMER_APPLICATION')]"))
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.To == 'SDRS_AZURE')]"))
+        .withRequestBody(matchingJsonPath("$.MessageBody[?(@.GatewayOperationType.GetOffenceRequest.AllOffences == 'CURRENT')]"))
         .willReturn(
           aResponse()
             .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
@@ -60,6 +61,40 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "code": " ",
                       "reason": " ",
                       "detail": " "
+                    }
+                  }
+              """.trimIndent()
+            )
+        )
+    )
+  }
+
+  fun stubControlTableRequest() {
+    stubFor(
+      post("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetControlTable')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'CONSUMER_APPLICATION')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.To == 'SDRS_AZURE')]"))
+        .willReturn(
+          aResponse()
+            .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
+            .withBody(
+              """ {
+                    "MessageBody":{
+                      "GatewayOperationType":{
+                        "GetControlTableResponse":{
+                          "ReferenceDataSet":[
+                            {
+                              "DataSet":"offence_A",
+                              "LastUpdate":"2022-04-05T09:17:19.823"
+                            },
+                            {
+                              "DataSet":"offence_B",
+                              "LastUpdate":"2022-04-05T09:16:58.595"
+                            }
+                          ]
+                        }
+                      }
                     }
                   }
               """.trimIndent()

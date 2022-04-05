@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.ControlTableRecord
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetControlTableResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetOffenceResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageBodyResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import java.time.LocalDate
+import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence as SDRSOffence
 
 class SDRSServiceIntTest : IntegrationTestBase() {
@@ -26,7 +29,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   )
   fun `Get all offences`() {
     sdrsApiMockServer.stubGetAllOffences()
-    val sdrsResponse = sdrsService.findAllOffences()
+    val sdrsResponse = sdrsService.findAllCurrentOffences()
     assertThat(sdrsResponse.messageBody).isEqualTo(
       MessageBodyResponse(
         GatewayOperationTypeResponse(
@@ -73,5 +76,32 @@ class SDRSServiceIntTest : IntegrationTestBase() {
         ),
       )
     )
+  }
+
+  @Test
+  fun `Make request to control table `() {
+    sdrsApiMockServer.stubControlTableRequest()
+    val sdrsResponse = sdrsService.makeControlTableRequest(LocalDateTime.now())
+    assertThat(sdrsResponse.messageBody)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*lastUpdate")
+      .isEqualTo(
+        MessageBodyResponse(
+          GatewayOperationTypeResponse(
+            getControlTableResponse = GetControlTableResponse(
+              referenceDataSet = listOf(
+                ControlTableRecord(
+                  dataSet = "offence_A",
+                  lastUpdate = LocalDateTime.now()
+                ),
+                ControlTableRecord(
+                  dataSet = "offence_B",
+                  lastUpdate = LocalDateTime.now()
+                ),
+              )
+            )
+          )
+        )
+      )
   }
 }

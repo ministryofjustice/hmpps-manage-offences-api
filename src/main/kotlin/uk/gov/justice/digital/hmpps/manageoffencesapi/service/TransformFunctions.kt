@@ -16,7 +16,7 @@ fun transform(offence: Offence): ModelOffence {
 }
 
 fun transform(sdrsResponse: SDRSResponse): List<Offence> {
-  return sdrsResponse.messageBody.gatewayOperationType.getOffenceResponse.offences.map {
+  return sdrsResponse.messageBody.gatewayOperationType.getOffenceResponse!!.offences.map {
     Offence(code = it.code, description = it.description)
   }
 }
