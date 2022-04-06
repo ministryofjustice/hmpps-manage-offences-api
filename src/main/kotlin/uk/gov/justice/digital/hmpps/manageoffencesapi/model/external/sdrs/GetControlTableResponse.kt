@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies.UpperCamelCaseStr
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
 @JsonNaming(UpperCamelCaseStrategy::class)
-data class GatewayOperationTypeResponse(
-  val getOffenceResponse: GetOffenceResponse? = null,
-  val getControlTableResponse: GetControlTableResponse? = null,
-
+data class GetControlTableResponse(
+  val referenceDataSet: List<ControlTableRecord>
 )
