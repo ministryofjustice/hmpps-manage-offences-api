@@ -23,6 +23,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     assertThat(result)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*dDate")
       .isEqualTo(
         listOf(
           ModelOffence(
