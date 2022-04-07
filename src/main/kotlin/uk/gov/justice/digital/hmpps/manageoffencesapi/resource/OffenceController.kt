@@ -25,15 +25,15 @@ class OffenceController(
   @GetMapping(value = ["/code/{offenceCode}"])
   @ResponseBody
   @Operation(
-    summary = "Get all offences matching a offence code",
-    description = "This endpoint will return the the offences that match an offence code"
+    summary = "Get all offences matching the passed offence code, does a start with match",
+    description = "This endpoint will return the the offences that start with the passed offence code"
   )
   fun getOffencesByOffenceCode(
     @Parameter(required = true, example = "AA1256A", description = "The offence code")
     @PathVariable("offenceCode")
     offenceCode: String
   ): List<Offence> {
-    log.info("Request received to fetch offences with offenceCode {}", offenceCode)
+    log.info("Request received to fetch offences that start with offenceCode {}", offenceCode)
     return offenceService.findOffencesByCode(offenceCode)
   }
 
