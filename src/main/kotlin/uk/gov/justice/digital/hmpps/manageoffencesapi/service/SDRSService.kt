@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetControlTableRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetOffenceRequest
@@ -18,16 +19,30 @@ import java.util.UUID
 
 @Service
 class SDRSService(private val sdrsApiClient: SDRSApiClient, private val offenceRepository: OffenceRepository) {
-  fun findAllCurrentOffences(): SDRSResponse {
-    log.info("Fetching all offences from SDRS")
-    val sdrsRequest = createOffenceRequest("")
+  private fun findAllOffencesByAlphaChar(alphaChar: Char): SDRSResponse {
+    // TODO at the moment this only fetches CURRENT offences, change to ALL after some analysis on any Transformation that may be required
+    val sdrsRequest = createOffenceRequest(alphaChar = alphaChar)
     return sdrsApiClient.callSDRS(sdrsRequest)
   }
 
-  fun findAllOffencesAndSave() {
-    val sdrsResponse = findAllCurrentOffences()
-    transform(sdrsResponse)
-    offenceRepository.saveAll(transform(sdrsResponse))
+  @Transactional
+  fun loadAllOffences() {
+    offenceRepository.deleteAll()
+    ('A'..'Z').forEach {
+      log.info("Starting full load for alphachar {} ", it)
+      val sdrsResponse = findAllOffencesByAlphaChar(it)
+      if (sdrsResponse.messageStatus.status == "ERRORED") {
+        log.error("Request to SDRS API failed for alpha char {} ", it)
+        log.error("Response details: {}", sdrsResponse)
+      } else {
+        log.info(
+          "Fetched {} records from SDRS for alphachar {} ",
+          sdrsResponse.messageBody.gatewayOperationType.getOffenceResponse!!.offences.size,
+          it
+        )
+        offenceRepository.saveAll(transform(sdrsResponse))
+      }
+    }
   }
 
   fun findOffenceByOffenceCode(offenceCode: String): SDRSResponse {
@@ -59,13 +74,18 @@ class SDRSService(private val sdrsApiClient: SDRSApiClient, private val offenceR
       )
     )
 
-  private fun createOffenceRequest(offenceCode: String) =
+  private fun createOffenceRequest(
+    offenceCode: String? = null,
+    changedDate: LocalDateTime? = null,
+    alphaChar: Char? = null
+  ) =
     createSDRSRequest(
       GatewayOperationTypeRequest(
         getOffenceRequest = GetOffenceRequest(
           cjsCode = offenceCode,
-          alphaChar = "",
+          alphaChar = alphaChar,
           allOffences = "CURRENT",
+          changedDate = changedDate,
         )
       ),
       "GetOffence"
