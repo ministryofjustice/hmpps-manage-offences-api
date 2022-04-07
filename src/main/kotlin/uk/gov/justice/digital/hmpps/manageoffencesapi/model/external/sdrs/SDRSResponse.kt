@@ -5,5 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 
 @JsonNaming(UpperCamelCaseStrategy::class)
 data class SDRSResponse(
-  val messageBody: MessageBodyResponse
+  val messageBody: MessageBodyResponse,
+  val messageStatus: MessageStatusResponse
 )

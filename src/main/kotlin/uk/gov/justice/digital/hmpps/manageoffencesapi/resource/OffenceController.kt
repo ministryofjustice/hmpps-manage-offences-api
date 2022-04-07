@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
@@ -49,6 +50,17 @@ class OffenceController(
   ): SDRSResponse {
     log.info("Lookup offence from SDRS")
     return sdrsService.findOffenceByOffenceCode(offenceCode)
+  }
+
+  @PostMapping(value = ["/load-all-offences"])
+  @ResponseBody
+  @Operation(
+    summary = "Fetch all offences from SDRS and load into manage offences",
+    description = "This endpoint will fetch all offences from SDRS and load into the manage offences DB. This will delete all existing data and reload"
+  )
+  fun loadAllOffences() {
+    log.info("Request received to loadAllOffences")
+    sdrsService.loadAllOffences()
   }
 
   companion object {
