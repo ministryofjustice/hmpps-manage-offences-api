@@ -15,7 +15,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
     "classpath:test_data/insert-offence-data.sql"
   )
   fun `Get offences by offence code`() {
-    val result = webTestClient.get().uri("/offences/code/AB")
+    val result = webTestClient.get().uri("/offences/code/aB")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus().isOk
