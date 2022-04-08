@@ -19,6 +19,12 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+  // Problem with hibernate-core 5.6.7.Final which was causing issue with 'startingWith'
+  // https://github.com/spring-projects/spring-data-jpa/issues/2472
+  // https://hibernate.atlassian.net/browse/HHH-15142
+  // TODO Temporarily revert to 5.6.5.Final until fixed
+  implementation("org.hibernate:hibernate-core:5.6.5.Final")
+
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql:42.3.3")
