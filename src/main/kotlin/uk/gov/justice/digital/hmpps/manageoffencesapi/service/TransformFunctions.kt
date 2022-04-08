@@ -12,6 +12,12 @@ fun transform(offence: Offence): ModelOffence {
     id = offence.id,
     code = offence.code,
     description = offence.description,
+    cjsTitle = offence.cjsTitle,
+    revisionId = offence.revisionId,
+    startDate = offence.startDate,
+    endDate = offence.endDate,
+    changedDate = offence.changedDate,
+    loadDate = offence.lastUpdatedDate,
   )
 }
 

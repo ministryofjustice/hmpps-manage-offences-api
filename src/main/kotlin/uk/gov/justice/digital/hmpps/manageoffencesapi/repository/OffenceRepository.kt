@@ -6,5 +6,5 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 
 @Repository
 interface OffenceRepository : JpaRepository<Offence, Long> {
-  fun findByCode(code: String): List<Offence>
+  fun findByCodeStartsWith(code: String): List<Offence>
 }

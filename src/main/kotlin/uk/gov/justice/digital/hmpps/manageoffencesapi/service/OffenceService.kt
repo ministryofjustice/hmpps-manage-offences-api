@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReposito
 class OffenceService(private val offenceRepository: OffenceRepository) {
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
-    return offenceRepository.findByCode(code).map { transform(it) }
+    return offenceRepository.findByCodeStartsWith(code).map { transform(it) }
   }
 
   companion object {
