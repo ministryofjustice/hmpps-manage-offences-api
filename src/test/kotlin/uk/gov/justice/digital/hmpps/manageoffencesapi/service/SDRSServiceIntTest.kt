@@ -5,12 +5,16 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.ControlTableRecord
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetControlTableResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageBodyResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadStatusHistoryRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadStatusRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -21,6 +25,12 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   @Autowired
   lateinit var offenceRepository: OffenceRepository
 
+  @Autowired
+  lateinit var sdrsLoadStatusRepository: SdrsLoadStatusRepository
+
+  @Autowired
+  lateinit var sdrsLoadStatusHistoryRepository: SdrsLoadStatusHistoryRepository
+
   @Test
   @Sql(
     "classpath:test_data/clear-all-data.sql"
@@ -30,6 +40,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     sdrsApiMockServer.stubGetAllOffencesForA()
     sdrsService.loadAllOffences()
     val offences = offenceRepository.findAll()
+    val statusRecords = sdrsLoadStatusRepository.findAll()
+    val statusHistoryRecords =sdrsLoadStatusHistoryRepository.findAll()
 
     assertThat(offences)
       .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
@@ -55,6 +67,18 @@ class SDRSServiceIntTest : IntegrationTestBase() {
           ),
         )
       )
+
+    assertThat(statusRecords.size).isEqualTo(26)
+    statusRecords.forEach {
+      assertThat(it.status).isEqualTo(SUCCESS)
+      assertThat(it.loadType).isEqualTo(FULL_LOAD)
+    }
+
+    assertThat(statusHistoryRecords.size).isEqualTo(26)
+    statusHistoryRecords.forEach {
+      assertThat(it.status).isEqualTo(SUCCESS)
+      assertThat(it.loadType).isEqualTo(FULL_LOAD)
+    }
   }
 
   @Test

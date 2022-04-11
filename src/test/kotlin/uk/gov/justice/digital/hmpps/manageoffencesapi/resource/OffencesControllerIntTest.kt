@@ -2,16 +2,22 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.service.SDRSService
 import java.time.LocalDate
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 
 class OffencesControllerIntTest : IntegrationTestBase() {
+  @Autowired
+  lateinit var sdrsService: SDRSService
 
   @Test
   @Sql(
+    "classpath:test_data/clear-all-data.sql",
     "classpath:test_data/insert-offence-data.sql"
   )
   fun `Get offences by offence code`() {
@@ -62,5 +68,36 @@ class OffencesControllerIntTest : IntegrationTestBase() {
           )
         )
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql"
+  )
+  fun `Get results of latest load`() {
+    sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetAllOffencesForA()
+    sdrsService.loadAllOffences()
+    val results = webTestClient.get().uri("/offences/load-results")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(MostRecentLoadResult::class.java)
+      .returnResult().responseBody
+
+    ('A'..'Z').forEach { alphaChar ->
+      val result = results.find { e -> e.alphaChar == alphaChar.toString() }
+      assertThat(result)
+        .usingRecursiveComparison()
+        .ignoringFieldsMatchingRegexes(".*dDate")
+        .isEqualTo(
+          MostRecentLoadResult(
+            alphaChar = alphaChar.toString(),
+            status = result!!.status,
+            type = result.type,
+          )
+        )
+    }
   }
 }

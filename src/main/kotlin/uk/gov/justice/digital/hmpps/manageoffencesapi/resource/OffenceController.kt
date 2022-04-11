@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.OffenceService
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.SDRSService
 
@@ -37,21 +37,7 @@ class OffenceController(
     return offenceService.findOffencesByCode(offenceCode)
   }
 
-  @GetMapping(value = ["/sdrs/code/{offenceCode}"])
-  @ResponseBody
-  @Operation(
-    summary = "Lookup an offence from the SDRS service",
-    description = "This endpoint will return the the offence that matches the passed in offence code"
-  )
-  fun getOffenceFromSDRS(
-    @Parameter(required = true, example = "AA1256A", description = "The offence code")
-    @PathVariable("offenceCode")
-    offenceCode: String
-  ): SDRSResponse {
-    log.info("Lookup offence from SDRS")
-    return sdrsService.findOffenceByOffenceCode(offenceCode)
-  }
-
+  //  TODO To decide how a full load is triggered, at the moment it's via this endpoint
   @PostMapping(value = ["/load-all-offences"])
   @ResponseBody
   @Operation(
@@ -61,6 +47,17 @@ class OffenceController(
   fun loadAllOffences() {
     log.info("Request received to loadAllOffences")
     sdrsService.loadAllOffences()
+  }
+
+  @GetMapping(value = ["/load-results"])
+  @ResponseBody
+  @Operation(
+    summary = "Get the results of the most recent load",
+    description = "Get the results of the most recent load"
+  )
+  fun findLoadResults(): List<MostRecentLoadResult> {
+    log.info("Request received to find the most recent load results")
+    return offenceService.findLoadResults()
   }
 
   companion object {
