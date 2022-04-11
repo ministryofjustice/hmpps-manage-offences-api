@@ -41,7 +41,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     sdrsService.loadAllOffences()
     val offences = offenceRepository.findAll()
     val statusRecords = sdrsLoadStatusRepository.findAll()
-    val statusHistoryRecords =sdrsLoadStatusHistoryRepository.findAll()
+    val statusHistoryRecords = sdrsLoadStatusHistoryRepository.findAll()
 
     assertThat(offences)
       .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
