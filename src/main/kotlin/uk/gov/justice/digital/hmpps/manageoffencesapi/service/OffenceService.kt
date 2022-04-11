@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadStatusR
 class OffenceService(
   private val offenceRepository: OffenceRepository,
   private val sdrsLoadStatusRepository: SdrsLoadStatusRepository,
-  ) {
+) {
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
     return offenceRepository.findByCodeStartsWithIgnoreCase(code).map { transform(it) }
