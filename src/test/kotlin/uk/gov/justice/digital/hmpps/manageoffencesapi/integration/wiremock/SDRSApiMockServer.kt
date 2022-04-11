@@ -18,7 +18,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetOffence')]"))
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'CONSUMER_APPLICATION')]"))
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.To == 'SDRS_AZURE')]"))
-        .withRequestBody(matchingJsonPath("$.MessageBody[?(@.GatewayOperationType.GetOffenceRequest.AllOffences == 'CURRENT')]"))
+        .withRequestBody(matchingJsonPath("$.MessageBody[?(@.GatewayOperationType.GetOffenceRequest.AllOffences == 'ALL')]"))
         .withRequestBody(matchingJsonPath("$.MessageBody[?(@.GatewayOperationType.GetOffenceRequest.AlphaChar == 'A')]"))
         .willReturn(
           aResponse()
@@ -76,7 +76,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetOffence')]"))
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'CONSUMER_APPLICATION')]"))
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.To == 'SDRS_AZURE')]"))
-        .withRequestBody(matchingJsonPath("$.MessageBody[?(@.GatewayOperationType.GetOffenceRequest.AllOffences == 'CURRENT')]"))
+        .withRequestBody(matchingJsonPath("$.MessageBody[?(@.GatewayOperationType.GetOffenceRequest.AllOffences == 'ALL')]"))
         .willReturn(
           aResponse()
             .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))

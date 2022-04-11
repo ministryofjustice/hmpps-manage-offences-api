@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 
@@ -33,4 +35,14 @@ fun transform(sdrsResponse: SDRSResponse): List<Offence> {
       changedDate = it.changedDate
     )
   }
+}
+
+fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult {
+  return MostRecentLoadResult(
+    alphaChar = loadResult.alphaChar,
+    status = loadResult.status,
+    type = loadResult.loadType,
+    loadDate = loadResult.loadDate,
+    lastSuccessfulLoadDate = loadResult.lastSuccessfulLoadDate
+  )
 }
