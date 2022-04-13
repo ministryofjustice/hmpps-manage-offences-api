@@ -40,4 +40,4 @@ RUN keytool -noprompt -storepass changeit -importcert -trustcacerts -cacerts -fi
 
 USER 2000
 
-ENTRYPOINT ["java", "-javaagent:/app/agent.jar", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-XX:+AlwaysActAsServerClassMachine", "-javaagent:/app/agent.jar", "-jar", "/app/app.jar"]
