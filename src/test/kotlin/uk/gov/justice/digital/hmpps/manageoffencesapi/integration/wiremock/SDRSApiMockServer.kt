@@ -34,6 +34,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                               "OffenceStartDate": "2013-03-01",
 						                  "OffenceEndDate": "2013-03-02",
                               "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+                              "MOJStatsCode": "195/99",
                               "code": "XX99001"
                             },
                             {
@@ -41,6 +42,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
 						                  "OffenceStartDate": "2005-09-02",
 						                  "OffenceEndDate": "2005-09-03",
                               "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+                              "MOJStatsCode": "195/99",
                               "code": "XX99001"
                             }
                           ]
@@ -199,6 +201,53 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                     },                    
                     "MessageStatus": {
                       "status": "SUCCESS"
+                    }
+                  }
+              """.trimIndent()
+            )
+        )
+    )
+  }
+
+  fun stubGetAllOffencesForQHasNoCache() {
+    stubFor(
+      post("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetOffence')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'CONSUMER_APPLICATION')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.To == 'SDRS_AZURE')]"))
+        .withRequestBody(matchingJsonPath("$.MessageBody[?(@.GatewayOperationType.GetOffenceRequest.AllOffences == 'ALL')]"))
+        .withRequestBody(matchingJsonPath("$.MessageBody[?(@.GatewayOperationType.GetOffenceRequest.AlphaChar == 'Q')]"))
+        .willReturn(
+          aResponse()
+            .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
+            .withBody(
+              """ {
+                    "MessageBody": {
+                      "GatewayOperationType": {
+                        "Acknowledgement": {
+                          "Ack": {
+                            "MessageStatus": "ERRORED",
+                            "MessageComment": "",
+                            "TimeStamp": 1650459143863
+                          }
+                        }
+		                  }
+	                  },
+                    "MessageHeader": {
+                      "MessageID": {
+                        "UUID": "7717d82c-9cc2-4983-acf1-0d42770e88bd",
+                        "RelatesTo": "df2200e6-241c-4642-b391-3d53299185cd"
+                      },
+                      "TimeStamp": "2022-03-01T15:00:00Z",
+                      "MessageType": "getOffence",
+                      "From": "SDRS_AZURE",
+                      "To": "CONSUMER_APPLICATION"
+                    },
+                    "MessageStatus": {
+                      "status": "ERRORED",
+                      "code": "SDRS-99918",
+                      "reason": " ",
+                      "detail": " "
                     }
                   }
               """.trimIndent()

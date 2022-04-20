@@ -20,6 +20,7 @@ data class Offence(
   val revisionId: Int? = null,
   val startDate: LocalDate? = null,
   val endDate: LocalDate? = null,
+  val homeOfficeStatsCode: String? = null,
   val changedDate: LocalDateTime? = null,
   val createdDate: LocalDateTime = LocalDateTime.now(),
   val lastUpdatedDate: LocalDateTime = LocalDateTime.now(),
