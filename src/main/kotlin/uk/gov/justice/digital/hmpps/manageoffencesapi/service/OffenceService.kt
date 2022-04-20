@@ -20,7 +20,7 @@ class OffenceService(
 
   fun findLoadResults(): List<MostRecentLoadResult> {
     log.info("Fetching offences by offenceCode")
-    return sdrsLoadStatusRepository.findAll().map { transform(it) }
+    return sdrsLoadStatusRepository.findAllByOrderByAlphaCharAsc().map { transform(it) }
   }
 
   companion object {
