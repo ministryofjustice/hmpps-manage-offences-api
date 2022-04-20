@@ -7,6 +7,7 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.ControlTableRecord
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
@@ -56,15 +57,6 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             changedDate = null
           ),
-          Offence(
-            code = "XX99001",
-            description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
-            cjsTitle = null,
-            revisionId = 354116,
-            startDate = LocalDate.of(2005, 9, 2),
-            endDate = LocalDate.of(2005, 9, 3),
-            changedDate = null
-          ),
         )
       )
 
@@ -79,6 +71,51 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       assertThat(it.status).isEqualTo(SUCCESS)
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
     }
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/insert-sdrs-load-result.sql",
+  )
+  fun `Update any offences that have changed`() {
+    sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetChangedOffencesForA()
+    sdrsApiMockServer.stubControlTableRequest()
+    sdrsService.loadOffenceUpdates()
+    val offences = offenceRepository.findAll()
+    val statusRecords = sdrsLoadStatusRepository.findAll()
+    val statusHistoryRecords = sdrsLoadStatusHistoryRepository.findAll()
+
+    assertThat(offences)
+      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
+      .isEqualTo(
+        listOf(
+          Offence(
+            code = "XX99001",
+            description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+            cjsTitle = null,
+            revisionId = 99991,
+            startDate = LocalDate.of(2014, 1, 1),
+            endDate = null,
+            changedDate = null
+          ),
+        )
+      )
+
+    statusRecords
+      .filter { it.alphaChar == "A" || it.alphaChar == "B" }
+      .forEach {
+        assertThat(it.status).isEqualTo(SUCCESS)
+        assertThat(it.loadType).isEqualTo(UPDATE)
+      }
+
+    statusHistoryRecords
+      .filter { it.alphaChar == "A" || it.alphaChar == "B" }
+      .forEach {
+        assertThat(it.status).isEqualTo(SUCCESS)
+        assertThat(it.loadType).isEqualTo(UPDATE)
+      }
   }
 
   @Test
