@@ -49,6 +49,18 @@ class OffenceController(
     sdrsService.loadAllOffences()
   }
 
+  //  TODO To decide how a update is triggered, at the moment it's via this endpoint
+  @PostMapping(value = ["/load-offence-updates"])
+  @ResponseBody
+  @Operation(
+    summary = "Update offences from SDRS and load into manage offences",
+    description = "This endpoint will determine which offences have been changed since the last SDRS load and update them"
+  )
+  fun updateOffences() {
+    log.info("Request received to loadOffenceUpdates")
+    sdrsService.loadOffenceUpdates()
+  }
+
   @GetMapping(value = ["/load-results"])
   @ResponseBody
   @Operation(

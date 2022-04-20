@@ -4,6 +4,8 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType
 import java.time.LocalDateTime
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -16,7 +18,9 @@ data class SdrsLoadResultHistory(
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   val id: Long = -1,
   val alphaChar: String,
+  @Enumerated(EnumType.STRING)
   val status: LoadStatus? = null,
+  @Enumerated(EnumType.STRING)
   val loadType: LoadType? = null,
   val loadDate: LocalDateTime? = null,
 )
