@@ -18,6 +18,7 @@ fun transform(offence: Offence): ModelOffence =
     revisionId = offence.revisionId,
     startDate = offence.startDate,
     endDate = offence.endDate,
+    homeOfficeStatsCode = offence.homeOfficeStatsCode,
     changedDate = offence.changedDate,
     loadDate = offence.lastUpdatedDate,
   )
@@ -29,6 +30,7 @@ fun transform(sdrsOffence: SdrsOffence): Offence = Offence(
   revisionId = sdrsOffence.offenceRevisionId,
   startDate = sdrsOffence.offenceStartDate,
   endDate = sdrsOffence.offenceEndDate,
+  homeOfficeStatsCode = sdrsOffence.mojStatsCode,
   changedDate = sdrsOffence.changedDate
 )
 
@@ -39,6 +41,7 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence): Offence =
     revisionId = sdrsOffence.offenceRevisionId,
     startDate = sdrsOffence.offenceStartDate,
     endDate = sdrsOffence.offenceEndDate,
+    homeOfficeStatsCode = sdrsOffence.mojStatsCode, // TODO may need to pad this out with zeroes eg 052/01 instead of 52/1
     changedDate = sdrsOffence.changedDate
   )
 

@@ -13,6 +13,8 @@ data class Offence(
   val code: String,
   val description: String? = null,
   val cjsTitle: String? = null,
+  @JsonProperty("MOJStatsCode")
+  val mojStatsCode: String? = null,
   val offenceStartDate: LocalDate? = null,
   val offenceEndDate: LocalDate? = null,
   val changedDate: LocalDateTime? = null

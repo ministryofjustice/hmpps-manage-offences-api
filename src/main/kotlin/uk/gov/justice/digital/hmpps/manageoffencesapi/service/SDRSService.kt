@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.UPDATE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsErrorCodes.SDRS_99918
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetControlTableRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetOffenceRequest
@@ -63,13 +64,29 @@ class SDRSService(
   ) {
     val sdrsResponse = findAllOffencesByAlphaChar(alphaChar)
     if (sdrsResponse.messageStatus.status == "ERRORED") {
-      log.error("Request to SDRS API failed for alpha char {} ", alphaChar)
-      log.error("Response details: {}", sdrsResponse)
-      saveLoad(alphaChar, loadDate, FAIL, FULL_LOAD)
+      handleSdrsError(sdrsResponse, alphaChar, loadDate, FULL_LOAD)
     } else {
       val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, alphaChar)
       offenceRepository.saveAll(latestOfEachOffence.map { transform(it) })
       saveLoad(alphaChar, loadDate, SUCCESS, FULL_LOAD)
+    }
+  }
+
+  private fun handleSdrsError(
+    sdrsResponse: SDRSResponse,
+    alphaChar: Char,
+    loadDate: LocalDateTime?,
+    loadType: LoadType
+  ) {
+    if (sdrsResponse.messageStatus.code == SDRS_99918.errorCode) {
+      // SDRS-99918 indicates the absence of a cache, however it also gets thrown when there are no offences matching the alphaChar
+      // e.g. no offence codes start with Q; therefore handling as a 'success' here
+      log.info("SDRS-9918 thrown by SDRS service due to no cache for alpha char {} (treated as success with no offences)", alphaChar)
+      saveLoad(alphaChar, loadDate, SUCCESS, loadType)
+    } else {
+      log.error("Request to SDRS API failed for alpha char {} ", alphaChar)
+      log.error("Response details: {}", sdrsResponse)
+      saveLoad(alphaChar, loadDate, FAIL, loadType)
     }
   }
 
@@ -78,18 +95,18 @@ class SDRSService(
     val sdrsLoadStatuses = sdrsLoadStatusRepository.findAll()
     val lastLoadDateByAlphaChar = sdrsLoadStatuses.groupBy({ it.lastSuccessfulLoadDate }, { it.alphaChar.single() })
     val loadDate = LocalDateTime.now()
-    lastLoadDateByAlphaChar.forEach { (lastLoadDate, affectedCaches) ->
-      if (lastLoadDate == null) {
+    lastLoadDateByAlphaChar.forEach { (lastSuccessfulLoadDate, affectedCaches) ->
+      if (lastSuccessfulLoadDate == null) {
         affectedCaches.forEach {
           log.info("Cache has not been previously loaded, so attempting full load of {} in update job", it)
           fullLoadSingleAlphaChar(it, loadDate)
         }
       } else {
-        val updatedCaches = getUpdatedCachesSinceLastLoadDate(lastLoadDate)
+        val updatedCaches = getUpdatedCachesSinceLastLoadDate(lastSuccessfulLoadDate)
         val cachesToUpdate = affectedCaches intersect updatedCaches
         log.info("Caches to update are {}", cachesToUpdate)
         cachesToUpdate.forEach { alphaChar ->
-          updateSingleCache(alphaChar, lastLoadDate, loadDate)
+          updateSingleCache(alphaChar, lastSuccessfulLoadDate, loadDate)
         }
       }
     }
@@ -103,9 +120,7 @@ class SDRSService(
     log.info("Starting update load for alpha char {} ", alphaChar)
     val sdrsResponse = findUpdatedOffences(alphaChar, lastLoadDate)
     if (sdrsResponse.messageStatus.status == "ERRORED") {
-      log.error("Request to SDRS API failed for alpha char {} ", alphaChar)
-      log.error("Response details: {}", sdrsResponse)
-      saveLoad(alphaChar, loadDate, FAIL, UPDATE)
+      handleSdrsError(sdrsResponse, alphaChar, loadDate, UPDATE)
     } else {
       val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, alphaChar)
       latestOfEachOffence.forEach {

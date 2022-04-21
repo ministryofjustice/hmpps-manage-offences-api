@@ -55,6 +55,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             revisionId = 410082,
             startDate = LocalDate.of(2013, 3, 1),
             endDate = LocalDate.of(2013, 3, 2),
+            homeOfficeStatsCode = "195/99",
             changedDate = null
           ),
         )
@@ -143,5 +144,30 @@ class SDRSServiceIntTest : IntegrationTestBase() {
           )
         )
       )
+  }
+
+  @Test
+  fun `Handle SDRS-99918 as a success ie no offences exist for that cache (cache doesnt exit)`() {
+    sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetAllOffencesForQHasNoCache()
+    sdrsService.loadAllOffences()
+    val offences = offenceRepository.findAll()
+    val statusRecords = sdrsLoadStatusRepository.findAll()
+    val statusHistoryRecords = sdrsLoadStatusHistoryRepository.findAll()
+
+    assertThat(offences).isEmpty()
+
+    assertThat(statusRecords.size).isEqualTo(26)
+    statusRecords.forEach {
+      println("Alpha char = " + it.alphaChar)
+      assertThat(it.status).isEqualTo(SUCCESS)
+      assertThat(it.loadType).isEqualTo(FULL_LOAD)
+    }
+
+    assertThat(statusHistoryRecords.size).isEqualTo(26)
+    statusHistoryRecords.forEach {
+      assertThat(it.status).isEqualTo(SUCCESS)
+      assertThat(it.loadType).isEqualTo(FULL_LOAD)
+    }
   }
 }

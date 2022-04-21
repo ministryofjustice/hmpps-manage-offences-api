@@ -20,6 +20,8 @@ data class Offence(
   val startDate: LocalDate? = null,
   @Schema(description = "The offence end date")
   val endDate: LocalDate? = null,
+  @Schema(description = "The offence's home office stats code")
+  val homeOfficeStatsCode: String? = null,
   @Schema(description = "The date this offence was last changed in SDRS")
   val changedDate: LocalDateTime? = null,
   @Schema(description = "The date this offence was loaded into manage-offences from SDRS")
