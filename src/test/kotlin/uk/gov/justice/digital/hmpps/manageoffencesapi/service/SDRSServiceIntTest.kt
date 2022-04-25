@@ -9,15 +9,10 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.ControlTableRecord
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetControlTableResponse
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageBodyResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadStatusHistoryRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadStatusRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class SDRSServiceIntTest : IntegrationTestBase() {
   @Autowired
@@ -27,22 +22,22 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   lateinit var offenceRepository: OffenceRepository
 
   @Autowired
-  lateinit var sdrsLoadStatusRepository: SdrsLoadStatusRepository
+  lateinit var sdrsLoadResultRepository: SdrsLoadResultRepository
 
   @Autowired
-  lateinit var sdrsLoadStatusHistoryRepository: SdrsLoadStatusHistoryRepository
+  lateinit var sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository
 
   @Test
   @Sql(
     "classpath:test_data/clear-all-data.sql"
   )
-  fun `Save all offences retrieved from SDRS`() {
+  fun `Perform a full load of offences retrieved from SDRS`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForA()
-    sdrsService.loadAllOffences()
+    sdrsService.synchroniseWithSdrs()
     val offences = offenceRepository.findAll()
-    val statusRecords = sdrsLoadStatusRepository.findAll()
-    val statusHistoryRecords = sdrsLoadStatusHistoryRepository.findAll()
+    val statusRecords = sdrsLoadResultRepository.findAll()
+    val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
 
     assertThat(offences)
       .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
@@ -83,10 +78,10 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetChangedOffencesForA()
     sdrsApiMockServer.stubControlTableRequest()
-    sdrsService.loadOffenceUpdates()
+    sdrsService.synchroniseWithSdrs()
     val offences = offenceRepository.findAll()
-    val statusRecords = sdrsLoadStatusRepository.findAll()
-    val statusHistoryRecords = sdrsLoadStatusHistoryRepository.findAll()
+    val statusRecords = sdrsLoadResultRepository.findAll()
+    val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
 
     assertThat(offences)
       .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
@@ -120,40 +115,13 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Make request to control table `() {
-    sdrsApiMockServer.stubControlTableRequest()
-    val sdrsResponse = sdrsService.makeControlTableRequest(LocalDateTime.now())
-    assertThat(sdrsResponse.messageBody)
-      .usingRecursiveComparison()
-      .ignoringFieldsMatchingRegexes(".*lastUpdate")
-      .isEqualTo(
-        MessageBodyResponse(
-          GatewayOperationTypeResponse(
-            getControlTableResponse = GetControlTableResponse(
-              referenceDataSet = listOf(
-                ControlTableRecord(
-                  dataSet = "offence_A",
-                  lastUpdate = LocalDateTime.now()
-                ),
-                ControlTableRecord(
-                  dataSet = "offence_B",
-                  lastUpdate = LocalDateTime.now()
-                ),
-              )
-            )
-          )
-        )
-      )
-  }
-
-  @Test
   fun `Handle SDRS-99918 as a success ie no offences exist for that cache (cache doesnt exit)`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForQHasNoCache()
-    sdrsService.loadAllOffences()
+    sdrsService.synchroniseWithSdrs()
     val offences = offenceRepository.findAll()
-    val statusRecords = sdrsLoadStatusRepository.findAll()
-    val statusHistoryRecords = sdrsLoadStatusHistoryRepository.findAll()
+    val statusRecords = sdrsLoadResultRepository.findAll()
+    val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
 
     assertThat(offences).isEmpty()
 

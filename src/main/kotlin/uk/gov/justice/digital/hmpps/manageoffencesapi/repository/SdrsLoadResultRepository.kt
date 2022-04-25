@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 
 @Repository
-interface SdrsLoadStatusRepository : JpaRepository<SdrsLoadResult, String> {
+interface SdrsLoadResultRepository : JpaRepository<SdrsLoadResult, String> {
   fun findAllByOrderByAlphaCharAsc(): List<SdrsLoadResult>
 }

@@ -4,10 +4,12 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.util.MultiValueMap
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
+@EnableScheduling
 class WebClientConfiguration(
   @Value("\${api.base.url.sdrs}") private val standingDataReferenceServiceApiUrl: String,
   private val webClientBuilder: WebClient.Builder,

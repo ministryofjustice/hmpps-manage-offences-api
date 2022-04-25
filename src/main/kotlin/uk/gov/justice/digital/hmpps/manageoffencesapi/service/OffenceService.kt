@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadStatusRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 
 @Service
 class OffenceService(
   private val offenceRepository: OffenceRepository,
-  private val sdrsLoadStatusRepository: SdrsLoadStatusRepository,
+  private val sdrsLoadResultRepository: SdrsLoadResultRepository,
 ) {
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
@@ -20,7 +20,7 @@ class OffenceService(
 
   fun findLoadResults(): List<MostRecentLoadResult> {
     log.info("Fetching offences by offenceCode")
-    return sdrsLoadStatusRepository.findAllByOrderByAlphaCharAsc().map { transform(it) }
+    return sdrsLoadResultRepository.findAllByOrderByAlphaCharAsc().map { transform(it) }
   }
 
   companion object {

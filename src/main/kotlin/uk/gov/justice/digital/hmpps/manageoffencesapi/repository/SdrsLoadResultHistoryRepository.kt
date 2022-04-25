@@ -5,4 +5,4 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 
 @Repository
-interface SdrsLoadStatusHistoryRepository : JpaRepository<SdrsLoadResultHistory, Long>
+interface SdrsLoadResultHistoryRepository : JpaRepository<SdrsLoadResultHistory, Long>

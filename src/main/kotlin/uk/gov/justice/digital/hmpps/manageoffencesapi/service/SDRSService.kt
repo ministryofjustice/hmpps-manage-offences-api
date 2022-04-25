@@ -2,8 +2,10 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.FAIL
@@ -22,8 +24,8 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offenc
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadStatusHistoryRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadStatusRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -33,29 +35,35 @@ import javax.persistence.EntityNotFoundException
 class SDRSService(
   private val sdrsApiClient: SDRSApiClient,
   private val offenceRepository: OffenceRepository,
-  private val sdrsLoadStatusRepository: SdrsLoadStatusRepository,
-  private val sdrsLoadStatusHistoryRepository: SdrsLoadStatusHistoryRepository,
+  private val sdrsLoadResultRepository: SdrsLoadResultRepository,
+  private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
 ) {
-  private fun findAllOffencesByAlphaChar(alphaChar: Char): SDRSResponse {
-    // TODO at the moment this fetches ALL offences, which means multiple revisions of the same offence could be returned
-    //  we may need to sanitise so that only the latest version of each offence is stored
-    val sdrsRequest = createOffenceRequest(alphaChar = alphaChar)
-    return sdrsApiClient.callSDRS(sdrsRequest)
-  }
-
-  private fun findUpdatedOffences(alphaChar: Char, lastUpdatedDate: LocalDateTime): SDRSResponse {
-    val sdrsRequest = createOffenceRequest(alphaChar = alphaChar, changedDate = lastUpdatedDate)
-    return sdrsApiClient.callSDRS(sdrsRequest)
-  }
-
+  @Scheduled(cron = "0 */20 * * * *")
   @Transactional
-  fun loadAllOffences() {
+  fun synchroniseWithSdrs() {
+    val sdrsLoadResults = sdrsLoadResultRepository.findAll()
+    if (!hasFullLoadPreviouslyOccurred(sdrsLoadResults)) {
+      log.info("The 'Synchronise with SDRS' job is performing a full load - as no load has previously occurred")
+      loadAllOffences()
+    } else {
+      log.info("The 'Synchronise with SDRS' job is checking for any updates since the last load")
+      loadOffenceUpdates(sdrsLoadResults)
+    }
+  }
+
+  private fun loadAllOffences() {
     offenceRepository.deleteAll()
     val loadDate = LocalDateTime.now()
     ('A'..'Z').forEach { alphaChar ->
       log.info("Starting full load for alpha char {} ", alphaChar)
       fullLoadSingleAlphaChar(alphaChar, loadDate)
     }
+  }
+
+  private fun makeControlTableRequest(changedDateTime: LocalDateTime): SDRSResponse {
+    log.info("Making a control table request from SDRS")
+    val sdrsRequest = createControlTableRequest(changedDateTime)
+    return sdrsApiClient.callSDRS(sdrsRequest)
   }
 
   private fun fullLoadSingleAlphaChar(
@@ -90,10 +98,11 @@ class SDRSService(
     }
   }
 
-  @Transactional
-  fun loadOffenceUpdates() {
-    val sdrsLoadStatuses = sdrsLoadStatusRepository.findAll()
-    val lastLoadDateByAlphaChar = sdrsLoadStatuses.groupBy({ it.lastSuccessfulLoadDate }, { it.alphaChar.single() })
+  private fun hasFullLoadPreviouslyOccurred(sdrsLoadResults: MutableList<SdrsLoadResult>) =
+    sdrsLoadResults.any { it.lastSuccessfulLoadDate != null }
+
+  private fun loadOffenceUpdates(sdrsLoadResults: List<SdrsLoadResult>) {
+    val lastLoadDateByAlphaChar = sdrsLoadResults.groupBy({ it.lastSuccessfulLoadDate }, { it.alphaChar.single() })
     val loadDate = LocalDateTime.now()
     lastLoadDateByAlphaChar.forEach { (lastSuccessfulLoadDate, affectedCaches) ->
       if (lastSuccessfulLoadDate == null) {
@@ -157,7 +166,7 @@ class SDRSService(
   }
 
   private fun saveLoad(alphaChar: Char, loadDate: LocalDateTime?, status: LoadStatus, type: LoadType) {
-    val loadStatusExisting = sdrsLoadStatusRepository.findById(alphaChar.toString())
+    val loadStatusExisting = sdrsLoadResultRepository.findById(alphaChar.toString())
       .orElseThrow { EntityNotFoundException("No record exists for alphaChar $alphaChar") }
     val loadStatus = if (status == SUCCESS) {
       loadStatusExisting.copy(
@@ -173,7 +182,7 @@ class SDRSService(
         loadDate = loadDate,
       )
     }
-    sdrsLoadStatusRepository.save(loadStatus)
+    sdrsLoadResultRepository.save(loadStatus)
 
     val loadStatusHistory = SdrsLoadResultHistory(
       alphaChar = alphaChar.toString(),
@@ -181,13 +190,7 @@ class SDRSService(
       loadType = type,
       loadDate = loadDate,
     )
-    sdrsLoadStatusHistoryRepository.save(loadStatusHistory)
-  }
-
-  fun makeControlTableRequest(changedDateTime: LocalDateTime): SDRSResponse {
-    log.info("Making a control table request from SDRS")
-    val sdrsRequest = createControlTableRequest(changedDateTime)
-    return sdrsApiClient.callSDRS(sdrsRequest)
+    sdrsLoadResultHistoryRepository.save(loadStatusHistory)
   }
 
   private fun createSDRSRequest(gatewayOperationTypeRequest: GatewayOperationTypeRequest, messageType: String) =
@@ -234,6 +237,16 @@ class SDRSService(
       ),
       "GetControlTable"
     )
+
+  private fun findAllOffencesByAlphaChar(alphaChar: Char): SDRSResponse {
+    val sdrsRequest = createOffenceRequest(alphaChar = alphaChar)
+    return sdrsApiClient.callSDRS(sdrsRequest)
+  }
+
+  private fun findUpdatedOffences(alphaChar: Char, lastUpdatedDate: LocalDateTime): SDRSResponse {
+    val sdrsRequest = createOffenceRequest(alphaChar = alphaChar, changedDate = lastUpdatedDate)
+    return sdrsApiClient.callSDRS(sdrsRequest)
+  }
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
