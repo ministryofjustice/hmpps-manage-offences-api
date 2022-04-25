@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.2"
-  kotlin("plugin.spring") version "1.6.10"
-  kotlin("plugin.jpa") version "1.6.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.5-beta-3"
+  kotlin("plugin.spring") version "1.6.21"
+  kotlin("plugin.jpa") version "1.6.21"
 }
 
 configurations {
@@ -21,16 +21,16 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.3.3")
+  runtimeOnly("org.postgresql:postgresql:42.3.4")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.6")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.6")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.6")
+  implementation("org.springdoc:springdoc-openapi-ui:1.6.8")
+  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.8")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.8")
 
   // Test dependencies
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.30")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.0.32")
   testImplementation("com.h2database:h2")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
 }
