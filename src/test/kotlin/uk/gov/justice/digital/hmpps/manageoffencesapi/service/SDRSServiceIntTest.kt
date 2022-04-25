@@ -115,9 +115,13 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql",
+  )
   fun `Handle SDRS-99918 as a success ie no offences exist for that cache (cache doesnt exit)`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForQHasNoCache()
+    sdrsApiMockServer.stubControlTableRequest()
     sdrsService.synchroniseWithSdrs()
     val offences = offenceRepository.findAll()
     val statusRecords = sdrsLoadResultRepository.findAll()
