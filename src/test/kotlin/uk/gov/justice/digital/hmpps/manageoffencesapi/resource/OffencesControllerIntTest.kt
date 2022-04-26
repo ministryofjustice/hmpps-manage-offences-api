@@ -78,7 +78,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   fun `Get results of latest load`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForA()
-    sdrsService.loadAllOffences()
+    sdrsService.synchroniseWithSdrs()
     val results = webTestClient.get().uri("/offences/load-results")
       .headers(setAuthorisation())
       .exchange()
