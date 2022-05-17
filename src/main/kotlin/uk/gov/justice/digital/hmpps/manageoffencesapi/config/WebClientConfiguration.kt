@@ -19,21 +19,19 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfiguration(
   @Value("\${api.base.url.sdrs}") private val standingDataReferenceServiceApiUrl: String,
   @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
-  private val webClientBuilder: WebClient.Builder,
-  private val webClientBuilderWithAuth: WebClient.Builder,
 ) {
   @Bean
-  fun standingDataReferenceServiceApiWebClient(): WebClient {
-    return webClientBuilder.baseUrl(standingDataReferenceServiceApiUrl)
+  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient {
+    return builder.baseUrl(standingDataReferenceServiceApiUrl)
       .defaultHeaders { headers -> headers.addAll(createHeaders()) }
       .build()
   }
 
   @Bean
-  fun prisonApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+  fun prisonApiWebClient(builder: WebClient.Builder, authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
-    return webClientBuilderWithAuth
+    return builder
       .baseUrl(prisonApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .build()
