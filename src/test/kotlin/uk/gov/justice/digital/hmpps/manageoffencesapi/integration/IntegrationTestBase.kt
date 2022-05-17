@@ -9,6 +9,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.manageoffencesapi.helpers.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.HmppsAuthMockServer
+import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.SDRSApiMockServer
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -24,11 +26,20 @@ abstract class IntegrationTestBase {
 
   companion object {
     @JvmField
+    internal val prisonApiMockServer = PrisonApiMockServer()
+
+    @JvmField
+    internal val hmppsAuthMockServer = HmppsAuthMockServer()
+
+    @JvmField
     internal val sdrsApiMockServer = SDRSApiMockServer()
 
     @BeforeAll
     @JvmStatic
     fun startMocks() {
+      hmppsAuthMockServer.start()
+      hmppsAuthMockServer.stubGrantToken()
+      prisonApiMockServer.start()
       sdrsApiMockServer.start()
     }
 
@@ -36,6 +47,8 @@ abstract class IntegrationTestBase {
     @JvmStatic
     fun stopMocks() {
       sdrsApiMockServer.stop()
+      prisonApiMockServer.stop()
+      hmppsAuthMockServer.stop()
     }
   }
 
