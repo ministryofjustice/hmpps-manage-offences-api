@@ -48,3 +48,5 @@ api:
   base:
     url:
       sdrs: http://localhost:8332
+      prison:
+        api: http://localhost:8333

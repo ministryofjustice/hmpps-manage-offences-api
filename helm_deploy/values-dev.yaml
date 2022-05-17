@@ -11,7 +11,7 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
     HMPPS_AUTH_URL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
     API_BASE_URL_SDRS: https://crime-reference-data-api.staging.service.justice.gov.uk
-    PRISON_API_URL: https://api-dev.prison.service.justice.gov.uk
+    API_BASE_URL_PRISON_API: https://api-dev.prison.service.justice.gov.uk
 
   # Switches off the allowlist in the DEV env only.
   allowlist: null

@@ -18,7 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient
 @EnableScheduling
 class WebClientConfiguration(
   @Value("\${api.base.url.sdrs}") private val standingDataReferenceServiceApiUrl: String,
-  @Value("\${prison.api.url}") private val prisonApiUri: String,
+  @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
   private val webClientBuilder: WebClient.Builder,
   private val webClientBuilderWithAuth: WebClient.Builder,
 ) {
@@ -34,7 +34,7 @@ class WebClientConfiguration(
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
     return webClientBuilderWithAuth
-      .baseUrl(prisonApiUri)
+      .baseUrl(prisonApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .build()
   }
