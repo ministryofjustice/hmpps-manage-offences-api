@@ -24,4 +24,7 @@ data class Offence(
   val changedDate: LocalDateTime? = null,
   val createdDate: LocalDateTime = LocalDateTime.now(),
   val lastUpdatedDate: LocalDateTime = LocalDateTime.now(),
-)
+) {
+  val statuteCode
+    get() = code.substring(0, 4)
+}

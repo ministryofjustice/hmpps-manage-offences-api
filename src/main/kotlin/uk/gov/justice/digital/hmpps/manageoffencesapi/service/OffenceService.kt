@@ -33,7 +33,7 @@ class OffenceService(
   @Transactional
   fun fullSyncWithNomis() {
     ('A'..'Z').forEach { alphaChar ->
-      SDRSService.log.info("Starting full sync with NOMIS for alphaChar {} ", alphaChar)
+      log.info("Starting full sync with NOMIS for alphaChar {} ", alphaChar)
       fullySyncOffenceGroupWithNomis(alphaChar.toString())
     }
   }
@@ -43,7 +43,7 @@ class OffenceService(
     val (nomisOffencesById, nomisOffences) = getAllNomisOffencecsForAlphaChar(alphaChar)
 
     // the keys here represent the NOMIS keys, each key is a pair of the offenceCode and the statuteCode
-    val (existingOffenceKeys, newOffenceKeys) = offencesByCode.keys.map { Pair(it, it.substring(0, 4)) }
+    val (existingOffenceKeys, newOffenceKeys) = offencesByCode.keys.map { Pair(it, offencesByCode[it]!!.statuteCode) }
       .partition { nomisOffencesById.containsKey(it) }
 
     newOffenceKeys.forEach {
@@ -103,8 +103,8 @@ class OffenceService(
     // TODO Make sure format of hoCode is 6 chars both sides
     if (offence.homeOfficeStatsCode == null) return null
     // TODO replace this condition, get all ho-codes from prison-api (requires new endpoint) and only create one if the statute doesnt exist in the list
-    if (nomisOffences.any { it.hoCode != null && it.hoCode.code == offence.homeOfficeStatsCode }) {
-      return nomisOffences.find { it.hoCode != null && it.hoCode.code == offence.homeOfficeStatsCode }!!.hoCode
+    if (nomisOffences.any { it.hoCode?.code == offence.homeOfficeStatsCode }) {
+      return nomisOffences.find { it.hoCode?.code == offence.homeOfficeStatsCode }!!.hoCode
     }
     log.info("Creating home office code {} in NOMIS", offence.homeOfficeStatsCode)
     val nomisHoCode = PrisonApiHoCode(
@@ -122,13 +122,13 @@ class OffenceService(
     nomisOffences: List<PrisonApiOffence>
   ): PrisonApiStatute {
     // TODO replace this condition, get all statutes from prison-api (requires new endpoint) and only create one if the statute doesnt exist in the list
-    if (nomisOffences.any { it.statuteCode.code == offence.code.substring(0, 4) }) {
-      return nomisOffences.find { it.statuteCode.code == offence.code.substring(0, 4) }!!.statuteCode
+    if (nomisOffences.any { it.statuteCode.code == offence.statuteCode }) {
+      return nomisOffences.find { it.statuteCode.code == offence.statuteCode }!!.statuteCode
     }
-    log.info("Creating statute code {} in NOMIS", offence.code.substring(0, 4))
+    log.info("Creating statute code {} in NOMIS", offence.statuteCode)
     val nomisStatute = PrisonApiStatute(
-      code = offence.code.substring(0, 4),
-      description = offence.code.substring(0, 4),
+      code = offence.statuteCode,
+      description = offence.statuteCode,
       legislatingBodyCode = "UK",
       activeFlag = "Y"
     )
