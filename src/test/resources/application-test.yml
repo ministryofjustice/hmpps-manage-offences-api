@@ -58,5 +58,5 @@ api:
 
 system:
   client:
-    id: calculate-release-dates-admin
+    id: manage-offences-api-admin
     secret: client_secret
