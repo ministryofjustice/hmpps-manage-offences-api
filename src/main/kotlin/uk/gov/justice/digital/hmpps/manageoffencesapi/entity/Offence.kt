@@ -14,7 +14,7 @@ data class Offence(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   val id: Long = -1,
-  val code: String? = null,
+  val code: String,
   val description: String? = null,
   val cjsTitle: String? = null,
   val revisionId: Int? = null,
@@ -24,4 +24,7 @@ data class Offence(
   val changedDate: LocalDateTime? = null,
   val createdDate: LocalDateTime = LocalDateTime.now(),
   val lastUpdatedDate: LocalDateTime = LocalDateTime.now(),
-)
+) {
+  val statuteCode
+    get() = code.substring(0, 4)
+}

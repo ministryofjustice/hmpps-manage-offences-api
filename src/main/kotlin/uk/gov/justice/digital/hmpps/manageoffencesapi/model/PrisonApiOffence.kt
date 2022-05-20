@@ -4,11 +4,11 @@ import java.time.LocalDate
 
 data class PrisonApiOffence(
   val code: String,
-  private val description: String,
-  private val statuteCode: PrisonApiStatute,
-  private val hoCode: PrisonApiHoCode? = null,
-  private val severityRanking: String? = null,
-  private val activeFlag: String? = null,
-  private val listSequence: Int? = null,
-  private val expiryDate: LocalDate? = null,
+  val description: String?,
+  val statuteCode: PrisonApiStatute,
+  val hoCode: PrisonApiHoCode? = null,
+  val severityRanking: String? = null,
+  val activeFlag: String? = null,
+  val listSequence: Int? = null,
+  val expiryDate: LocalDate? = null,
 )

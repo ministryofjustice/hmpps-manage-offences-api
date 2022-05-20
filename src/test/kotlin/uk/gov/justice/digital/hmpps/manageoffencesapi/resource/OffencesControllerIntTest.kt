@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
@@ -87,7 +89,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     ('A'..'Z').forEach { alphaChar ->
-      val result = results.find { e -> e.alphaChar == alphaChar.toString() }
+      val result = results?.find { e -> e.alphaChar == alphaChar.toString() }
       assertThat(result)
         .usingRecursiveComparison()
         .ignoringFieldsMatchingRegexes(".*dDate")
@@ -99,5 +101,47 @@ class OffencesControllerIntTest : IntegrationTestBase() {
           )
         )
     }
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql",
+    "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql"
+  )
+  fun `Fully sync with NOMIS`() {
+    ('A'..'Z').forEach { alphaChar ->
+      prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+    }
+    prisonApiMockServer.stubFindByOffenceCodeStartsWith('M')
+    prisonApiMockServer.stubCreateHomeOfficeCode()
+    prisonApiMockServer.stubCreateStatute()
+    prisonApiMockServer.stubCreateOffence()
+    prisonApiMockServer.stubUpdateOffence()
+
+    webTestClient.post()
+      .uri("/offences/full-sync-nomis")
+      .headers(setAuthorisation())
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+
+    prisonApiMockServer.verify(
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AB14003")))
+    )
+
+    prisonApiMockServer.verify(
+      WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("M1119999")))
+    )
+    prisonApiMockServer.verify(
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/statute"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AF06")))
+    )
+    prisonApiMockServer.verify(
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/ho-code"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("91/881")))
+    )
   }
 }
