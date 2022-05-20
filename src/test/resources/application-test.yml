@@ -44,9 +44,19 @@ management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
 
+# Wiremock auth server
+hmpps:
+  auth:
+    url: http://localhost:8334/auth
+
 api:
   base:
     url:
       sdrs: http://localhost:8332
       prison:
         api: http://localhost:8333
+
+system:
+  client:
+    id: calculate-release-dates-admin
+    secret: client_secret

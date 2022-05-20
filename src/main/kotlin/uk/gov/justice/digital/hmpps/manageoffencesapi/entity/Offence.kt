@@ -14,7 +14,7 @@ data class Offence(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   val id: Long = -1,
-  val code: String? = null,
+  val code: String,
   val description: String? = null,
   val cjsTitle: String? = null,
   val revisionId: Int? = null,

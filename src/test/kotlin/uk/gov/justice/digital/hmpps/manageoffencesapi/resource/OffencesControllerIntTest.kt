@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
@@ -99,5 +100,28 @@ class OffencesControllerIntTest : IntegrationTestBase() {
           )
         )
     }
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql"
+  )
+  fun `Fully sync with NOMIS`() {
+    ('A'..'Z').forEach { alphaChar ->
+      prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+    }
+    prisonApiMockServer.stubFindByOffenceCodeStartsWith('M')
+    prisonApiMockServer.stubCreateHomeOfficeCode()
+    prisonApiMockServer.stubCreateStatute()
+    prisonApiMockServer.stubCreateOffence()
+    prisonApiMockServer.stubUpdateOffence()
+
+    webTestClient.post()
+      .uri("/offences/full-sync-nomis")
+      .headers(setAuthorisation())
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
   }
 }

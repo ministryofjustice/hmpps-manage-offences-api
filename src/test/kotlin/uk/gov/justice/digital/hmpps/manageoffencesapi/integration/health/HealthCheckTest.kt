@@ -71,7 +71,6 @@ class HealthCheckTest : IntegrationTestBase() {
   }
 
   private fun stubPingWithResponse(status: Int) {
-    hmppsAuthMockServer.stubHealthPing(status)
     prisonApiMockServer.stubHealthPing(status)
   }
 }
