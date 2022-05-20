@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -88,7 +89,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .returnResult().responseBody
 
     ('A'..'Z').forEach { alphaChar ->
-      val result = results.find { e -> e.alphaChar == alphaChar.toString() }
+      val result = results?.find { e -> e.alphaChar == alphaChar.toString() }
       assertThat(result)
         .usingRecursiveComparison()
         .ignoringFieldsMatchingRegexes(".*dDate")
@@ -105,7 +106,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/clear-all-data.sql",
-    "classpath:test_data/insert-offence-data.sql"
+    "classpath:test_data/insert-offence-data.sql",
+    "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql"
   )
   fun `Fully sync with NOMIS`() {
     ('A'..'Z').forEach { alphaChar ->
@@ -123,5 +125,15 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
+
+    prisonApiMockServer.verify(
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AB14003".repeat(1))))
+    )
+
+    prisonApiMockServer.verify(
+      WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("M1119999".repeat(1))))
+    )
   }
 }

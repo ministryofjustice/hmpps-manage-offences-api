@@ -87,12 +87,12 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
     private val nomisOffences = """ {
                   "content": [
                     {
-                      "code": "M1",
+                      "code": "M1119999",
                       "description": "Actual bodily harm",
                       "statuteCode": {
-                        "code": "RC86",
-                        "description": "Statute RC86",
-                        "legislatingBodyCode": "LG1",
+                        "code": "M111",
+                        "description": "Statute M111",
+                        "legislatingBodyCode": "UK",
                         "activeFlag": "Y"
                       },
                       "hoCode": {
@@ -104,12 +104,12 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "activeFlag": "Y"
                     },
                     {
-                      "code": "M2",
+                      "code": "M2119999",
                       "description": "Common assault",
                       "statuteCode": {
-                        "code": "RC86",
-                        "description": "Statute RC86",
-                        "legislatingBodyCode": "LG1",
+                        "code": "M111",
+                        "description": "Statute M111",
+                        "legislatingBodyCode": "UK",
                         "activeFlag": "Y"
                       },
                       "hoCode": {
@@ -121,12 +121,12 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "activeFlag": "Y"
                     },
                     {
-                      "code": "M3",
+                      "code": "M3119999",
                       "description": "Attempted Murder",
                       "statuteCode": {
-                        "code": "RC86",
-                        "description": "Statute RC86",
-                        "legislatingBodyCode": "LG1",
+                        "code": "M111",
+                        "description": "Statute M111",
+                        "legislatingBodyCode": "UK",
                         "activeFlag": "Y"
                       },
                       "hoCode": {
@@ -138,12 +138,12 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "activeFlag": "Y"
                     },
                     {
-                      "code": "M4",
+                      "code": "M4119999",
                       "description": "Manslaughter",
                       "statuteCode": {
-                        "code": "RC86",
-                        "description": "Statute RC86",
-                        "legislatingBodyCode": "LG1",
+                        "code": "M111",
+                        "description": "Statute M111",
+                        "legislatingBodyCode": "UK",
                         "activeFlag": "Y"
                       },
                       "hoCode": {
@@ -155,12 +155,12 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "activeFlag": "Y"
                     },
                     {
-                      "code": "M5",
+                      "code": "M5119999",
                       "description": "Manslaughter Old",
                       "statuteCode": {
-                        "code": "RC86",
-                        "description": "Statute RC86",
-                        "legislatingBodyCode": "LG1",
+                        "code": "M111",
+                        "description": "Statute M111",
+                        "legislatingBodyCode": "UK",
                         "activeFlag": "Y"
                       },
                       "hoCode": {
