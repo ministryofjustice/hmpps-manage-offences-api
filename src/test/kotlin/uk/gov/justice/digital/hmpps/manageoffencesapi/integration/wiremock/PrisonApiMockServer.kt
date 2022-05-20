@@ -30,6 +30,7 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
             .withStatus(200)
         )
     )
+
   fun stubCreateStatute(): StubMapping =
     stubFor(
       WireMock.post("/api/offences/statute")
@@ -49,6 +50,7 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
             .withStatus(200)
         )
     )
+
   fun stubUpdateOffence(): StubMapping =
     stubFor(
       WireMock.put("/api/offences/offence")
@@ -70,6 +72,7 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
       )
     )
   }
+
   fun stubFindByOffenceCodeStartsWith(offenceCode: Char) {
     stubFor(
       get("/api/offences/code/$offenceCode?page=0&size=1000&sort=code,ASC").willReturn(
@@ -198,7 +201,7 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
                   "numberOfElements": 5,
                   "empty": false
                 }
-              """.trimIndent()
+    """.trimIndent()
 
     private val emptyNomisOffenceResponse = """ {
                   "content": [],
@@ -228,6 +231,6 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
                   "numberOfElements": 0,
                   "empty": false
                 }
-              """.trimIndent()
+    """.trimIndent()
   }
 }
