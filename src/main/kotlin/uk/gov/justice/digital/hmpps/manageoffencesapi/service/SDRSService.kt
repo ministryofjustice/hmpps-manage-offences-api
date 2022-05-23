@@ -70,23 +70,31 @@ class SDRSService(
     alphaChar: Char,
     loadDate: LocalDateTime?
   ) {
-    val sdrsResponse = findAllOffencesByAlphaChar(alphaChar)
-    if (sdrsResponse.messageStatus.status == "ERRORED") {
-      handleSdrsError(sdrsResponse, alphaChar, loadDate, FULL_LOAD)
-    } else {
-      val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, alphaChar)
-      offenceRepository.saveAll(latestOfEachOffence.map { transform(it) })
-      saveLoad(alphaChar, loadDate, SUCCESS, FULL_LOAD)
+    try {
+      val sdrsResponse = findAllOffencesByAlphaChar(alphaChar)
+      if (sdrsResponse.messageStatus.status == "ERRORED") {
+        handleSdrsError(sdrsResponse, alphaChar, loadDate, FULL_LOAD)
+      } else {
+        val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, alphaChar)
+        offenceRepository.saveAll(latestOfEachOffence.map { transform(it) })
+        saveLoad(alphaChar, loadDate, SUCCESS, FULL_LOAD)
+      }
+    } catch (e: Exception) {
+      log.error("Failed to do a full load from SDRS for alphaChar {} - error message = {}", alphaChar, e.message)
+      handleSdrsError(alphaChar = alphaChar, loadDate = loadDate, loadType = FULL_LOAD)
     }
   }
 
   private fun handleSdrsError(
-    sdrsResponse: SDRSResponse,
+    sdrsResponse: SDRSResponse? = null,
     alphaChar: Char,
     loadDate: LocalDateTime?,
     loadType: LoadType
   ) {
-    if (sdrsResponse.messageStatus.code == SDRS_99918.errorCode) {
+    if (sdrsResponse == null) {
+      log.error("An unexpected error occurred when calling SDRS for alphaChar {}", alphaChar)
+      saveLoad(alphaChar, loadDate, FAIL, loadType)
+    } else if (sdrsResponse.messageStatus.code == SDRS_99918.errorCode) {
       // SDRS-99918 indicates the absence of a cache, however it also gets thrown when there are no offences matching the alphaChar
       // e.g. no offence codes start with Q; therefore handling as a 'success' here
       log.info("SDRS-9918 thrown by SDRS service due to no cache for alpha char {} (treated as success with no offences)", alphaChar)
@@ -127,18 +135,23 @@ class SDRSService(
     loadDate: LocalDateTime?
   ) {
     log.info("Starting update load for alpha char {} ", alphaChar)
-    val sdrsResponse = findUpdatedOffences(alphaChar, lastLoadDate)
-    if (sdrsResponse.messageStatus.status == "ERRORED") {
-      handleSdrsError(sdrsResponse, alphaChar, loadDate, UPDATE)
-    } else {
-      val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, alphaChar)
-      latestOfEachOffence.forEach {
-        offenceRepository.findOneByCode(it.code).ifPresentOrElse(
-          { offenceToUpdate -> offenceRepository.save(transform(it, offenceToUpdate)) },
-          { offenceRepository.save(transform(it)) }
-        )
+    try {
+      val sdrsResponse = findUpdatedOffences(alphaChar, lastLoadDate)
+      if (sdrsResponse.messageStatus.status == "ERRORED") {
+        handleSdrsError(sdrsResponse, alphaChar, loadDate, UPDATE)
+      } else {
+        val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, alphaChar)
+        latestOfEachOffence.forEach {
+          offenceRepository.findOneByCode(it.code).ifPresentOrElse(
+            { offenceToUpdate -> offenceRepository.save(transform(it, offenceToUpdate)) },
+            { offenceRepository.save(transform(it)) }
+          )
+        }
+        saveLoad(alphaChar, loadDate, SUCCESS, UPDATE)
       }
-      saveLoad(alphaChar, loadDate, SUCCESS, UPDATE)
+    } catch (e: Exception) {
+      log.error("Failed for updating a single cache from SDRS for alphaChar {} - error message = {}", alphaChar, e.message)
+      handleSdrsError(alphaChar = alphaChar, loadDate = loadDate, loadType = UPDATE)
     }
   }
 
