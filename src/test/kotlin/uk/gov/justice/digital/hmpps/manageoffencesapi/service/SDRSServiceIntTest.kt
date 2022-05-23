@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.FAIL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.UPDATE
@@ -141,5 +142,25 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       assertThat(it.status).isEqualTo(SUCCESS)
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
     }
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/insert-sdrs-load-result.sql",
+  )
+  fun `Handle unexpected exception from SDRS - Bad JSON is returned from SDRS thus causing a generic exception`() {
+    sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetChangedOffencesForAHasBadJson()
+    sdrsApiMockServer.stubControlTableRequest()
+    sdrsService.synchroniseWithSdrs()
+
+    val statusRecords = sdrsLoadResultRepository.findAll()
+    val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
+
+    assertThat(statusRecords.first { it.alphaChar == "A" }.status).isEqualTo(FAIL)
+    assertThat(statusRecords.first { it.alphaChar == "A" }.loadType).isEqualTo(UPDATE)
+    assertThat(statusHistoryRecords.first { it.alphaChar == "A" }.status).isEqualTo(FAIL)
+    assertThat(statusHistoryRecords.first { it.alphaChar == "A" }.loadType).isEqualTo(UPDATE)
   }
 }
