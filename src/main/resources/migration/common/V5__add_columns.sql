@@ -1,5 +1,5 @@
-ALTER TABLE offence ADD COLUMN category INT(3);
-ALTER TABLE offence ADD COLUMN sub_category INT(2);
+ALTER TABLE offence ADD COLUMN category INT;
+ALTER TABLE offence ADD COLUMN sub_category INT;
 ALTER TABLE offence ADD COLUMN acts_and_sections varchar(1024);
 
 
