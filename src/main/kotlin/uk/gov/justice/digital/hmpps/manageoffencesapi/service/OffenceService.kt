@@ -84,7 +84,7 @@ class OffenceService(
       description = offence.description,
       statuteCode = statute,
       hoCode = homeOfficeCode,
-      severityRanking = if (offence.category != null) offence.category.toString() else "99",
+      severityRanking = offence.category?.toString() ?: "99",
       activeFlag = isOffenceActive(offence.endDate),
     )
     prisonApiClient.createOffence(nomisOffence)

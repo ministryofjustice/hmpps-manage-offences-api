@@ -32,6 +32,8 @@ data class Offence(
   val homeOfficeStatsCode: String?
     get() {
       if (category == null && subCategory == null) return null
-      return category?.toString().orEmpty().padStart(3, '0') + "/" + subCategory.toString().padStart(2, '0')
+      if (subCategory == null) return category.toString().padStart(3, '0') + "/"
+      if (category == null) return "/" + subCategory.toString().padStart(2, '0')
+      return category.toString().padStart(3, '0') + "/" + subCategory.toString().padStart(2, '0')
     }
 }
