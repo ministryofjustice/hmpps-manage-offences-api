@@ -69,7 +69,6 @@ class OffenceService(
     val nomisOffenceUpdated = nomisOffence.copy(
       description = offence.description,
       hoCode = homeOfficeCode,
-      // severityRanking = "99", // TODO should derive this and how to set on update?
       activeFlag = isOffenceActive(offence.endDate),
     )
     prisonApiClient.updateOffence(nomisOffenceUpdated)
@@ -85,7 +84,7 @@ class OffenceService(
       description = offence.description,
       statuteCode = statute,
       hoCode = homeOfficeCode,
-      severityRanking = "99", // TODO should derive this?
+      severityRanking = if (offence.category != null) offence.category.toString() else "99",
       activeFlag = isOffenceActive(offence.endDate),
     )
     prisonApiClient.createOffence(nomisOffence)
@@ -100,7 +99,6 @@ class OffenceService(
     offence: EntityOffence,
     nomisOffences: List<PrisonApiOffence>
   ): PrisonApiHoCode? {
-    // TODO Make sure format of hoCode is 6 chars both sides
     if (offence.homeOfficeStatsCode == null) return null
     // TODO replace this condition, get all ho-codes from prison-api (requires new endpoint) and only create one if the statute doesnt exist in the list
     if (nomisOffences.any { it.hoCode?.code == offence.homeOfficeStatsCode }) {
@@ -108,7 +106,7 @@ class OffenceService(
     }
     log.info("Creating home office code {} in NOMIS", offence.homeOfficeStatsCode)
     val nomisHoCode = PrisonApiHoCode(
-      code = offence.homeOfficeStatsCode,
+      code = offence.homeOfficeStatsCode!!,
       description = offence.homeOfficeStatsCode,
       activeFlag = "Y"
     )
@@ -128,7 +126,7 @@ class OffenceService(
     log.info("Creating statute code {} in NOMIS", offence.statuteCode)
     val nomisStatute = PrisonApiStatute(
       code = offence.statuteCode,
-      description = offence.statuteCode,
+      description = offence.actsAndSections,
       legislatingBodyCode = "UK",
       activeFlag = "Y"
     )
