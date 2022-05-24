@@ -51,7 +51,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             revisionId = 410082,
             startDate = LocalDate.of(2013, 3, 1),
             endDate = LocalDate.of(2013, 3, 2),
-            homeOfficeStatsCode = "195/99",
+            category = 195,
+            subCategory = 99,
             changedDate = null
           ),
         )

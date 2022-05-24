@@ -30,8 +30,10 @@ fun transform(sdrsOffence: SdrsOffence): Offence = Offence(
   revisionId = sdrsOffence.offenceRevisionId,
   startDate = sdrsOffence.offenceStartDate,
   endDate = sdrsOffence.offenceEndDate,
-  homeOfficeStatsCode = sdrsOffence.mojStatsCode,
-  changedDate = sdrsOffence.changedDate
+  category = sdrsOffence.category,
+  subCategory = sdrsOffence.subCategory,
+  changedDate = sdrsOffence.changedDate,
+  actsAndSections = sdrsOffence.offenceActsAndSections,
 )
 
 fun transform(sdrsOffence: SdrsOffence, offence: Offence): Offence =
@@ -41,8 +43,10 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence): Offence =
     revisionId = sdrsOffence.offenceRevisionId,
     startDate = sdrsOffence.offenceStartDate,
     endDate = sdrsOffence.offenceEndDate,
-    homeOfficeStatsCode = sdrsOffence.mojStatsCode, // TODO may need to pad this out with zeroes eg 052/01 instead of 52/1
-    changedDate = sdrsOffence.changedDate
+    category = sdrsOffence.category,
+    subCategory = sdrsOffence.subCategory,
+    changedDate = sdrsOffence.changedDate,
+    actsAndSections = sdrsOffence.offenceActsAndSections,
   )
 
 fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
