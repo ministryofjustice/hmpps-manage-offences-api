@@ -89,12 +89,14 @@ class OffenceServiceTest {
     private val NOMIS_OFFENCE_A1234AAA = PrisonApiOffence(
       code = "A1234AAA",
       description = "A Desc 1",
-      statuteCode = NOMIS_STATUTE_A123
+      statuteCode = NOMIS_STATUTE_A123,
+      activeFlag = "Y"
     )
     private val NOMIS_OFFENCE_A1234AAB = PrisonApiOffence(
       code = "A1234AAB",
       description = "A Desc 2",
-      statuteCode = NOMIS_STATUTE_A123
+      statuteCode = NOMIS_STATUTE_A123,
+      activeFlag = "Y"
     )
     val PAGE_1_OF_2 = createPrisonApiOffencesResponse(
       2,

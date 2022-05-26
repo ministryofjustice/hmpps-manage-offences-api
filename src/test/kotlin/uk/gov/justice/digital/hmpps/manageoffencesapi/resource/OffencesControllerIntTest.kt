@@ -61,7 +61,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             id = 4,
             code = "AB14003",
             description = "Fail to give to an authorised person information / assistance / provide facilities that person may require",
-            cjsTitle = "Fail to give to an authorised person information / assistance / provide facilities that person may require",
+            cjsTitle = "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
             revisionId = 574449,
             startDate = LocalDate.of(2015, 3, 13),
             endDate = null,
@@ -129,12 +129,14 @@ class OffencesControllerIntTest : IntegrationTestBase() {
     prisonApiMockServer.verify(
       WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
         .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AB14003")))
+        .withRequestBody(WireMock.matchingJsonPath("description", WireMock.equalTo("CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require")))
     )
 
     prisonApiMockServer.verify(
       WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
         .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("M1119999")))
         .withRequestBody(WireMock.matchingJsonPath("severityRanking", WireMock.equalTo("500")))
+        .withRequestBody(WireMock.matchingJsonPath("description", WireMock.equalTo("Actual bodily harm UPDATED")))
     )
     prisonApiMockServer.verify(
       WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/statute"))
