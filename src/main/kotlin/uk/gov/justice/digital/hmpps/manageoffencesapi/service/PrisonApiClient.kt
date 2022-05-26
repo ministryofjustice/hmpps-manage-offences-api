@@ -3,8 +3,12 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientException
+import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiHoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
@@ -30,6 +34,7 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .bodyValue(prisonApiHoCode)
       .retrieve()
       .toBodilessEntity()
+      .onErrorResume(WebClientResponseException.Conflict::class.java) { Mono.empty() }
       .block()
   }
 
@@ -39,6 +44,7 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .bodyValue(prisonApiStatute)
       .retrieve()
       .toBodilessEntity()
+      .onErrorResume(WebClientResponseException.Conflict::class.java) { Mono.empty() }
       .block()
   }
 

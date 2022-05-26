@@ -100,7 +100,6 @@ class OffenceService(
     nomisOffences: List<PrisonApiOffence>
   ): PrisonApiHoCode? {
     if (offence.homeOfficeStatsCode == null) return null
-    // TODO replace this condition, get all ho-codes from prison-api (requires new endpoint) and only create one if the statute doesnt exist in the list
     if (nomisOffences.any { it.hoCode?.code == offence.homeOfficeStatsCode }) {
       return nomisOffences.find { it.hoCode?.code == offence.homeOfficeStatsCode }!!.hoCode
     }
@@ -119,7 +118,6 @@ class OffenceService(
     offence: EntityOffence,
     nomisOffences: List<PrisonApiOffence>
   ): PrisonApiStatute {
-    // TODO replace this condition, get all statutes from prison-api (requires new endpoint) and only create one if the statute doesnt exist in the list
     if (nomisOffences.any { it.statuteCode.code == offence.statuteCode }) {
       return nomisOffences.find { it.statuteCode.code == offence.statuteCode }!!.statuteCode
     }
