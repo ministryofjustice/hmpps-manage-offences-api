@@ -41,6 +41,25 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         )
     )
 
+  fun stubCreateHomeOfficeCodeWhenOneAlreadyExists(): StubMapping =
+    stubFor(
+      WireMock.post("/api/offences/ho-code")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(409)
+        )
+    )
+  fun stubCreateStatuteWhenOneAlreadyExists(): StubMapping =
+    stubFor(
+      WireMock.post("/api/offences/statute")
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(409)
+        )
+    )
+
   fun stubCreateOffence(): StubMapping =
     stubFor(
       WireMock.post("/api/offences/offence")

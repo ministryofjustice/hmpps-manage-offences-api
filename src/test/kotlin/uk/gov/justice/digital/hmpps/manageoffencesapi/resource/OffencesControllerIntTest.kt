@@ -109,7 +109,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
     "classpath:test_data/insert-offence-data.sql",
     "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql"
   )
-  fun `Fully sync with NOMIS`() {
+  fun `Fully sync with NOMIS - includes creating statute and ho-code`() {
     ('A'..'Z').forEach { alphaChar ->
       prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
     }
@@ -136,6 +136,51 @@ class OffencesControllerIntTest : IntegrationTestBase() {
         .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("M1119999")))
         .withRequestBody(WireMock.matchingJsonPath("severityRanking", WireMock.equalTo("500")))
     )
+    prisonApiMockServer.verify(
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/statute"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AF06")))
+        .withRequestBody(WireMock.matchingJsonPath("description", WireMock.equalTo("Contrary to section 19 of the Zoo Licensing Act 1981")))
+    )
+    prisonApiMockServer.verify(
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/ho-code"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("091/81")))
+    )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql",
+    "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql"
+  )
+  fun `Fully sync with NOMIS - prison api call throws 409 error when creating statute and homeOfficeCode because they already exist, should  still succeed`() {
+    ('A'..'Z').forEach { alphaChar ->
+      prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+    }
+    prisonApiMockServer.stubFindByOffenceCodeStartsWith('M')
+    prisonApiMockServer.stubCreateHomeOfficeCodeWhenOneAlreadyExists()
+    prisonApiMockServer.stubCreateStatuteWhenOneAlreadyExists()
+    prisonApiMockServer.stubCreateOffence()
+    prisonApiMockServer.stubUpdateOffence()
+
+    webTestClient.post()
+      .uri("/offences/full-sync-nomis")
+      .headers(setAuthorisation())
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+
+    prisonApiMockServer.verify(
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AB14003")))
+    )
+
+    prisonApiMockServer.verify(
+      WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("M1119999")))
+        .withRequestBody(WireMock.matchingJsonPath("severityRanking", WireMock.equalTo("500")))
+    )
+
     prisonApiMockServer.verify(
       WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/statute"))
         .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AF06")))
