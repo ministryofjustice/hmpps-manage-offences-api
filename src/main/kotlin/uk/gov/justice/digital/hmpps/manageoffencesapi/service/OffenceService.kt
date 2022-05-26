@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiHoCode
@@ -11,7 +12,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
-import javax.transaction.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
 
 @Service
@@ -30,7 +30,7 @@ class OffenceService(
     return sdrsLoadResultRepository.findAllByOrderByAlphaCharAsc().map { transform(it) }
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   fun fullSyncWithNomis() {
     ('A'..'Z').forEach { alphaChar ->
       log.info("Starting full sync with NOMIS for alphaChar {} ", alphaChar)
@@ -137,7 +137,7 @@ class OffenceService(
     var totalPages = 1
     val nomisOffences: MutableList<PrisonApiOffence> = mutableListOf()
     while (pageNumber < totalPages) {
-      val response = prisonApiClient.findByOffenceCodeStartsWith(alphaChar, 0)
+      val response = prisonApiClient.findByOffenceCodeStartsWith(alphaChar, pageNumber)
       totalPages = response.totalPages
       pageNumber++
       nomisOffences.addAll(response.content)
