@@ -9,4 +9,4 @@ INSERT INTO public.offence
 VALUES(3, 'AB14002', 'Intentionally obstruct an authorised person', 574487, 'Intentionally obstruct an authorised person', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07 16:05:58.178');
 INSERT INTO public.offence
 (id, code, description, revision_id, cjs_title, start_date, end_date, changed_date, created_date, last_updated_date)
-VALUES(4, 'AB14003', 'Fail to give to an authorised person information / assistance / provide facilities that person may require', 574449, 'Fail to give to an authorised person information / assistance / provide facilities that person may require', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07 16:05:58.178');
+VALUES(4, 'AB14003', 'Fail to give to an authorised person information / assistance / provide facilities that person may require', 574449, 'CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07 16:05:58.178');

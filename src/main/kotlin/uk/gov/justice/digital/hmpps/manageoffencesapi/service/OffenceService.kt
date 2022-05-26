@@ -67,7 +67,7 @@ class OffenceService(
     homeOfficeCode: PrisonApiHoCode?
   ) {
     val nomisOffenceUpdated = nomisOffence.copy(
-      description = offence.description,
+      description = (offence.cjsTitle ?: offence.description)!!,
       hoCode = homeOfficeCode,
       activeFlag = isOffenceActive(offence.endDate),
     )
@@ -81,7 +81,7 @@ class OffenceService(
   ) {
     val nomisOffence = PrisonApiOffence(
       code = offence.code,
-      description = offence.description,
+      description = (offence.cjsTitle ?: offence.description)!!,
       statuteCode = statute,
       hoCode = homeOfficeCode,
       severityRanking = offence.category?.toString() ?: "99",
