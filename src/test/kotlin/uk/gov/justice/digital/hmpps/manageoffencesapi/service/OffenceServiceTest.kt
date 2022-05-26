@@ -8,6 +8,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
@@ -35,7 +36,7 @@ class OffenceServiceTest {
       createPrisonApiOffencesResponse(
         1,
         listOf(
-          OFFENCE_A1234AAA
+          NOMIS_OFFENCE_A1234AAA
         )
       )
     )
@@ -58,29 +59,54 @@ class OffenceServiceTest {
     verify(prisonApiClient, never()).findByOffenceCodeStartsWith("A", 2)
   }
 
+  @Test
+  fun `When creating a statute in NOMIS, the description should be set to the statute code if there is no ActsAndSections value`() {
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("B")).thenReturn(listOf(OFFENCE_B123AA6))
+
+    offenceService.fullSyncWithNomis()
+
+    verify(prisonApiClient, times(1)).createStatute(NOMIS_STATUTE_B123.copy(description = NOMIS_STATUTE_B123.code))
+  }
+
+  @Test
+  fun `When creating a statute in NOMIS, the statute description should be set to the ActsAndSections value (if it exists)`() {
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("B")).thenReturn(listOf(OFFENCE_B123AA6.copy(actsAndSections = "Statute description B123")))
+
+    offenceService.fullSyncWithNomis()
+
+    verify(prisonApiClient, times(1)).createStatute(NOMIS_STATUTE_B123.copy(description = "Statute description B123"))
+  }
+
   companion object {
-    private val OFFENCE_A1234AAA = PrisonApiOffence(
+    private val OFFENCE_B123AA6 = Offence(
+      code = "B123AA6",
+      description = "B Desc 1",
+    )
+    private val NOMIS_STATUTE_B123 =
+      PrisonApiStatute(code = "B123", description = "Statute desc", activeFlag = "Y", legislatingBodyCode = "UK")
+    private val NOMIS_STATUTE_A123 =
+      PrisonApiStatute(code = "A123", description = "Statute desc", activeFlag = "Y", legislatingBodyCode = "UK")
+    private val NOMIS_OFFENCE_A1234AAA = PrisonApiOffence(
       code = "A1234AAA",
       description = "A Desc 1",
-      statuteCode = PrisonApiStatute(code = "A123")
+      statuteCode = NOMIS_STATUTE_A123
     )
-
-    private val OFFENCE_A1234AAB = PrisonApiOffence(
+    private val NOMIS_OFFENCE_A1234AAB = PrisonApiOffence(
       code = "A1234AAB",
       description = "A Desc 2",
-      statuteCode = PrisonApiStatute(code = "A123")
+      statuteCode = NOMIS_STATUTE_A123
     )
     val PAGE_1_OF_2 = createPrisonApiOffencesResponse(
       2,
       listOf(
-        OFFENCE_A1234AAA
+        NOMIS_OFFENCE_A1234AAA
       )
     )
 
     val PAGE_2_OF_2 = createPrisonApiOffencesResponse(
       2,
       listOf(
-        OFFENCE_A1234AAB
+        NOMIS_OFFENCE_A1234AAB
       )
     )
 

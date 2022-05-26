@@ -106,7 +106,7 @@ class OffenceService(
     log.info("Creating home office code {} in NOMIS", offence.homeOfficeStatsCode)
     val nomisHoCode = PrisonApiHoCode(
       code = offence.homeOfficeStatsCode!!,
-      description = offence.homeOfficeStatsCode,
+      description = offence.homeOfficeStatsCode!!,
       activeFlag = "Y"
     )
 
@@ -124,7 +124,7 @@ class OffenceService(
     log.info("Creating statute code {} in NOMIS", offence.statuteCode)
     val nomisStatute = PrisonApiStatute(
       code = offence.statuteCode,
-      description = offence.actsAndSections,
+      description = offence.actsAndSections ?: offence.statuteCode,
       legislatingBodyCode = "UK",
       activeFlag = "Y"
     )
