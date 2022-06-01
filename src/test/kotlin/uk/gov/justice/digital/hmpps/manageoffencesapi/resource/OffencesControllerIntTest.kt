@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -128,69 +129,74 @@ class OffencesControllerIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.verify(
       WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
-        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AB14003")))
-        .withRequestBody(WireMock.matchingJsonPath("description", WireMock.equalTo("CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require")))
-    )
-
-    prisonApiMockServer.verify(
-      WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
-        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("M1119999")))
-        .withRequestBody(WireMock.matchingJsonPath("severityRanking", WireMock.equalTo("500")))
-        .withRequestBody(WireMock.matchingJsonPath("description", WireMock.equalTo("Actual bodily harm UPDATED")))
-    )
-    prisonApiMockServer.verify(
-      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/statute"))
-        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AF06")))
-        .withRequestBody(WireMock.matchingJsonPath("description", WireMock.equalTo("Contrary to section 19 of the Zoo Licensing Act 1981")))
-    )
-    prisonApiMockServer.verify(
-      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/ho-code"))
-        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("091/81")))
+        .withRequestBody(equalToJson(FULL_SYNC_CREATE_OFFENCES, true, true))
     )
   }
 
-  @Test
-  @Sql(
-    "classpath:test_data/clear-all-data.sql",
-    "classpath:test_data/insert-offence-data.sql",
-    "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql"
-  )
-  fun `Fully sync with NOMIS - prison api call throws 409 error when creating statute and homeOfficeCode because they already exist, should  still succeed`() {
-    ('A'..'Z').forEach { alphaChar ->
-      prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
-    }
-    prisonApiMockServer.stubFindByOffenceCodeStartsWith('M')
-    prisonApiMockServer.stubCreateHomeOfficeCodeWhenOneAlreadyExists()
-    prisonApiMockServer.stubCreateStatuteWhenOneAlreadyExists()
-    prisonApiMockServer.stubCreateOffence()
-    prisonApiMockServer.stubUpdateOffence()
-
-    webTestClient.post()
-      .uri("/offences/full-sync-nomis")
-      .headers(setAuthorisation())
-      .accept(MediaType.APPLICATION_JSON)
-      .exchange()
-      .expectStatus().isOk
-
-    prisonApiMockServer.verify(
-      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
-        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AB14003")))
-    )
-
-    prisonApiMockServer.verify(
-      WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
-        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("M1119999")))
-        .withRequestBody(WireMock.matchingJsonPath("severityRanking", WireMock.equalTo("500")))
-    )
-
-    prisonApiMockServer.verify(
-      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/statute"))
-        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("AF06")))
-        .withRequestBody(WireMock.matchingJsonPath("description", WireMock.equalTo("Contrary to section 19 of the Zoo Licensing Act 1981")))
-    )
-    prisonApiMockServer.verify(
-      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/ho-code"))
-        .withRequestBody(WireMock.matchingJsonPath("code", WireMock.equalTo("091/81")))
-    )
+  companion object {
+    private val FULL_SYNC_CREATE_OFFENCES = """
+      [
+       {
+          "code" : "AF06999",
+          "description" : "Brought before the court as being absent without leave from the Armed Forces",
+          "statuteCode" : {
+            "code" : "AF06",
+            "description" : "Contrary to section 19 of the Zoo Licensing Act 1981",
+            "legislatingBodyCode" : "UK",
+            "activeFlag" : "Y"
+            },
+          "hoCode" : null,
+          "severityRanking" : "99",
+          "activeFlag" : "Y",
+          "listSequence" : null,
+          "expiryDate" : null
+        }, 
+        {
+          "code" : "AB14001",
+          "description" : "Fail to comply with an animal by-product requirement",
+          "statuteCode" : {
+            "code" : "AB14",
+            "description" : "AB14",
+            "legislatingBodyCode" : "UK",
+            "activeFlag" : "Y"
+          },
+          "hoCode" : null,
+          "severityRanking" : "99",
+          "activeFlag" : "Y",
+          "listSequence" : null,
+          "expiryDate" : null
+        }, 
+        {
+          "code" : "AB14002",
+          "description" : "Intentionally obstruct an authorised person",
+          "statuteCode" : {
+            "code" : "AB14",
+            "description" : "AB14",
+            "legislatingBodyCode" : "UK",
+            "activeFlag" : "Y"
+          },
+          "hoCode" : null,
+          "severityRanking" : "99",
+          "activeFlag" : "Y",
+          "listSequence" : null,
+          "expiryDate" : null
+        }, 
+        {
+          "code" : "AB14003",
+          "description" : "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
+          "statuteCode" : {
+            "code" : "AB14",
+            "description" : "AB14",
+            "legislatingBodyCode" : "UK",
+            "activeFlag" : "Y"
+          },
+          "hoCode" : null,
+          "severityRanking" : "99",
+          "activeFlag" : "Y",
+          "listSequence" : null,
+          "expiryDate" : null
+        } 
+    ] 
+    """.trimIndent()
   }
 }
