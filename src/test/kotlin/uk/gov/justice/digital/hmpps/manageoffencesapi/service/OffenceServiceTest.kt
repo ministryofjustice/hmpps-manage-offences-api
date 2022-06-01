@@ -117,6 +117,30 @@ class OffenceServiceTest {
     verifyNoMoreInteractions(prisonApiClient)
   }
 
+  @Test
+  fun `Does not call update if the offence details are the same in prison-api and manage-offences`() {
+    whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
+      createPrisonApiOffencesResponse(
+        1,
+        listOf(
+          NOMIS_OFFENCE_A1234AAA
+        )
+      )
+    )
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+      listOf(
+        OFFENCE_A1234AAA.copy(description = NOMIS_OFFENCE_A1234AAA.description)
+      )
+    )
+
+    offenceService.fullSyncWithNomis()
+
+    ('A'..'Z').forEach { alphaChar ->
+      verify(prisonApiClient, times(1)).findByOffenceCodeStartsWith(alphaChar.toString(), 0)
+    }
+    verifyNoMoreInteractions(prisonApiClient)
+  }
+
   companion object {
     private val OFFENCE_B123AA6 = Offence(
       code = "B123AA6",
