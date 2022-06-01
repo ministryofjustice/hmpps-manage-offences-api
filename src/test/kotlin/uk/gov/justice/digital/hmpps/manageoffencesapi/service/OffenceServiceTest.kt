@@ -7,6 +7,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
@@ -65,22 +66,71 @@ class OffenceServiceTest {
 
     offenceService.fullSyncWithNomis()
 
-    verify(prisonApiClient, times(1)).createStatute(NOMIS_STATUTE_B123.copy(description = NOMIS_STATUTE_B123.code))
+    verify(
+      prisonApiClient,
+      times(1)
+    ).createStatutes(listOf(NOMIS_STATUTE_B123.copy(description = NOMIS_STATUTE_B123.code)))
   }
 
   @Test
   fun `When creating a statute in NOMIS, the statute description should be set to the ActsAndSections value (if it exists)`() {
-    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("B")).thenReturn(listOf(OFFENCE_B123AA6.copy(actsAndSections = "Statute description B123")))
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("B")).thenReturn(
+      listOf(
+        OFFENCE_B123AA6.copy(
+          actsAndSections = "Statute description B123"
+        )
+      )
+    )
 
     offenceService.fullSyncWithNomis()
 
-    verify(prisonApiClient, times(1)).createStatute(NOMIS_STATUTE_B123.copy(description = "Statute description B123"))
+    verify(
+      prisonApiClient,
+      times(1)
+    ).createStatutes(listOf(NOMIS_STATUTE_B123.copy(description = "Statute description B123")))
+  }
+
+  @Test
+  fun `One offence to update and one to create makes the correct prison-api calls`() {
+    whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
+      createPrisonApiOffencesResponse(
+        1,
+        listOf(
+          NOMIS_OFFENCE_A1234AAA
+        )
+      )
+    )
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+      listOf(
+        OFFENCE_A123AA6,
+        OFFENCE_A1234AAA
+      )
+    )
+
+    offenceService.fullSyncWithNomis()
+
+    ('A'..'Z').forEach { alphaChar ->
+      verify(prisonApiClient, times(1)).findByOffenceCodeStartsWith(alphaChar.toString(), 0)
+    }
+    verify(prisonApiClient, times(1)).createOffences(listOf(NOMIS_OFFENCE_A123AA6))
+    verify(prisonApiClient, times(1)).updateOffences(listOf(NOMIS_OFFENCE_A1234AAA_UPDATED))
+    verifyNoMoreInteractions(prisonApiClient)
   }
 
   companion object {
     private val OFFENCE_B123AA6 = Offence(
       code = "B123AA6",
       description = "B Desc 1",
+    )
+    private val OFFENCE_A123AA6 = Offence(
+      code = "A123AA6",
+      description = "A Desc 1",
+      actsAndSections = "Statute desc A123",
+    )
+    private val OFFENCE_A1234AAA = Offence(
+      code = "A1234AAA",
+      description = "A NEW DESC",
+      actsAndSections = "Statute desc A123",
     )
     private val NOMIS_STATUTE_B123 =
       PrisonApiStatute(code = "B123", description = "Statute desc", activeFlag = "Y", legislatingBodyCode = "UK")
@@ -89,6 +139,20 @@ class OffenceServiceTest {
     private val NOMIS_OFFENCE_A1234AAA = PrisonApiOffence(
       code = "A1234AAA",
       description = "A Desc 1",
+      statuteCode = NOMIS_STATUTE_A123,
+      activeFlag = "Y"
+    )
+
+    private val NOMIS_OFFENCE_A123AA6 = PrisonApiOffence(
+      code = "A123AA6",
+      description = "A Desc 1",
+      statuteCode = NOMIS_STATUTE_A123,
+      severityRanking = "99",
+      activeFlag = "Y"
+    )
+    private val NOMIS_OFFENCE_A1234AAA_UPDATED = PrisonApiOffence(
+      code = "A1234AAA",
+      description = "A NEW DESC",
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y"
     )

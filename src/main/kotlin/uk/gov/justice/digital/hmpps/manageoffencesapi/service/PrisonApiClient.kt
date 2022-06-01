@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiHoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
@@ -26,27 +24,28 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .block()!!
   }
 
-  fun createHomeOfficeCode(prisonApiHoCode: PrisonApiHoCode) {
+  fun createHomeOfficeCodes(prisonApiHoCode: List<PrisonApiHoCode>) {
+    log.info("Making prison-api call to create home office offence codes")
     webClient.post()
       .uri("/api/offences/ho-code")
       .bodyValue(prisonApiHoCode)
       .retrieve()
       .toBodilessEntity()
-      .onErrorResume(WebClientResponseException.Conflict::class.java) { Mono.empty() }
       .block()
   }
 
-  fun createStatute(prisonApiStatute: PrisonApiStatute) {
+  fun createStatutes(prisonApiStatute: List<PrisonApiStatute>) {
+    log.info("Making prison-api call to create statutes")
     webClient.post()
       .uri("/api/offences/statute")
       .bodyValue(prisonApiStatute)
       .retrieve()
       .toBodilessEntity()
-      .onErrorResume(WebClientResponseException.Conflict::class.java) { Mono.empty() }
       .block()
   }
 
-  fun createOffence(prisonApiOffence: PrisonApiOffence) {
+  fun createOffences(prisonApiOffence: List<PrisonApiOffence>) {
+    log.info("Making prison-api call to create offences")
     webClient.post()
       .uri("/api/offences/offence")
       .bodyValue(prisonApiOffence)
@@ -55,10 +54,11 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .block()
   }
 
-  fun updateOffence(prisonApiOffence: PrisonApiOffence) {
+  fun updateOffences(updatedNomisOffences: List<PrisonApiOffence>) {
+    log.info("Making prison-api call to update offences")
     webClient.put()
       .uri("/api/offences/offence")
-      .bodyValue(prisonApiOffence)
+      .bodyValue(updatedNomisOffences)
       .retrieve()
       .toBodilessEntity()
       .block()

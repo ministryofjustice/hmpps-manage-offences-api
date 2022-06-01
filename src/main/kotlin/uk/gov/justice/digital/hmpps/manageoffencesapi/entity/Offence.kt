@@ -36,4 +36,6 @@ data class Offence(
       if (category == null) return "/" + subCategory.toString().padStart(2, '0')
       return category.toString().padStart(3, '0') + "/" + subCategory.toString().padStart(2, '0')
     }
+  val derivedDescription: String
+    get() = (cjsTitle ?: description)!!
 }
