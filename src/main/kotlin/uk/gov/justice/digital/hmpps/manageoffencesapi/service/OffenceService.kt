@@ -204,6 +204,6 @@ class OffenceService(
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
-    private const val MAX_RECORDS_IN_POST_PAYLOAD = 100
+    private const val MAX_RECORDS_IN_POST_PAYLOAD = 1
   }
 }

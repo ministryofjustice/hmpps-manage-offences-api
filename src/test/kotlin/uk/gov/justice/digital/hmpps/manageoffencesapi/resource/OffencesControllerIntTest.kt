@@ -127,14 +127,20 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    prisonApiMockServer.verify(
-      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
-        .withRequestBody(equalToJson(FULL_SYNC_CREATE_OFFENCES, true, true))
-    )
+    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES_AF06999)
+    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES_AB14001)
+    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES_AB14002)
+    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES_AB14003)
   }
 
+  private fun verifyPostOffenceToPrisonApi(json: String) =
+    prisonApiMockServer.verify(
+      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+        .withRequestBody(equalToJson(json, true, true))
+    )
+
   companion object {
-    private val FULL_SYNC_CREATE_OFFENCES = """
+    private val FULL_SYNC_CREATE_OFFENCES_AF06999 = """
       [
        {
           "code" : "AF06999",
@@ -150,7 +156,11 @@ class OffencesControllerIntTest : IntegrationTestBase() {
           "activeFlag" : "Y",
           "listSequence" : null,
           "expiryDate" : null
-        }, 
+        }
+    ] 
+    """.trimIndent()
+    private val FULL_SYNC_CREATE_OFFENCES_AB14001 = """
+      [
         {
           "code" : "AB14001",
           "description" : "Fail to comply with an animal by-product requirement",
@@ -165,7 +175,11 @@ class OffencesControllerIntTest : IntegrationTestBase() {
           "activeFlag" : "Y",
           "listSequence" : null,
           "expiryDate" : null
-        }, 
+        }
+    ] 
+    """.trimIndent()
+    private val FULL_SYNC_CREATE_OFFENCES_AB14002 = """
+      [     
         {
           "code" : "AB14002",
           "description" : "Intentionally obstruct an authorised person",
@@ -180,7 +194,11 @@ class OffencesControllerIntTest : IntegrationTestBase() {
           "activeFlag" : "Y",
           "listSequence" : null,
           "expiryDate" : null
-        }, 
+        } 
+    ] 
+    """.trimIndent()
+    private val FULL_SYNC_CREATE_OFFENCES_AB14003 = """
+      [ 
         {
           "code" : "AB14003",
           "description" : "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
