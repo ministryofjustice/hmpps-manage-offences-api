@@ -7,9 +7,11 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
@@ -20,8 +22,9 @@ class OffenceServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
+  private val adminService = mock<AdminService>()
 
-  private val offenceService = OffenceService(offenceRepository, sdrsLoadResultRepository, prisonApiClient)
+  private val offenceService = OffenceService(offenceRepository, sdrsLoadResultRepository, prisonApiClient, adminService)
 
   @BeforeEach
   fun setup() {
@@ -29,6 +32,7 @@ class OffenceServiceTest {
     ('A'..'Z').forEach { alphaChar ->
       whenever(prisonApiClient.findByOffenceCodeStartsWith(alphaChar.toString(), 0)).thenReturn(emptyPrisonApiOffences)
     }
+    whenever(adminService.isFeatureEnabled(FULL_SYNC_NOMIS)).thenReturn(true)
   }
 
   @Test
@@ -139,6 +143,15 @@ class OffenceServiceTest {
       verify(prisonApiClient, times(1)).findByOffenceCodeStartsWith(alphaChar.toString(), 0)
     }
     verifyNoMoreInteractions(prisonApiClient)
+  }
+
+  @Test
+  fun `Ensure sync with nomis doesnt occur if associated feature toggle is disabled`() {
+    whenever(adminService.isFeatureEnabled(FULL_SYNC_NOMIS)).thenReturn(false)
+
+    offenceService.fullSyncWithNomis()
+
+    verifyNoInteractions(prisonApiClient)
   }
 
   companion object {

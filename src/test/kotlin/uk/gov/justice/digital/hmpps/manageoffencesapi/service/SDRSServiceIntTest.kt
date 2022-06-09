@@ -30,7 +30,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-data.sql"
+    "classpath:test_data/reset-all-data.sql"
   )
   fun `Perform a full load of offences retrieved from SDRS`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
@@ -73,7 +73,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/insert-sdrs-load-result.sql",
   )
   fun `Update any offences that have changed`() {
@@ -118,9 +118,9 @@ class SDRSServiceIntTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/reset-all-data.sql",
   )
-  fun `Handle SDRS-99918 as a success ie no offences exist for that cache (cache doesnt exit)`() {
+  fun `Handle SDRS-99918 as a success ie no offences exist for that cache (cache doesnt exist)`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForQHasNoCache()
     sdrsApiMockServer.stubControlTableRequest()
@@ -147,7 +147,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
 
   @Test
   @Sql(
-    "classpath:test_data/clear-all-data.sql",
+    "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/insert-sdrs-load-result.sql",
   )
   fun `Handle unexpected exception from SDRS - Bad JSON is returned from SDRS thus causing a generic exception`() {

@@ -7,20 +7,17 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.OffenceService
-import uk.gov.justice.digital.hmpps.manageoffencesapi.service.SDRSService
 
 @RestController
 @RequestMapping("/offences", produces = [MediaType.APPLICATION_JSON_VALUE])
 class OffenceController(
-  private val offenceService: OffenceService,
-  private val sdrsService: SDRSService
+  private val offenceService: OffenceService
 ) {
   @GetMapping(value = ["/code/{offenceCode}"])
   @ResponseBody
@@ -46,17 +43,6 @@ class OffenceController(
   fun findLoadResults(): List<MostRecentLoadResult> {
     log.info("Request received to find the most recent load results")
     return offenceService.findLoadResults()
-  }
-
-  @PostMapping(value = ["/full-sync-nomis"])
-  @ResponseBody
-  @Operation(
-    summary = "Synchronise all offences with NOMIS",
-    description = "Synchronise all offences with NOMIS"
-  )
-  fun fullySyncWithNomis() {
-    log.info("Request received to synchronise with NOMIS")
-    return offenceService.fullSyncWithNomis()
   }
 
   companion object {

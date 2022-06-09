@@ -2,8 +2,10 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiHoCode
@@ -19,6 +21,7 @@ class OffenceService(
   private val offenceRepository: OffenceRepository,
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val prisonApiClient: PrisonApiClient,
+  private val adminService: AdminService,
 ) {
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
@@ -30,15 +33,20 @@ class OffenceService(
     return sdrsLoadResultRepository.findAllByOrderByAlphaCharAsc().map { transform(it) }
   }
 
+  @Scheduled(cron = "0 0 */1 * * *")
   @Transactional(readOnly = true)
   fun fullSyncWithNomis() {
+    if (!adminService.isFeatureEnabled(FULL_SYNC_NOMIS)) {
+      log.info("Full sync with NOMIS not running - disabled")
+      return
+    }
     ('A'..'Z').forEach { alphaChar ->
       log.info("Starting full sync with NOMIS for alphaChar {} ", alphaChar)
       fullySyncOffenceGroupWithNomis(alphaChar.toString())
     }
   }
 
-  private fun fullySyncOffenceGroupWithNomis(alphaChar: String) {
+  fun fullySyncOffenceGroupWithNomis(alphaChar: String) {
     val offencesByCode = offenceRepository.findByCodeStartsWithIgnoreCase(alphaChar).associateBy { it.code }
     val (nomisOffencesById, nomisOffences) = getAllNomisOffencecsForAlphaChar(alphaChar)
 
