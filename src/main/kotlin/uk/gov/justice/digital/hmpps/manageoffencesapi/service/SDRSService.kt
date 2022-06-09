@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.FAIL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
@@ -37,10 +39,17 @@ class SDRSService(
   private val offenceRepository: OffenceRepository,
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
+  private val offenceService: OffenceService,
+  private val adminService: AdminService,
 ) {
   @Scheduled(cron = "0 */20 * * * *")
   @Transactional
   fun synchroniseWithSdrs() {
+    if (!adminService.isFeatureEnabled(SYNC_SDRS)) {
+      log.info("Sync with SDRS not running - disabled")
+      return
+    }
+
     val sdrsLoadResults = sdrsLoadResultRepository.findAll()
     if (!hasFullLoadPreviouslyOccurred(sdrsLoadResults)) {
       log.info("The 'Synchronise with SDRS' job is performing a full load - as no load has previously occurred")
@@ -122,8 +131,10 @@ class SDRSService(
         val updatedCaches = getUpdatedCachesSinceLastLoadDate(lastSuccessfulLoadDate)
         val cachesToUpdate = affectedCaches intersect updatedCaches
         log.info("Caches to update are {}", cachesToUpdate)
+        val deltaSyncToNomisEnabled = adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)
         cachesToUpdate.forEach { alphaChar ->
           updateSingleCache(alphaChar, lastSuccessfulLoadDate, loadDate)
+          if (deltaSyncToNomisEnabled) offenceService.fullySyncOffenceGroupWithNomis(alphaChar.toString())
         }
       }
     }
