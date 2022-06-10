@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
-import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
 
 @Service
@@ -47,24 +46,23 @@ class OffenceService(
   }
 
   fun fullySyncOffenceGroupWithNomis(alphaChar: String) {
-    val offencesByCode = offenceRepository.findByCodeStartsWithIgnoreCase(alphaChar).associateBy { it.code }
+    val allOffences = offenceRepository.findByCodeStartsWithIgnoreCase(alphaChar)
+    val offencesByCode = allOffences.associateBy { it.code }
     val (nomisOffencesById, nomisOffences) = getAllNomisOffencecsForAlphaChar(alphaChar)
 
     // the keys here represent the NOMIS keys, each key is a pair of the offenceCode and the statuteCode
     val (existingOffenceKeys, newOffenceKeys) = offencesByCode.keys.map { Pair(it, offencesByCode[it]!!.statuteCode) }
       .partition { nomisOffencesById.containsKey(it) }
 
-    val newNomisStatutes = mutableSetOf<PrisonApiStatute>()
-    val newNomisHoCodes = mutableSetOf<PrisonApiHoCode>()
+    val newNomisStatutes = determineNewStatutesToCreate(allOffences, nomisOffences)
+    val newNomisHoCodes = determineNewHoCodesToCreate(allOffences, nomisOffences)
     val newNomisOffences = mutableSetOf<PrisonApiOffence>()
     val updatedNomisOffences = mutableSetOf<PrisonApiOffence>()
 
     newOffenceKeys.forEach {
       val offence = offencesByCode[it.first]!!
-      val statute = createStatuteInNomis(offence, nomisOffences)
-      if (!statuteExists(nomisOffences, offence)) newNomisStatutes.add(statute)
-      val homeOfficeCode = createHomeOfficeCodeInNomis(offence, nomisOffences)
-      if (homeOfficeCode != null && !homeOfficeCodeExists(nomisOffences, offence)) newNomisHoCodes.add(homeOfficeCode)
+      val statute = findAssociatedStatute(offence, nomisOffences, newNomisStatutes)
+      val homeOfficeCode = findAssociatedHomeOfficeCodeInNomis(offence, nomisOffences, newNomisHoCodes)
       newNomisOffences.add(copyOffenceToCreate(offence, statute, homeOfficeCode))
     }
 
@@ -72,8 +70,7 @@ class OffenceService(
       val offence = offencesByCode[it.first]!!
       val nomisOffence = nomisOffencesById[it]!!
       if (!offenceDetailsSame(offence, nomisOffence)) {
-        val homeOfficeCode = createHomeOfficeCodeInNomis(offence, nomisOffences)
-        if (homeOfficeCode != null && !homeOfficeCodeExists(nomisOffences, offence)) newNomisHoCodes.add(homeOfficeCode)
+        val homeOfficeCode = findAssociatedHomeOfficeCodeInNomis(offence, nomisOffences, newNomisHoCodes)
         updatedNomisOffences.add(copyOffenceToUpdate(offence, nomisOffence, homeOfficeCode))
       }
     }
@@ -84,11 +81,47 @@ class OffenceService(
     updateNomisOffences(updatedNomisOffences)
   }
 
-  private fun createStatutes(statutesToCreate: Set<PrisonApiStatute>) {
-    if (statutesToCreate.isNotEmpty()) {
-      statutesToCreate.chunked(MAX_RECORDS_IN_POST_PAYLOAD).forEach {
-        prisonApiClient.createStatutes(it)
-      }
+  private fun determineNewStatutesToCreate(
+    allOffences: List<EntityOffence>,
+    nomisOffences: MutableList<PrisonApiOffence>
+  ): Set<PrisonApiStatute> {
+    val offencesByNewStatuteCode = allOffences
+      .filter { nomisOffences.none { o -> o.statuteCode.code == it.statuteCode } }
+      .groupBy { it.statuteCode }
+
+    return offencesByNewStatuteCode.map {
+      val statuteDescription = it.value
+        .sortedWith(
+          compareByDescending(EntityOffence::activeFlag)
+            .thenByDescending(EntityOffence::startDate)
+        )
+        .firstOrNull { offence -> offence.statuteDescription != offence.statuteCode }?.statuteDescription
+      PrisonApiStatute(
+        code = it.key,
+        description = statuteDescription ?: it.key,
+        legislatingBodyCode = "UK",
+        activeFlag = "Y"
+      )
+    }.toSet()
+  }
+
+  private fun determineNewHoCodesToCreate(
+    allOffences: List<EntityOffence>,
+    nomisOffences: MutableList<PrisonApiOffence>
+  ): Set<PrisonApiHoCode> =
+    allOffences
+      .filter { !it.homeOfficeStatsCode.isNullOrBlank() && nomisOffences.none { o -> o.hoCode?.code == it.homeOfficeStatsCode } }
+      .map {
+        PrisonApiHoCode(
+          code = it.homeOfficeStatsCode!!,
+          description = it.homeOfficeStatsCode!!,
+          activeFlag = "Y"
+        )
+      }.toSet()
+
+  private fun createStatutes(nomisStatutesToCreate: Set<PrisonApiStatute>) {
+    nomisStatutesToCreate.chunked(MAX_RECORDS_IN_POST_PAYLOAD).forEach {
+      prisonApiClient.createStatutes(it)
     }
   }
 
@@ -124,7 +157,7 @@ class OffenceService(
   private fun offenceDetailsSame(offence: EntityOffence, nomisOffence: PrisonApiOffence): Boolean =
     nomisOffence.hoCode?.code == offence.homeOfficeStatsCode &&
       nomisOffence.description == offence.derivedDescription &&
-      nomisOffence.activeFlag == isOffenceActive(offence.endDate)
+      nomisOffence.activeFlag == offence.activeFlag
 
   private fun copyOffenceToUpdate(
     offence: EntityOffence,
@@ -135,7 +168,7 @@ class OffenceService(
     return nomisOffence.copy(
       description = offence.derivedDescription,
       hoCode = homeOfficeCode,
-      activeFlag = isOffenceActive(offence.endDate),
+      activeFlag = offence.activeFlag,
     )
   }
 
@@ -151,50 +184,32 @@ class OffenceService(
       statuteCode = statute,
       hoCode = homeOfficeCode,
       severityRanking = offence.category?.toString() ?: "99",
-      activeFlag = isOffenceActive(offence.endDate),
+      activeFlag = offence.activeFlag,
     )
   }
 
-  private fun isOffenceActive(endDate: LocalDate?): String {
-    if (endDate == null || endDate.isAfter(LocalDate.now())) return "Y"
-    return "N"
-  }
-
-  private fun createHomeOfficeCodeInNomis(
-    offence: EntityOffence,
-    nomisOffences: List<PrisonApiOffence>
-  ): PrisonApiHoCode? {
+  private fun findAssociatedHomeOfficeCodeInNomis(offence: EntityOffence, nomisOffences: List<PrisonApiOffence>, newNomisHoCodes: Set<PrisonApiHoCode>): PrisonApiHoCode? {
     if (offence.homeOfficeStatsCode == null) return null
     if (homeOfficeCodeExists(nomisOffences, offence)) {
-      return nomisOffences.find { it.hoCode?.code == offence.homeOfficeStatsCode }!!.hoCode
+      return nomisOffences.first { it.hoCode?.code == offence.homeOfficeStatsCode }.hoCode
     }
-    log.info("Home office code {} to be created in NOMIS", offence.homeOfficeStatsCode)
-    return PrisonApiHoCode(
-      code = offence.homeOfficeStatsCode!!,
-      description = offence.homeOfficeStatsCode!!,
-      activeFlag = "Y"
-    )
+    return newNomisHoCodes.first { it.code == offence.homeOfficeStatsCode }
   }
 
   private fun homeOfficeCodeExists(
     nomisOffences: List<PrisonApiOffence>,
-    offence: uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+    offence: EntityOffence
   ) = nomisOffences.any { it.hoCode?.code == offence.homeOfficeStatsCode }
 
-  private fun createStatuteInNomis(
+  private fun findAssociatedStatute(
     offence: EntityOffence,
-    nomisOffences: List<PrisonApiOffence>
+    nomisOffences: List<PrisonApiOffence>,
+    newStatutes: Set<PrisonApiStatute>
   ): PrisonApiStatute {
     if (statuteExists(nomisOffences, offence)) {
-      return nomisOffences.find { it.statuteCode.code == offence.statuteCode }!!.statuteCode
+      return nomisOffences.first { it.statuteCode.code == offence.statuteCode }.statuteCode
     }
-    log.info("Statute code {} to be created in NOMIS", offence.statuteCode)
-    return PrisonApiStatute(
-      code = offence.statuteCode,
-      description = offence.actsAndSections ?: offence.statuteCode,
-      legislatingBodyCode = "UK",
-      activeFlag = "Y"
-    )
+    return newStatutes.first { it.code == offence.statuteCode }
   }
 
   fun getAllNomisOffencecsForAlphaChar(alphaChar: String): Pair<Map<Pair<String, String>, PrisonApiOffence>, MutableList<PrisonApiOffence>> {

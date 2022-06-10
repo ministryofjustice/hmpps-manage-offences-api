@@ -38,4 +38,14 @@ data class Offence(
     }
   val derivedDescription: String
     get() = (cjsTitle ?: description)!!
+  val statuteDescription: String
+    get() {
+      if (actsAndSections.isNullOrBlank()) return statuteCode
+      return actsAndSections
+    }
+  val activeFlag: String
+    get() {
+      if (endDate == null || endDate.isAfter(LocalDate.now())) return "Y"
+      return "N"
+    }
 }

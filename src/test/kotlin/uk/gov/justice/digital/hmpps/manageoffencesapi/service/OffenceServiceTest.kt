@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 import com.vladmihalcea.hibernate.type.json.internal.JacksonUtil
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -17,6 +18,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
+import java.time.LocalDate
 
 class OffenceServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
@@ -154,6 +156,25 @@ class OffenceServiceTest {
     verifyNoInteractions(prisonApiClient)
   }
 
+  @Test
+  fun `When creating a statute the correct statute description is selected from the offences`() {
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+      listOf(
+        OFFENCE_A123992,
+        OFFENCE_A123991,
+        OFFENCE_A123993,
+        OFFENCE_A123995,
+        OFFENCE_A167996,
+      )
+    )
+
+    offenceService.fullSyncWithNomis()
+
+    verify(prisonApiClient, times(1)).createStatutes(listOf(NOMIS_STATUTE_A123))
+    verify(prisonApiClient, times(1)).createStatutes(listOf(NOMIS_STATUTE_A167))
+    verify(prisonApiClient, times(2)).createStatutes(any())
+  }
+
   companion object {
     private val OFFENCE_B123AA6 = Offence(
       code = "B123AA6",
@@ -169,10 +190,54 @@ class OffenceServiceTest {
       description = "A NEW DESC",
       actsAndSections = "Statute desc A123",
     )
+
+    val OFFENCE_A123992 = Offence(
+      id = 992,
+      category = 1,
+      subCategory = 2,
+      cjsTitle = "Descriptiom",
+      code = "A123992",
+      startDate = LocalDate.of(2021,6,1),
+      actsAndSections = "Statute 992"
+    )
+
+    val OFFENCE_A123991 = Offence(
+      id = 991,
+      cjsTitle = "Descriptiom",
+      code = "A123991",
+      startDate = LocalDate.of(2021,5,6),
+      actsAndSections = "Statute 991"
+    )
+
+    val OFFENCE_A123993 = Offence(
+      id = 993,
+      cjsTitle = "Descriptiom",
+      code = "A123993",
+      startDate = LocalDate.of(2022,7,7),
+      actsAndSections = "Statute 993"
+    )
+
+    val OFFENCE_A123995 = Offence(
+      id = 995,
+      cjsTitle = "Descriptiom",
+      code = "A123995",
+      startDate = LocalDate.of(2022,5,7),
+      endDate = LocalDate.of(2022,5,8),
+      actsAndSections = "Statute 995"
+    )
+
+    val OFFENCE_A167996 = Offence(
+      id = 996,
+      cjsTitle = "Descriptiom",
+      code = "A167995",
+    )
+
     private val NOMIS_STATUTE_B123 =
       PrisonApiStatute(code = "B123", description = "Statute desc", activeFlag = "Y", legislatingBodyCode = "UK")
     private val NOMIS_STATUTE_A123 =
-      PrisonApiStatute(code = "A123", description = "Statute desc", activeFlag = "Y", legislatingBodyCode = "UK")
+      PrisonApiStatute(code = "A123", description = "Statute 993", activeFlag = "Y", legislatingBodyCode = "UK")
+    private val NOMIS_STATUTE_A167 =
+      PrisonApiStatute(code = "A167", description = "A167", activeFlag = "Y", legislatingBodyCode = "UK")
     private val NOMIS_OFFENCE_A1234AAA = PrisonApiOffence(
       code = "A1234AAA",
       description = "A Desc 1",
