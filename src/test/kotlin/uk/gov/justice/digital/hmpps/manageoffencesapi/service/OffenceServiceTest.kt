@@ -26,7 +26,8 @@ class OffenceServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val adminService = mock<AdminService>()
 
-  private val offenceService = OffenceService(offenceRepository, sdrsLoadResultRepository, prisonApiClient, adminService)
+  private val offenceService =
+    OffenceService(offenceRepository, sdrsLoadResultRepository, prisonApiClient, adminService)
 
   @BeforeEach
   fun setup() {
@@ -197,7 +198,7 @@ class OffenceServiceTest {
       subCategory = 2,
       cjsTitle = "Descriptiom",
       code = "A123992",
-      startDate = LocalDate.of(2021,6,1),
+      startDate = LocalDate.of(2021, 6, 1),
       actsAndSections = "Statute 992"
     )
 
@@ -205,7 +206,7 @@ class OffenceServiceTest {
       id = 991,
       cjsTitle = "Descriptiom",
       code = "A123991",
-      startDate = LocalDate.of(2021,5,6),
+      startDate = LocalDate.of(2021, 5, 6),
       actsAndSections = "Statute 991"
     )
 
@@ -213,7 +214,7 @@ class OffenceServiceTest {
       id = 993,
       cjsTitle = "Descriptiom",
       code = "A123993",
-      startDate = LocalDate.of(2022,7,7),
+      startDate = LocalDate.of(2022, 7, 7),
       actsAndSections = "Statute 993"
     )
 
@@ -221,8 +222,8 @@ class OffenceServiceTest {
       id = 995,
       cjsTitle = "Descriptiom",
       code = "A123995",
-      startDate = LocalDate.of(2022,5,7),
-      endDate = LocalDate.of(2022,5,8),
+      startDate = LocalDate.of(2022, 5, 7),
+      endDate = LocalDate.of(2022, 5, 8),
       actsAndSections = "Statute 995"
     )
 
