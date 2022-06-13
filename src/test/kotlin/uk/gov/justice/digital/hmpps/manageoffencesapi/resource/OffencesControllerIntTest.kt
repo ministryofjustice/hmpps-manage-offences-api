@@ -31,6 +31,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
     assertThat(result)
       .usingRecursiveComparison()
       .ignoringFieldsMatchingRegexes(".*dDate")
+      .ignoringFieldsMatchingRegexes("id")
       .isEqualTo(
         listOf(
           ModelOffence(
