@@ -19,6 +19,9 @@ class AdminService(
   }
 
   @Transactional(readOnly = true)
+  fun getAllToggles(): List<FeatureToggle> =
+    featureToggleRepository.findAll().map { transform(it) }
+
   fun isFeatureEnabled(feature: Feature): Boolean =
     featureToggleRepository.findById(feature).map { it.enabled }.orElse(false)
 

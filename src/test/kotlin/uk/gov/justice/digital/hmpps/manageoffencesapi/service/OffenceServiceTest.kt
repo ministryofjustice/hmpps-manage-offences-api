@@ -171,9 +171,8 @@ class OffenceServiceTest {
 
     offenceService.fullSyncWithNomis()
 
-    verify(prisonApiClient, times(1)).createStatutes(listOf(NOMIS_STATUTE_A123))
-    verify(prisonApiClient, times(1)).createStatutes(listOf(NOMIS_STATUTE_A167))
-    verify(prisonApiClient, times(2)).createStatutes(any())
+    verify(prisonApiClient, times(1)).createStatutes(listOf(NOMIS_STATUTE_A123, NOMIS_STATUTE_A167))
+    verify(prisonApiClient, times(1)).createStatutes(any())
   }
 
   companion object {
