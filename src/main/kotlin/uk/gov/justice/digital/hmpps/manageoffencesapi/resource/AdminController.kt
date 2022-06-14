@@ -30,7 +30,7 @@ class AdminController(
     summary = "Get values of all feature toggles"
   )
   fun getAllToggles(): List<FeatureToggle> {
-    log.info("Request received to toggle Feature to get values of all feature toggles")
+    log.info("Request received to get values of all feature toggles")
     return adminService.getAllToggles()
   }
 
