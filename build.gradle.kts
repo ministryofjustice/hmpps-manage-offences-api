@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.6"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.2.3"
   kotlin("plugin.spring") version "1.6.21"
   kotlin("plugin.jpa") version "1.6.21"
 }
@@ -18,12 +18,6 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
-
-  // Problem with hibernate-core 5.6.7.Final which was causing issue with 'startingWith'
-  // https://github.com/spring-projects/spring-data-jpa/issues/2472
-  // https://hibernate.atlassian.net/browse/HHH-15142
-  // TODO Temporarily revert to 5.6.5.Final until fixed
-  implementation("org.hibernate:hibernate-core:5.6.5.Final")
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
