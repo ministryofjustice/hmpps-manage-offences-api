@@ -28,10 +28,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
 
     offenceService.fullSyncWithNomis()
 
-    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES_AF06999)
-    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES_AB14001)
-    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES_AB14002)
-    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES_AB14003)
+    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES)
   }
 
   private fun verifyPostOffenceToPrisonApi(json: String) =
@@ -41,7 +38,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
     )
 
   companion object {
-    private val FULL_SYNC_CREATE_OFFENCES_AF06999 = """
+    private val FULL_SYNC_CREATE_OFFENCES = """
       [
        {
           "code" : "AF06999",
@@ -57,11 +54,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
           "activeFlag" : "Y",
           "listSequence" : null,
           "expiryDate" : null
-        }
-    ] 
-    """.trimIndent()
-    private val FULL_SYNC_CREATE_OFFENCES_AB14001 = """
-      [
+        },
         {
           "code" : "AB14001",
           "description" : "Fail to comply with an animal by-product requirement",
@@ -76,11 +69,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
           "activeFlag" : "Y",
           "listSequence" : null,
           "expiryDate" : null
-        }
-    ] 
-    """.trimIndent()
-    private val FULL_SYNC_CREATE_OFFENCES_AB14002 = """
-      [     
+        },
         {
           "code" : "AB14002",
           "description" : "Intentionally obstruct an authorised person",
@@ -95,11 +84,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
           "activeFlag" : "Y",
           "listSequence" : null,
           "expiryDate" : null
-        } 
-    ] 
-    """.trimIndent()
-    private val FULL_SYNC_CREATE_OFFENCES_AB14003 = """
-      [ 
+        },
         {
           "code" : "AB14003",
           "description" : "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
