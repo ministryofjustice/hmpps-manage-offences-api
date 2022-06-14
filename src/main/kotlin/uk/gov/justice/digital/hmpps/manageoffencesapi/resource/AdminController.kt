@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,6 +24,14 @@ class AdminController(
   fun toggleFeature(@RequestBody featureToggle: FeatureToggle) {
     log.info("Request received to toggle Feature to {}", featureToggle.enabled)
     return adminService.toggleFeature(featureToggle)
+  }
+  @GetMapping(value = ["/feature-toggles"])
+  @Operation(
+    summary = "Get values of all feature toggles"
+  )
+  fun getAllToggles(): List<FeatureToggle> {
+    log.info("Request received to toggle Feature to get values of all feature toggles")
+    return adminService.getAllToggles()
   }
 
   companion object {

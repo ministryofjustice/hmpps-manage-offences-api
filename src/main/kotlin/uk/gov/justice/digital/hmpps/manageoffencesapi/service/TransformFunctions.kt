@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle as ModelFeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence as SdrsOffence
 
@@ -57,3 +59,5 @@ fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
     loadDate = loadResult.loadDate,
     lastSuccessfulLoadDate = loadResult.lastSuccessfulLoadDate
   )
+
+fun transform(it: FeatureToggle) = ModelFeatureToggle(feature = it.feature, enabled = it.enabled)

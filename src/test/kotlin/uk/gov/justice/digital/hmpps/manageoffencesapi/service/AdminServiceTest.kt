@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -34,5 +35,14 @@ class AdminServiceTest {
     adminService.toggleFeature(FeatureToggle(FULL_SYNC_NOMIS, true))
 
     verify(featureToggleRepository, times(1)).save(FeatureToggleEntity(FULL_SYNC_NOMIS, true))
+  }
+
+  @Test
+  fun `Get all toggles`() {
+    whenever(featureToggleRepository.findAll()).thenReturn(listOf(FeatureToggleEntity(FULL_SYNC_NOMIS, false)))
+
+    val res = adminService.getAllToggles()
+
+    assertThat(res).isEqualTo(listOf(FeatureToggle(FULL_SYNC_NOMIS, false)))
   }
 }
