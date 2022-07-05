@@ -14,5 +14,5 @@ data class Schedule(
   val id: Long = -1,
   val act: String,
   val code: String,
-  val url: String,
+  val url: String?,
 )
