@@ -2,10 +2,15 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart as EntitySchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle as ModelFeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule as ModelSchedule
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart as ModelSchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence as SdrsOffence
 
 /*
@@ -61,3 +66,43 @@ fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
   )
 
 fun transform(it: FeatureToggle) = ModelFeatureToggle(feature = it.feature, enabled = it.enabled)
+
+fun transform(schedulePart: ModelSchedulePart, entitySchedule: EntitySchedule) =
+  EntitySchedulePart(
+    schedule = entitySchedule,
+    partNumber = schedulePart.partNumber,
+  )
+
+fun transform(schedule: ModelSchedule) =
+  EntitySchedule(
+    act = schedule.act,
+    code = schedule.code,
+    url = schedule.url,
+  )
+
+fun transform(
+  it: EntitySchedulePart,
+  offencesByParts: Map<Long, List<OffenceSchedulePart>>
+) = ModelSchedulePart(
+  id = it.id,
+  partNumber = it.partNumber,
+  offences = offencesByParts[it.id]?.map { o -> transform(o.offence) }
+)
+
+fun transform(
+  schedule: EntitySchedule,
+  scheduleParts: List<ModelSchedulePart>
+) = ModelSchedule(
+  id = schedule.id,
+  act = schedule.act,
+  code = schedule.code,
+  url = schedule.url,
+  scheduleParts = scheduleParts,
+)
+
+fun transform(it: EntitySchedule) = ModelSchedule(
+  id = it.id,
+  act = it.act,
+  code = it.code,
+  url = it.url,
+)
