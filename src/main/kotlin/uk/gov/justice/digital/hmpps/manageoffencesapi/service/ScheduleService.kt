@@ -28,12 +28,14 @@ class ScheduleService(
 
     val scheduleEntity = scheduleRepository.save(transform(schedule))
     if (schedule.scheduleParts != null) {
-      schedulePartRepository.saveAll(schedule.scheduleParts.map { schedulePart ->
-        transform(
-          schedulePart,
-          scheduleEntity
-        )
-      })
+      schedulePartRepository.saveAll(
+        schedule.scheduleParts.map { schedulePart ->
+          transform(
+            schedulePart,
+            scheduleEntity
+          )
+        }
+      )
     }
   }
 
@@ -43,12 +45,14 @@ class ScheduleService(
       .orElseThrow { EntityNotFoundException("No schedulePart exists for $schedulePartId") }
 
     val offences = offenceRepository.findAllById(offenceIds)
-    offenceSchedulePartRepository.saveAll(offences.map { offence ->
-      OffenceSchedulePart(
-        schedulePart = schedulePart,
-        offence = offence
-      )
-    })
+    offenceSchedulePartRepository.saveAll(
+      offences.map { offence ->
+        OffenceSchedulePart(
+          schedulePart = schedulePart,
+          offence = offence
+        )
+      }
+    )
   }
 
   @Transactional
@@ -69,7 +73,6 @@ class ScheduleService(
     val entityScheduleParts = schedulePartRepository.findByScheduleId(scheduleId)
     val offenceScheduleParts = offenceSchedulePartRepository.findBySchedulePartScheduleId(scheduleId)
     val offencesByParts = offenceScheduleParts.groupBy { it.schedulePart.id }
-
 
     val scheduleParts = entityScheduleParts.map {
       transform(it, offencesByParts)

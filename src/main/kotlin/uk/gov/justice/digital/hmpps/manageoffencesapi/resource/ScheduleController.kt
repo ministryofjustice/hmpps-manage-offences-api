@@ -56,7 +56,7 @@ class ScheduleController(
 
   @GetMapping(value = ["/by-id/{scheduleId}"])
   @Operation(
-    summary = "Get schedule by ID"
+    summary = "Get schedule by ID - includes all scheduled parts and mapped offences"
   )
   fun findScheduleById(
     @Parameter(required = true, example = "1000011", description = "The schedule ID")
@@ -69,7 +69,7 @@ class ScheduleController(
 
   @GetMapping(value = ["/all"])
   @Operation(
-    summary = "Find all schedules (just the top level)"
+    summary = "Find all schedules - does not include mapped offences"
   )
   fun findAllSchedules(): List<Schedule> {
     log.info("Request received to find all schedules")

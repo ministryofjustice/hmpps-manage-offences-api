@@ -42,13 +42,16 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
 
     val scheduleAfterLinkingOffences = getScheduleDetails(createdScheduleId)
 
-    assertThatScheduleMatches(scheduleAfterLinkingOffences, SCHEDULE.copy(
-      scheduleParts = listOf(
-        SchedulePart(partNumber = 1, offences = offencesAB),
-        SchedulePart(partNumber = 2, offences = offencesAF),
-        SchedulePart(partNumber = 3),
+    assertThatScheduleMatches(
+      scheduleAfterLinkingOffences,
+      SCHEDULE.copy(
+        scheduleParts = listOf(
+          SchedulePart(partNumber = 1, offences = offencesAB),
+          SchedulePart(partNumber = 2, offences = offencesAF),
+          SchedulePart(partNumber = 3),
+        )
       )
-    ))
+    )
 
     val linkedScheduleAndOffenceIds = mutableListOf<SchedulePartIdAndOffenceId>()
     extract(scheduleAfterLinkingOffences!!.scheduleParts?.get(0)!!, linkedScheduleAndOffenceIds)
