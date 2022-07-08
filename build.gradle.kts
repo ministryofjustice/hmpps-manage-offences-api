@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.2.3"
-  kotlin("plugin.spring") version "1.6.21"
-  kotlin("plugin.jpa") version "1.6.21"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.3.2"
+  kotlin("plugin.spring") version "1.7.10"
+  kotlin("plugin.jpa") version "1.7.10"
 }
 
 configurations {
@@ -24,9 +24,9 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.3.4")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.8")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.8")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.8")
+  implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
+  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.9")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
 
   // Test dependencies
@@ -37,13 +37,13 @@ dependencies {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+  toolchain.languageVersion.set(JavaLanguageVersion.of(18))
 }
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-      jvmTarget = "17"
+      jvmTarget = "18"
     }
   }
 }
