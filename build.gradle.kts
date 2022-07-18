@@ -11,6 +11,10 @@ configurations {
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+  // Database dependencies
+  runtimeOnly("org.flywaydb:flyway-core")
+  runtimeOnly("org.postgresql:postgresql:42.3.4")
+
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -19,15 +23,15 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
-  // Database dependencies
-  runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.3.4")
-
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
   implementation("org.springdoc:springdoc-openapi-data-rest:1.6.9")
   implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
+
+  // Schedule locking
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.38.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:4.38.0")
 
   // Test dependencies
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")

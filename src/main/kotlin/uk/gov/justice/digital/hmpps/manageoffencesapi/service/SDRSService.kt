@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
@@ -43,6 +44,7 @@ class SDRSService(
   private val adminService: AdminService,
 ) {
   @Scheduled(cron = "0 */20 * * * *")
+  @SchedulerLock(name = "synchroniseWithSdrsLock")
   @Transactional
   fun synchroniseWithSdrs() {
     if (!adminService.isFeatureEnabled(SYNC_SDRS)) {
