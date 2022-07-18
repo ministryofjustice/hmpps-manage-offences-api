@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
@@ -33,6 +34,7 @@ class OffenceService(
   }
 
   @Scheduled(cron = "0 0 */1 * * *")
+  @SchedulerLock(name = "fullSyncWithNomisLock")
   @Transactional(readOnly = true)
   fun fullSyncWithNomis() {
     if (!adminService.isFeatureEnabled(FULL_SYNC_NOMIS)) {
