@@ -135,8 +135,7 @@ class SDRSService(
         log.info("Caches to update are {}", cachesToUpdate)
         val deltaSyncToNomisEnabled = adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)
         cachesToUpdate.forEach { alphaChar ->
-          updateSingleCache(alphaChar, lastSuccessfulLoadDate, loadDate)
-          if (deltaSyncToNomisEnabled) offenceService.fullySyncOffenceGroupWithNomis(alphaChar.toString())
+          updateSingleCache(alphaChar, lastSuccessfulLoadDate, loadDate, deltaSyncToNomisEnabled)
         }
       }
     }
@@ -145,7 +144,8 @@ class SDRSService(
   private fun updateSingleCache(
     alphaChar: Char,
     lastLoadDate: LocalDateTime,
-    loadDate: LocalDateTime?
+    loadDate: LocalDateTime?,
+    deltaSyncToNomisEnabled: Boolean
   ) {
     log.info("Starting update load for alpha char {} ", alphaChar)
     try {
@@ -161,6 +161,7 @@ class SDRSService(
           )
         }
         saveLoad(alphaChar, loadDate, SUCCESS, UPDATE)
+        if (deltaSyncToNomisEnabled) offenceService.fullySyncOffenceGroupWithNomis(alphaChar.toString())
       }
     } catch (e: Exception) {
       log.error("Failed for updating a single cache from SDRS for alphaChar {} - error message = {}", alphaChar, e.message)

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.ControlTableRecord
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetControlTableResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetOffenceResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageBodyResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageStatusResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
@@ -78,7 +80,8 @@ class SDRSServiceTest {
 
   @Test
   fun `Ensure delta sync with nomis is called for only the alphaChar affected (there are records to update for A) `() {
-    whenever(sdrsApiClient.callSDRS(any())).thenReturn(CONTROL_TABLE_RESPONSE)
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetControlTable" })).thenReturn(CONTROL_TABLE_RESPONSE)
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetOffence" })).thenReturn(GET_OFFENCE_RESPONSE)
 
     sdrsService.synchroniseWithSdrs()
 
@@ -103,6 +106,17 @@ class SDRSServiceTest {
         gatewayOperationType = GatewayOperationTypeResponse(
           getControlTableResponse = GetControlTableResponse(
             referenceDataSet = listOf(ControlTableRecord("offence_A", lastUpdate = NOW))
+          )
+        ),
+      ),
+      messageStatus = MessageStatusResponse(status = "SUCCESS")
+    )
+
+    private val GET_OFFENCE_RESPONSE = SDRSResponse(
+      messageBody = MessageBodyResponse(
+        gatewayOperationType = GatewayOperationTypeResponse(
+          getOffenceResponse = GetOffenceResponse(
+            offences = emptyList()
           )
         ),
       ),
