@@ -80,7 +80,12 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetChangedOffencesForA()
     sdrsApiMockServer.stubControlTableRequest()
+    ('A'..'Z').forEach { alphaChar ->
+      prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+    }
+
     sdrsService.synchroniseWithSdrs()
+
     val offences = offenceRepository.findAll()
     val statusRecords = sdrsLoadResultRepository.findAll()
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
