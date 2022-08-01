@@ -73,10 +73,10 @@ workflows:
             - manage-offences-api-preprod
           requires:
             - request-preprod-approval
-      - request-prod-approval:
-          type: approval
-          requires:
-            - deploy_preprod
+#      - request-prod-approval:
+#          type: approval
+#          requires:
+#            - deploy_preprod
 #      - hmpps/deploy_env:
 #          name: deploy_prod
 #          env: "prod"
