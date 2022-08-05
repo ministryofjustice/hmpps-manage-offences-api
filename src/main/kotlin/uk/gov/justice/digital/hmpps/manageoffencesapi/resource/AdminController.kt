@@ -21,9 +21,9 @@ class AdminController(
   @Operation(
     summary = "Enable / disable a feature"
   )
-  fun toggleFeature(@RequestBody featureToggle: FeatureToggle) {
-    log.info("Request received to toggle Feature to {}", featureToggle.enabled)
-    return adminService.toggleFeature(featureToggle)
+  fun toggleFeature(@RequestBody featureToggles: List<FeatureToggle>) {
+    log.info("Request received to toggle features")
+    return adminService.toggleFeature(featureToggles)
   }
   @GetMapping(value = ["/feature-toggles"])
   @Operation(

@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
@@ -28,17 +29,25 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   @Autowired
   lateinit var sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository
 
+  @Autowired
+  lateinit var offenceSchedulePartRepository: OffenceSchedulePartRepository
+
   @Test
   @Sql(
-    "classpath:test_data/reset-all-data.sql"
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-schedule-and-offence-data.sql",
+    "classpath:test_data/set-full-sdrs-load-toggle.sql",
   )
   fun `Perform a full load of offences retrieved from SDRS`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
-    sdrsApiMockServer.stubGetAllOffencesForA()
-    sdrsService.synchroniseWithSdrs()
+    sdrsApiMockServer.stubGetAllOffencesForAMultipleOffences()
+
+    sdrsService.fullSynchroniseWithSdrs()
+
     val offences = offenceRepository.findAll()
     val statusRecords = sdrsLoadResultRepository.findAll()
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
+    val offenceScheduleParts = offenceSchedulePartRepository.findAll()
 
     assertThat(offences)
       .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
@@ -46,6 +55,17 @@ class SDRSServiceIntTest : IntegrationTestBase() {
         listOf(
           Offence(
             code = "XX99001",
+            description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+            cjsTitle = null,
+            revisionId = 410082,
+            startDate = LocalDate.of(2013, 3, 1),
+            endDate = LocalDate.of(2013, 3, 2),
+            category = 195,
+            subCategory = 99,
+            changedDate = null
+          ),
+          Offence(
+            code = "XX99002",
             description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
             cjsTitle = null,
             revisionId = 410082,
@@ -69,6 +89,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       assertThat(it.status).isEqualTo(SUCCESS)
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
     }
+
+    assertThat(offenceScheduleParts.size).isEqualTo(4)
   }
 
   @Test
@@ -84,7 +106,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
     }
 
-    sdrsService.synchroniseWithSdrs()
+    sdrsService.deltaSynchroniseWithSdrs()
 
     val offences = offenceRepository.findAll()
     val statusRecords = sdrsLoadResultRepository.findAll()
@@ -129,7 +151,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForQHasNoCache()
     sdrsApiMockServer.stubControlTableRequest()
-    sdrsService.synchroniseWithSdrs()
+    sdrsService.deltaSynchroniseWithSdrs()
     val offences = offenceRepository.findAll()
     val statusRecords = sdrsLoadResultRepository.findAll()
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
@@ -159,7 +181,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetChangedOffencesForAHasBadJson()
     sdrsApiMockServer.stubControlTableRequest()
-    sdrsService.synchroniseWithSdrs()
+    sdrsService.deltaSynchroniseWithSdrs()
 
     val statusRecords = sdrsLoadResultRepository.findAll()
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()

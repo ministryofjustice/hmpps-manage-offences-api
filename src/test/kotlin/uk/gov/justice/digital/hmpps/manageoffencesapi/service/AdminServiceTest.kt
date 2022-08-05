@@ -22,7 +22,7 @@ class AdminServiceTest {
   fun `If the feature doesnt exist then no save is performed`() {
     whenever(featureToggleRepository.findById(FULL_SYNC_NOMIS)).thenReturn(Optional.empty())
 
-    adminService.toggleFeature(FeatureToggle(FULL_SYNC_NOMIS, true))
+    adminService.toggleFeature(listOf(FeatureToggle(FULL_SYNC_NOMIS, true)))
 
     verify(featureToggleRepository, times(1)).findById(FULL_SYNC_NOMIS)
     verifyNoMoreInteractions(featureToggleRepository)
@@ -32,7 +32,7 @@ class AdminServiceTest {
   fun `Toggling a feature gets saved`() {
     whenever(featureToggleRepository.findById(FULL_SYNC_NOMIS)).thenReturn(Optional.of(FeatureToggleEntity(FULL_SYNC_NOMIS, false)))
 
-    adminService.toggleFeature(FeatureToggle(FULL_SYNC_NOMIS, true))
+    adminService.toggleFeature(listOf(FeatureToggle(FULL_SYNC_NOMIS, true)))
 
     verify(featureToggleRepository, times(1)).save(FeatureToggleEntity(FULL_SYNC_NOMIS, true))
   }

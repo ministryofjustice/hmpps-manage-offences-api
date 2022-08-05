@@ -26,4 +26,6 @@ data class Offence(
   val changedDate: LocalDateTime? = null,
   @Schema(description = "The date this offence was loaded into manage-offences from SDRS")
   val loadDate: LocalDateTime? = null,
+  @Schema(description = "The schedules linked to this offence")
+  val schedules: List<ScheduleDetails>? = emptyList(),
 )

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.SDRSService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -79,7 +80,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   fun `Get results of latest load`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForA()
-    sdrsService.synchroniseWithSdrs()
+    sdrsService.fullSynchroniseWithSdrs()
     val results = webTestClient.get().uri("/offences/load-results")
       .headers(setAuthorisation())
       .exchange()
@@ -100,5 +101,72 @@ class OffencesControllerIntTest : IntegrationTestBase() {
           )
         )
     }
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-schedule-and-offence-data.sql"
+  )
+  fun `Get offences with attached schedules`() {
+    val result = webTestClient.get().uri("/offences/code/XX")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(ModelOffence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*dDate")
+      .ignoringFieldsMatchingRegexes(".*id")
+      .isEqualTo(
+        listOf(
+          ModelOffence(
+            id = 1,
+            code = "XX99001",
+            description = "Fail to give to an authorised person information / assistance / provide facilities that person may require",
+            cjsTitle = "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
+            revisionId = 574449,
+            startDate = LocalDate.of(2015, 3, 13),
+            endDate = null,
+            changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            schedules = listOf(
+              ScheduleDetails(
+                act = "Criminal Justice Act",
+                code = "15",
+                url = "https://www.legislation.gov.uk/ukpga/2003/44/schedule/15",
+                schedulePartNumbers = listOf(1, 2)
+              ),
+              ScheduleDetails(
+                act = "Sentencing Act 2020",
+                code = "13",
+                url = "https://www.legislation.gov.uk/ukpga/2020/17/schedule/13",
+                schedulePartNumbers = listOf(1)
+              )
+            )
+          ),
+          ModelOffence(
+            id = 1,
+            code = "XX99002",
+            description = "2Fail to give to an authorised person information / assistance / provide facilities that person may require",
+            cjsTitle = "CJS Title 2Fail to give to an authorised person information / assistance / provide facilities that person may require",
+            revisionId = 574449,
+            startDate = LocalDate.of(2015, 3, 13),
+            endDate = null,
+            changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            schedules = listOf(
+              ScheduleDetails(
+                act = "Criminal Justice Act",
+                code = "15",
+                url = "https://www.legislation.gov.uk/ukpga/2003/44/schedule/15",
+                schedulePartNumbers = listOf(1)
+              )
+            )
+          )
+        )
+      )
   }
 }
