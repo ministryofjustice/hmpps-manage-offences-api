@@ -6,10 +6,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SYNC_SDRS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.FAIL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
@@ -27,6 +29,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offenc
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDateTime
@@ -40,35 +43,63 @@ class SDRSService(
   private val offenceRepository: OffenceRepository,
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
+  private val offenceSchedulePartRepository: OffenceSchedulePartRepository,
   private val offenceService: OffenceService,
   private val adminService: AdminService,
 ) {
-  @Scheduled(cron = "0 */20 * * * *")
-  @SchedulerLock(name = "synchroniseWithSdrsLock")
+  @Scheduled(cron = "0 0 */1 * * *")
+  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
   @Transactional
-  fun synchroniseWithSdrs() {
-    if (!adminService.isFeatureEnabled(SYNC_SDRS)) {
-      log.info("Sync with SDRS not running - disabled")
+  fun fullSynchroniseWithSdrs() {
+    if (!adminService.isFeatureEnabled(FULL_SYNC_SDRS)) {
+      log.info("FULL Sync with SDRS not running - disabled")
+      return
+    }
+    log.info("The 'Synchronise with SDRS' job is performing a full load")
+    loadAllOffences()
+  }
+
+  @Scheduled(cron = "0 */20 * * * *")
+  @SchedulerLock(name = "deltaSynchroniseWithSdrsLock")
+  @Transactional
+  fun deltaSynchroniseWithSdrs() {
+    if (!adminService.isFeatureEnabled(DELTA_SYNC_SDRS) || adminService.isFeatureEnabled(FULL_SYNC_SDRS)) {
+      log.info("DELTA Sync with SDRS not running - delta sync disabled or full sync is enabled")
       return
     }
 
     val sdrsLoadResults = sdrsLoadResultRepository.findAll()
-    if (!hasFullLoadPreviouslyOccurred(sdrsLoadResults)) {
-      log.info("The 'Synchronise with SDRS' job is performing a full load - as no load has previously occurred")
-      loadAllOffences()
-    } else {
-      log.info("The 'Synchronise with SDRS' job is checking for any updates since the last load")
-      loadOffenceUpdates(sdrsLoadResults)
-    }
+
+    log.info("The 'Synchronise with SDRS' job is checking for any updates since the last load")
+    loadOffenceUpdates(sdrsLoadResults)
   }
 
   private fun loadAllOffences() {
-    offenceRepository.deleteAll()
+    // These offenceToScheduleParts mappings will be re-inserted after all offences have been re-loaded (from SDRS)
+    val offenceToScheduleParts = offenceSchedulePartRepository.findAll()
+    resetLoadResultAndDeleteOffences()
+
     val loadDate = LocalDateTime.now()
     ('A'..'Z').forEach { alphaChar ->
       log.info("Starting full load for alpha char {} ", alphaChar)
       fullLoadSingleAlphaChar(alphaChar, loadDate)
     }
+
+    offenceToScheduleParts.forEach {
+      val offence = offenceRepository.findOneByCode(it.offence.code)
+        .orElseThrow { EntityNotFoundException("Offence code ${it.offence.code} missing that was previously assigned to a schedule") }
+      offenceSchedulePartRepository.save(OffenceSchedulePart(offence = offence, schedulePart = it.schedulePart))
+    }
+  }
+
+  private fun resetLoadResultAndDeleteOffences() {
+    ('A'..'Z').forEach { alphaChar ->
+      sdrsLoadResultRepository.save(SdrsLoadResult(alphaChar = alphaChar.toString()))
+    }
+    offenceSchedulePartRepository.deleteAll()
+    offenceRepository.deleteAll()
+    offenceRepository.flush()
+    offenceSchedulePartRepository.flush()
   }
 
   private fun makeControlTableRequest(changedDateTime: LocalDateTime): SDRSResponse {
@@ -77,10 +108,7 @@ class SDRSService(
     return sdrsApiClient.callSDRS(sdrsRequest)
   }
 
-  private fun fullLoadSingleAlphaChar(
-    alphaChar: Char,
-    loadDate: LocalDateTime?
-  ) {
+  private fun fullLoadSingleAlphaChar(alphaChar: Char, loadDate: LocalDateTime?) {
     try {
       val sdrsResponse = findAllOffencesByAlphaChar(alphaChar)
       if (sdrsResponse.messageStatus.status == "ERRORED") {
@@ -96,19 +124,17 @@ class SDRSService(
     }
   }
 
-  private fun handleSdrsError(
-    sdrsResponse: SDRSResponse? = null,
-    alphaChar: Char,
-    loadDate: LocalDateTime?,
-    loadType: LoadType
-  ) {
+  private fun handleSdrsError(sdrsResponse: SDRSResponse? = null, alphaChar: Char, loadDate: LocalDateTime?, loadType: LoadType) {
     if (sdrsResponse == null) {
       log.error("An unexpected error occurred when calling SDRS for alphaChar {}", alphaChar)
       saveLoad(alphaChar, loadDate, FAIL, loadType)
     } else if (sdrsResponse.messageStatus.code == SDRS_99918.errorCode) {
       // SDRS-99918 indicates the absence of a cache, however it also gets thrown when there are no offences matching the alphaChar
       // e.g. no offence codes start with Q; therefore handling as a 'success' here
-      log.info("SDRS-9918 thrown by SDRS service due to no cache for alpha char {} (treated as success with no offences)", alphaChar)
+      log.info(
+        "SDRS-9918 thrown by SDRS service due to no cache for alpha char {} (treated as success with no offences)",
+        alphaChar
+      )
       saveLoad(alphaChar, loadDate, SUCCESS, loadType)
     } else {
       log.error("Request to SDRS API failed for alpha char {} ", alphaChar)
@@ -141,12 +167,7 @@ class SDRSService(
     }
   }
 
-  private fun updateSingleCache(
-    alphaChar: Char,
-    lastLoadDate: LocalDateTime,
-    loadDate: LocalDateTime?,
-    deltaSyncToNomisEnabled: Boolean
-  ) {
+  private fun updateSingleCache(alphaChar: Char, lastLoadDate: LocalDateTime, loadDate: LocalDateTime?, deltaSyncToNomisEnabled: Boolean) {
     log.info("Starting update load for alpha char {} ", alphaChar)
     try {
       val sdrsResponse = findUpdatedOffences(alphaChar, lastLoadDate)
@@ -155,24 +176,24 @@ class SDRSService(
       } else {
         val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, alphaChar)
         latestOfEachOffence.forEach {
-          offenceRepository.findOneByCode(it.code).ifPresentOrElse(
-            { offenceToUpdate -> offenceRepository.save(transform(it, offenceToUpdate)) },
-            { offenceRepository.save(transform(it)) }
-          )
+          offenceRepository.findOneByCode(it.code)
+            .ifPresentOrElse(
+              { offenceToUpdate -> offenceRepository.save(transform(it, offenceToUpdate)) },
+              { offenceRepository.save(transform(it)) }
+            )
         }
         saveLoad(alphaChar, loadDate, SUCCESS, UPDATE)
         if (deltaSyncToNomisEnabled) offenceService.fullySyncOffenceGroupWithNomis(alphaChar.toString())
       }
     } catch (e: Exception) {
-      log.error("Failed for updating a single cache from SDRS for alphaChar {} - error message = {}", alphaChar, e.message)
+      log.error(
+        "Failed for updating a single cache from SDRS for alphaChar {} - error message = {}", alphaChar, e.message
+      )
       handleSdrsError(alphaChar = alphaChar, loadDate = loadDate, loadType = UPDATE)
     }
   }
 
-  private fun getLatestOfEachOffence(
-    sdrsResponse: SDRSResponse,
-    alphaChar: Char
-  ): List<Offence> {
+  private fun getLatestOfEachOffence(sdrsResponse: SDRSResponse, alphaChar: Char): List<Offence> {
     val allOffences = sdrsResponse.messageBody.gatewayOperationType.getOffenceResponse!!.offences
     log.info("Fetched {} records from SDRS for alpha char {} ", allOffences.size, alphaChar)
     val latestOfEachOffence = allOffences.groupBy { it.code }.map {
@@ -183,13 +204,11 @@ class SDRSService(
 
   private fun getUpdatedCachesSinceLastLoadDate(lastLoadDate: LocalDateTime): Set<Char> {
     val controlResults = makeControlTableRequest(lastLoadDate)
-    return controlResults.messageBody.gatewayOperationType.getControlTableResponse!!.referenceDataSet
-      .filter {
-        it.dataSet.startsWith("offence_")
-      }
-      .map {
-        it.dataSet.toCharArray().last()
-      }.toSet()
+    return controlResults.messageBody.gatewayOperationType.getControlTableResponse!!.referenceDataSet.filter {
+      it.dataSet.startsWith("offence_")
+    }.map {
+      it.dataSet.toCharArray().last()
+    }.toSet()
   }
 
   private fun saveLoad(alphaChar: Char, loadDate: LocalDateTime?, status: LoadStatus, type: LoadType) {
@@ -197,10 +216,7 @@ class SDRSService(
       .orElseThrow { EntityNotFoundException("No record exists for alphaChar $alphaChar") }
     val loadStatus = if (status == SUCCESS) {
       loadStatusExisting.copy(
-        status = status,
-        loadType = type,
-        loadDate = loadDate,
-        lastSuccessfulLoadDate = loadDate
+        status = status, loadType = type, loadDate = loadDate, lastSuccessfulLoadDate = loadDate
       )
     } else {
       loadStatusExisting.copy(
@@ -224,13 +240,9 @@ class SDRSService(
     SDRSRequest(
       messageHeader = MessageHeader(
         messageID = MessageID(
-          uuid = UUID.randomUUID(),
-          relatesTo = ""
+          uuid = UUID.randomUUID(), relatesTo = ""
         ),
-        timeStamp = ZonedDateTime.now(),
-        messageType = messageType,
-        from = "CONSUMER_APPLICATION",
-        to = "SDRS_AZURE"
+        timeStamp = ZonedDateTime.now(), messageType = messageType, from = "CONSUMER_APPLICATION", to = "SDRS_AZURE"
       ),
       messageBody = MessageBodyRequest(
         gatewayOperationTypeRequest
@@ -242,28 +254,26 @@ class SDRSService(
     changedDate: LocalDateTime? = null,
     alphaChar: Char? = null,
     allOffences: String = "ALL"
-  ) =
-    createSDRSRequest(
-      GatewayOperationTypeRequest(
-        getOffenceRequest = GetOffenceRequest(
-          cjsCode = offenceCode,
-          alphaChar = alphaChar,
-          allOffences = allOffences,
-          changedDate = changedDate,
-        )
-      ),
-      "GetOffence"
-    )
+  ) = createSDRSRequest(
+    GatewayOperationTypeRequest(
+      getOffenceRequest = GetOffenceRequest(
+        cjsCode = offenceCode,
+        alphaChar = alphaChar,
+        allOffences = allOffences,
+        changedDate = changedDate,
+      )
+    ),
+    "GetOffence"
+  )
 
-  private fun createControlTableRequest(changedDateTime: LocalDateTime) =
-    createSDRSRequest(
-      GatewayOperationTypeRequest(
-        getControlTableRequest = GetControlTableRequest(
-          changedDateTime = changedDateTime
-        )
-      ),
-      "GetControlTable"
-    )
+  private fun createControlTableRequest(changedDateTime: LocalDateTime) = createSDRSRequest(
+    GatewayOperationTypeRequest(
+      getControlTableRequest = GetControlTableRequest(
+        changedDateTime = changedDateTime
+      )
+    ),
+    "GetControlTable"
+  )
 
   private fun findAllOffencesByAlphaChar(alphaChar: Char): SDRSResponse {
     val sdrsRequest = createOffenceRequest(alphaChar = alphaChar)

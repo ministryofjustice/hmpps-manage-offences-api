@@ -11,7 +11,7 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SYNC_SDRS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.ControlTableRecord
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Messag
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageStatusResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDateTime
@@ -30,6 +31,7 @@ class SDRSServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
   private val sdrsLoadResultHistoryRepository = mock<SdrsLoadResultHistoryRepository>()
+  private val offenceSchedulePartRepository = mock<OffenceSchedulePartRepository>()
   private val adminService = mock<AdminService>()
   private val offenceService = mock<OffenceService>()
   private val sdrsApiClient = mock<SDRSApiClient>()
@@ -39,6 +41,7 @@ class SDRSServiceTest {
     offenceRepository,
     sdrsLoadResultRepository,
     sdrsLoadResultHistoryRepository,
+    offenceSchedulePartRepository,
     offenceService,
     adminService
   )
@@ -65,15 +68,15 @@ class SDRSServiceTest {
     }
 
     whenever(sdrsLoadResultRepository.findAll()).thenReturn(loadResults)
-    whenever(adminService.isFeatureEnabled(SYNC_SDRS)).thenReturn(true)
+    whenever(adminService.isFeatureEnabled(DELTA_SYNC_SDRS)).thenReturn(true)
     whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(true)
   }
 
   @Test
   fun `Ensure sync with SDRS doesnt occur if associated feature toggle is disabled`() {
-    whenever(adminService.isFeatureEnabled(SYNC_SDRS)).thenReturn(false)
+    whenever(adminService.isFeatureEnabled(DELTA_SYNC_SDRS)).thenReturn(false)
 
-    sdrsService.synchroniseWithSdrs()
+    sdrsService.deltaSynchroniseWithSdrs()
 
     verifyNoInteractions(sdrsApiClient)
   }
@@ -83,7 +86,7 @@ class SDRSServiceTest {
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetControlTable" })).thenReturn(CONTROL_TABLE_RESPONSE)
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetOffence" })).thenReturn(GET_OFFENCE_RESPONSE)
 
-    sdrsService.synchroniseWithSdrs()
+    sdrsService.deltaSynchroniseWithSdrs()
 
     verify(offenceService, times(1)).fullySyncOffenceGroupWithNomis("A")
   }
@@ -93,7 +96,7 @@ class SDRSServiceTest {
     whenever(sdrsApiClient.callSDRS(any())).thenReturn(CONTROL_TABLE_RESPONSE)
     whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(false)
 
-    sdrsService.synchroniseWithSdrs()
+    sdrsService.fullSynchroniseWithSdrs()
 
     verifyNoInteractions(offenceService)
   }

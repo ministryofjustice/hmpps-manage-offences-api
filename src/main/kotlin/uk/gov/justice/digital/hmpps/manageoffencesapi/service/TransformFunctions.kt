@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart as EntitySchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle as ModelFeatureToggle
@@ -27,8 +28,19 @@ fun transform(offence: Offence): ModelOffence =
     endDate = offence.endDate,
     homeOfficeStatsCode = offence.homeOfficeStatsCode,
     changedDate = offence.changedDate,
-    loadDate = offence.lastUpdatedDate,
+    loadDate = offence.lastUpdatedDate
   )
+
+fun transform(offenceScheduleParts: List<OffenceSchedulePart>?): List<ScheduleDetails>? =
+  offenceScheduleParts?.groupBy { it.schedulePart.schedule }?.map {
+    ScheduleDetails(
+      id = it.key.id,
+      act = it.key.act,
+      code = it.key.code,
+      url = it.key.url,
+      schedulePartNumbers = it.value.map { offenceSchedulePart -> offenceSchedulePart.schedulePart.partNumber }
+    )
+  }
 
 fun transform(sdrsOffence: SdrsOffence): Offence = Offence(
   code = sdrsOffence.code,

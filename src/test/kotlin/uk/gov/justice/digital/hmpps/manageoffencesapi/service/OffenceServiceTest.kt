@@ -17,17 +17,19 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
 
 class OffenceServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
+  private val offenceSchedulePartRepository = mock<OffenceSchedulePartRepository>()
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val adminService = mock<AdminService>()
 
   private val offenceService =
-    OffenceService(offenceRepository, sdrsLoadResultRepository, prisonApiClient, adminService)
+    OffenceService(offenceRepository, offenceSchedulePartRepository, sdrsLoadResultRepository, prisonApiClient, adminService)
 
   @BeforeEach
   fun setup() {

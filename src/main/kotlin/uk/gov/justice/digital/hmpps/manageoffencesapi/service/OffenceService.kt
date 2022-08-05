@@ -13,19 +13,24 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiHoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
 
 @Service
 class OffenceService(
   private val offenceRepository: OffenceRepository,
+  private val offenceSchedulePartRepository: OffenceSchedulePartRepository,
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val prisonApiClient: PrisonApiClient,
   private val adminService: AdminService,
 ) {
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
-    return offenceRepository.findByCodeStartsWithIgnoreCase(code).map { transform(it) }
+    val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code).map { transform(it) }
+    return offences.map {
+      it.copy(schedules = transform(offenceSchedulePartRepository.findByOffenceId(it.id)))
+    }
   }
 
   fun findLoadResults(): List<MostRecentLoadResult> {
@@ -190,7 +195,11 @@ class OffenceService(
     )
   }
 
-  private fun findAssociatedHomeOfficeCodeInNomis(offence: EntityOffence, nomisOffences: List<PrisonApiOffence>, newNomisHoCodes: Set<PrisonApiHoCode>): PrisonApiHoCode? {
+  private fun findAssociatedHomeOfficeCodeInNomis(
+    offence: EntityOffence,
+    nomisOffences: List<PrisonApiOffence>,
+    newNomisHoCodes: Set<PrisonApiHoCode>
+  ): PrisonApiHoCode? {
     if (offence.homeOfficeStatsCode == null) return null
     if (homeOfficeCodeExists(nomisOffences, offence)) {
       return nomisOffences.first { it.hoCode?.code == offence.homeOfficeStatsCode }.hoCode

@@ -4,8 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SYNC_SDRS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
 
@@ -24,11 +25,13 @@ class AdminControllerIntTest : IntegrationTestBase() {
 
     assertThat(result)
       .usingRecursiveComparison()
+      .ignoringCollectionOrder()
       .isEqualTo(
         listOf(
           FeatureToggle(FULL_SYNC_NOMIS, true),
           FeatureToggle(DELTA_SYNC_NOMIS, true),
-          FeatureToggle(SYNC_SDRS, true),
+          FeatureToggle(FULL_SYNC_SDRS, false),
+          FeatureToggle(DELTA_SYNC_SDRS, true),
         )
       )
   }

@@ -13,9 +13,11 @@ class AdminService(
   private val featureToggleRepository: FeatureToggleRepository,
 ) {
   @Transactional
-  fun toggleFeature(featureToggle: FeatureToggle) {
-    featureToggleRepository.findById(featureToggle.feature)
-      .ifPresent { featureToggleRepository.save(it.copy(enabled = featureToggle.enabled)) }
+  fun toggleFeature(featureToggles: List<FeatureToggle>) {
+    featureToggles.forEach {
+      featureToggleRepository.findById(it.feature)
+        .ifPresent { featureToggle -> featureToggleRepository.save(featureToggle.copy(enabled = it.enabled)) }
+    }
   }
 
   @Transactional(readOnly = true)
