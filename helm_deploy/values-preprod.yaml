@@ -6,7 +6,7 @@ generic-service:
     host: manage-offences-api-preprod.hmpps.service.justice.gov.uk
 
   env:
-    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     HMPPS_AUTH_URL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
     API_BASE_URL_SDRS: https://crime-reference-data-api.staging.service.justice.gov.uk
     API_BASE_URL_PRISON_API: https://api-preprod.prison.service.justice.gov.uk
