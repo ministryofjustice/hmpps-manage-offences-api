@@ -96,7 +96,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-sdrs-load-result.sql",
+    "classpath:test_data/set-success-all-load-results.sql",
   )
   fun `Update any offences that have changed`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
@@ -146,12 +146,14 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/set-full-sdrs-load-toggle.sql",
+    "classpath:test_data/set-success-all-load-results.sql",
   )
   fun `Handle SDRS-99918 as a success ie no offences exist for that cache (cache doesnt exist)`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForQHasNoCache()
     sdrsApiMockServer.stubControlTableRequest()
-    sdrsService.deltaSynchroniseWithSdrs()
+    sdrsService.fullSynchroniseWithSdrs()
     val offences = offenceRepository.findAll()
     val statusRecords = sdrsLoadResultRepository.findAll()
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
@@ -160,7 +162,6 @@ class SDRSServiceIntTest : IntegrationTestBase() {
 
     assertThat(statusRecords.size).isEqualTo(26)
     statusRecords.forEach {
-      println("Alpha char = " + it.alphaChar)
       assertThat(it.status).isEqualTo(SUCCESS)
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
     }
@@ -175,7 +176,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-sdrs-load-result.sql",
+    "classpath:test_data/set-success-all-load-results.sql",
   )
   fun `Handle unexpected exception from SDRS - Bad JSON is returned from SDRS thus causing a generic exception`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
@@ -190,5 +191,90 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     assertThat(statusRecords.first { it.alphaChar == "A" }.loadType).isEqualTo(UPDATE)
     assertThat(statusHistoryRecords.first { it.alphaChar == "A" }.status).isEqualTo(FAIL)
     assertThat(statusHistoryRecords.first { it.alphaChar == "A" }.loadType).isEqualTo(UPDATE)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/set-full-sdrs-load-toggle.sql",
+  )
+  fun `Perform a full load of offences when there are incohate offences`() {
+    sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetAllOffencesWithChildren()
+
+    sdrsService.fullSynchroniseWithSdrs()
+
+    val offences = offenceRepository.findAll()
+    val statusRecords = sdrsLoadResultRepository.findAll()
+    val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
+    val parentOne = offences.first { it.code == "AX99001" }
+    val parentTwo = offences.first { it.code == "AX99002" }
+
+    assertThat(offences)
+      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
+      .containsAnyElementsOf(
+        listOf(
+          Offence(
+            code = "AX99001",
+            description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+            cjsTitle = null,
+            revisionId = 410082,
+            startDate = LocalDate.of(2013, 3, 1),
+            endDate = LocalDate.of(2013, 3, 2),
+            category = 195,
+            subCategory = 99,
+            changedDate = null,
+            parentOffenceId = null,
+          ),
+          Offence(
+            code = "AX99001A",
+            description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+            cjsTitle = null,
+            revisionId = 410082,
+            startDate = LocalDate.of(2013, 3, 1),
+            endDate = LocalDate.of(2013, 3, 2),
+            category = 195,
+            subCategory = 99,
+            changedDate = null,
+            parentOffenceId = parentOne.id,
+          ),
+          Offence(
+            code = "AX99001B",
+            description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+            cjsTitle = null,
+            revisionId = 410082,
+            startDate = LocalDate.of(2013, 3, 1),
+            endDate = LocalDate.of(2013, 3, 2),
+            category = 195,
+            subCategory = 99,
+            changedDate = null,
+            parentOffenceId = parentOne.id,
+          ),
+          Offence(
+            code = "AX99002",
+            description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+            cjsTitle = null,
+            revisionId = 410082,
+            startDate = LocalDate.of(2013, 3, 1),
+            endDate = LocalDate.of(2013, 3, 2),
+            category = 195,
+            subCategory = 99,
+            changedDate = null,
+            parentOffenceId = null,
+          ),
+          Offence(
+            code = "AX99002B",
+            description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+            cjsTitle = null,
+            revisionId = 410082,
+            startDate = LocalDate.of(2013, 3, 1),
+            endDate = LocalDate.of(2013, 3, 2),
+            category = 195,
+            subCategory = 99,
+            changedDate = null,
+            parentOffenceId = parentTwo.id,
+          ),
+        )
+      )
   }
 }

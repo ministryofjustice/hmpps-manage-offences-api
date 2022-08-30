@@ -92,6 +92,17 @@ class SDRSService(
     }
   }
 
+  private fun setParentOffences(alphaChar: Char) {
+    val offences = offenceRepository.findChildOffencesWithNoParent(alphaChar)
+    offences
+      .filter { it.parentCode != null }
+      .forEach { child ->
+        offenceRepository.findOneByCode(child.parentCode!!).ifPresent { parent ->
+          offenceRepository.save(child.copy(parentOffenceId = parent.id))
+        }
+      }
+  }
+
   private fun resetLoadResultAndDeleteOffences() {
     ('A'..'Z').forEach { alphaChar ->
       sdrsLoadResultRepository.save(SdrsLoadResult(alphaChar = alphaChar.toString()))
@@ -117,6 +128,7 @@ class SDRSService(
         val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, alphaChar)
         offenceRepository.saveAll(latestOfEachOffence.map { transform(it) })
         saveLoad(alphaChar, loadDate, SUCCESS, FULL_LOAD)
+        setParentOffences(alphaChar)
       }
     } catch (e: Exception) {
       log.error("Failed to do a full load from SDRS for alphaChar {} - error message = {}", alphaChar, e.message)
@@ -124,7 +136,12 @@ class SDRSService(
     }
   }
 
-  private fun handleSdrsError(sdrsResponse: SDRSResponse? = null, alphaChar: Char, loadDate: LocalDateTime?, loadType: LoadType) {
+  private fun handleSdrsError(
+    sdrsResponse: SDRSResponse? = null,
+    alphaChar: Char,
+    loadDate: LocalDateTime?,
+    loadType: LoadType
+  ) {
     if (sdrsResponse == null) {
       log.error("An unexpected error occurred when calling SDRS for alphaChar {}", alphaChar)
       saveLoad(alphaChar, loadDate, FAIL, loadType)
@@ -143,23 +160,18 @@ class SDRSService(
     }
   }
 
-  private fun hasFullLoadPreviouslyOccurred(sdrsLoadResults: MutableList<SdrsLoadResult>) =
-    sdrsLoadResults.any { it.lastSuccessfulLoadDate != null }
-
   private fun loadOffenceUpdates(sdrsLoadResults: List<SdrsLoadResult>) {
     val lastLoadDateByAlphaChar = sdrsLoadResults.groupBy({ it.lastSuccessfulLoadDate }, { it.alphaChar.single() })
     val loadDate = LocalDateTime.now()
     lastLoadDateByAlphaChar.forEach { (lastSuccessfulLoadDate, affectedCaches) ->
+      val deltaSyncToNomisEnabled = adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)
       if (lastSuccessfulLoadDate == null) {
-        affectedCaches.forEach {
-          log.info("Cache has not been previously loaded, so attempting full load of {} in update job", it)
-          fullLoadSingleAlphaChar(it, loadDate)
-        }
+        // This code should never be called - it will only run if the initial full load failed on any of the alpha chars
+        fullLoadOfAlphaCharDuringUpdate(affectedCaches, loadDate, deltaSyncToNomisEnabled)
       } else {
         val updatedCaches = getUpdatedCachesSinceLastLoadDate(lastSuccessfulLoadDate)
         val cachesToUpdate = affectedCaches intersect updatedCaches
         log.info("Caches to update are {}", cachesToUpdate)
-        val deltaSyncToNomisEnabled = adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)
         cachesToUpdate.forEach { alphaChar ->
           updateSingleCache(alphaChar, lastSuccessfulLoadDate, loadDate, deltaSyncToNomisEnabled)
         }
@@ -167,7 +179,24 @@ class SDRSService(
     }
   }
 
-  private fun updateSingleCache(alphaChar: Char, lastLoadDate: LocalDateTime, loadDate: LocalDateTime?, deltaSyncToNomisEnabled: Boolean) {
+  private fun fullLoadOfAlphaCharDuringUpdate(
+    affectedCaches: List<Char>,
+    loadDate: LocalDateTime?,
+    deltaSyncToNomisEnabled: Boolean
+  ) {
+    affectedCaches.forEach {
+      log.info("Cache has not been previously loaded, so attempting full load of {} in update job", it)
+      fullLoadSingleAlphaChar(it, loadDate)
+      if (deltaSyncToNomisEnabled) offenceService.fullySyncOffenceGroupWithNomis(it.toString())
+    }
+  }
+
+  private fun updateSingleCache(
+    alphaChar: Char,
+    lastLoadDate: LocalDateTime,
+    loadDate: LocalDateTime?,
+    deltaSyncToNomisEnabled: Boolean
+  ) {
     log.info("Starting update load for alpha char {} ", alphaChar)
     try {
       val sdrsResponse = findUpdatedOffences(alphaChar, lastLoadDate)
@@ -183,6 +212,7 @@ class SDRSService(
             )
         }
         saveLoad(alphaChar, loadDate, SUCCESS, UPDATE)
+        setParentOffences(alphaChar)
         if (deltaSyncToNomisEnabled) offenceService.fullySyncOffenceGroupWithNomis(alphaChar.toString())
       }
     } catch (e: Exception) {
