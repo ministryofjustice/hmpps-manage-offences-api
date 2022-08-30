@@ -23,6 +23,7 @@ data class Offence(
   val category: Int? = null,
   val subCategory: Int? = null,
   val actsAndSections: String? = null,
+  val parentOffenceId: Long? = null,
   val changedDate: LocalDateTime? = null,
   val createdDate: LocalDateTime = LocalDateTime.now(),
   val lastUpdatedDate: LocalDateTime = LocalDateTime.now(),
@@ -47,5 +48,11 @@ data class Offence(
     get() {
       if (endDate == null || endDate.isAfter(LocalDate.now())) return "Y"
       return "N"
+    }
+
+  val parentCode: String?
+    get() {
+      if (code.length < 8) return null
+      return code.substring(0, 7)
     }
 }

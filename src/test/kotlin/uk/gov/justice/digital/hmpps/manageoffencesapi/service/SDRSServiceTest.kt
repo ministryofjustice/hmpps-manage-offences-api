@@ -9,6 +9,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
@@ -101,6 +102,18 @@ class SDRSServiceTest {
     verifyNoInteractions(offenceService)
   }
 
+  @Test
+  fun `Ensure children are updated with parent offence id (there are records to update for A) `() {
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetControlTable" })).thenReturn(CONTROL_TABLE_RESPONSE)
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetOffence" })).thenReturn(GET_OFFENCE_RESPONSE)
+    whenever(offenceRepository.findChildOffencesWithNoParent('A')).thenReturn(listOf(OFFENCE_B123AA6A))
+    whenever(offenceRepository.findOneByCode(OFFENCE_B123AA6A.parentCode!!)).thenReturn(Optional.of(OFFENCE_B123AA6))
+
+    sdrsService.deltaSynchroniseWithSdrs()
+
+    verify(offenceRepository, times(1)).save(OFFENCE_B123AA6A.copy(parentOffenceId = OFFENCE_B123AA6.id))
+  }
+
   companion object {
     private val NOW = LocalDateTime.now()
 
@@ -124,6 +137,18 @@ class SDRSServiceTest {
         ),
       ),
       messageStatus = MessageStatusResponse(status = "SUCCESS")
+    )
+
+    private val OFFENCE_B123AA6 = Offence(
+      id = 991,
+      code = "B123AA6",
+      description = "B Desc 1 -= parent",
+    )
+
+    private val OFFENCE_B123AA6A = Offence(
+      id = 992,
+      code = "B123AA6A",
+      description = "B Desc 1 - child",
     )
   }
 }
