@@ -13,4 +13,8 @@ interface OffenceRepository : JpaRepository<Offence, Long> {
 
   @Query("SELECT o FROM Offence o WHERE o.code LIKE :alphaChar% AND LENGTH(o.code) > 7 AND o.parentOffenceId IS NULL")
   fun findChildOffencesWithNoParent(alphaChar: Char): List<Offence>
+
+  fun findByParentOffenceId(parentOffenceId: Long): List<Offence>
+
+  fun findByParentOffenceIdIn(parentOffenceIds: List<Long>): List<Offence>
 }

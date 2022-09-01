@@ -169,4 +169,81 @@ class OffencesControllerIntTest : IntegrationTestBase() {
         )
       )
   }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-with-children.sql",
+  )
+  fun `Get offences by offence code where offence has associated children`() {
+    val result = webTestClient.get().uri("/offences/code/AF")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(ModelOffence::class.java)
+      .returnResult().responseBody
+
+    val parentOffenceId = result!!.first { it.code == "AF06999" }.id
+    val childOffenceIds = result.filter { it.code != "AF06999" }.map { it.id }
+
+    assertThat(result)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*dDate")
+      .ignoringFieldsMatchingRegexes("id")
+      .isEqualTo(
+        listOf(
+          ModelOffence(
+            id = 1,
+            code = "AF06999",
+            description = "Brought before the court as being absent without leave from the Armed Forces",
+            cjsTitle = "Brought before the court as being absent without leave from the Armed Forces",
+            revisionId = 570173,
+            startDate = LocalDate.of(2009, 11, 2),
+            endDate = null,
+            changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            childOffenceIds = childOffenceIds,
+          ),
+          ModelOffence(
+            id = 2,
+            code = "AF06999A",
+            description = "Inchoate A",
+            cjsTitle = "Inchoate A",
+            revisionId = 570173,
+            startDate = LocalDate.of(2009, 11, 2),
+            endDate = null,
+            changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            parentOffenceId = parentOffenceId,
+            isChild = true,
+          ),
+          ModelOffence(
+            id = 3,
+            code = "AF06999B",
+            description = "Inchoate B",
+            cjsTitle = "Inchoate B",
+            revisionId = 570173,
+            startDate = LocalDate.of(2009, 11, 2),
+            endDate = null,
+            changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            parentOffenceId = parentOffenceId,
+            isChild = true,
+          ),
+          ModelOffence(
+            id = 4,
+            code = "AF06999C",
+            description = "Inchoate C",
+            cjsTitle = "Inchoate C",
+            revisionId = 570173,
+            startDate = LocalDate.of(2009, 11, 2),
+            endDate = null,
+            changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            parentOffenceId = parentOffenceId,
+            isChild = true,
+          ),
+        )
+      )
+  }
 }
