@@ -27,7 +27,10 @@ class OffenceService(
 ) {
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
-    val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code).map { transform(it) }
+    val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code).map { it ->
+      val children = offenceRepository.findByParentOffenceId(it.id)
+      transform(it, children.map { child -> child.id })
+    }
     return offences.map {
       it.copy(schedules = transform(offenceSchedulePartRepository.findByOffenceId(it.id)))
     }

@@ -31,7 +31,7 @@ class ScheduleController(
 
   @PostMapping(value = ["/link-offences/{schedulePartId}"])
   @Operation(
-    summary = "Link offences to a schedule part"
+    summary = "Link offences to a schedule part - will also link any associated inchoate offences (i.e. if any of the passed in offences have children they will also be linked)"
   )
   fun linkOffences(
     @Parameter(required = true, example = "1000011", description = "The schedule part ID")
@@ -45,7 +45,7 @@ class ScheduleController(
 
   @PostMapping(value = ["/unlink-offences"])
   @Operation(
-    summary = "Unlink offences from schedules"
+    summary = "Unlink offences from schedules - will also unlink any associated inchoate offences (i.e. if any of the passed in offences have children they will also be unlinked)"
   )
   fun unlinkOffences(
     @RequestBody schedulePartIdAndOffenceIds: List<SchedulePartIdAndOffenceId>

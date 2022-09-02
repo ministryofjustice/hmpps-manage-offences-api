@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offenc
 /*
 ** Functions which transform JPA entity objects into their API model equivalents and vice-versa.
 */
-fun transform(offence: Offence): ModelOffence =
+fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): ModelOffence =
   ModelOffence(
     id = offence.id,
     code = offence.code,
@@ -28,7 +28,10 @@ fun transform(offence: Offence): ModelOffence =
     endDate = offence.endDate,
     homeOfficeStatsCode = offence.homeOfficeStatsCode,
     changedDate = offence.changedDate,
-    loadDate = offence.lastUpdatedDate
+    loadDate = offence.lastUpdatedDate,
+    isChild = offence.parentCode != null,
+    parentOffenceId = offence.parentOffenceId,
+    childOffenceIds = childOffenceIds,
   )
 
 fun transform(offenceScheduleParts: List<OffenceSchedulePart>?): List<ScheduleDetails>? =

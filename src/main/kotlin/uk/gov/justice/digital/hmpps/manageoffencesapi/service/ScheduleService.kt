@@ -39,12 +39,15 @@ class ScheduleService(
     }
   }
 
+  //  If the offence has any children (inchoate offences) they are linked as well
   @Transactional
   fun linkOffences(schedulePartId: Long, offenceIds: List<Long>) {
     val schedulePart = schedulePartRepository.findById(schedulePartId)
       .orElseThrow { EntityNotFoundException("No schedulePart exists for $schedulePartId") }
 
-    val offences = offenceRepository.findAllById(offenceIds)
+    val childOffenceIds = offenceRepository.findByParentOffenceIdIn(offenceIds).map { it.id }
+    val offences = offenceRepository.findAllById(offenceIds.plus(childOffenceIds).distinct())
+
     offenceSchedulePartRepository.saveAll(
       offences.map { offence ->
         OffenceSchedulePart(
@@ -55,13 +58,21 @@ class ScheduleService(
     )
   }
 
+  //  If the offence has any children (inchoate offences) they are unlinked as well
   @Transactional
   fun unlinkOffences(offenceSchedulePartIds: List<SchedulePartIdAndOffenceId>) {
     offenceSchedulePartIds.forEach {
+      val childOffenceIds = offenceRepository.findByParentOffenceId(it.offenceId).map { child -> child.id }
       offenceSchedulePartRepository.deleteBySchedulePartIdAndOffenceId(
         it.schedulePartId,
         it.offenceId
       )
+      childOffenceIds.forEach { childOffenceId ->
+        offenceSchedulePartRepository.deleteBySchedulePartIdAndOffenceId(
+          it.schedulePartId,
+          childOffenceId
+        )
+      }
     }
   }
 

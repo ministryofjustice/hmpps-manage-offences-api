@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import com.vladmihalcea.hibernate.type.json.internal.JacksonUtil
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReposito
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 
 class OffenceServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
@@ -29,7 +31,13 @@ class OffenceServiceTest {
   private val adminService = mock<AdminService>()
 
   private val offenceService =
-    OffenceService(offenceRepository, offenceSchedulePartRepository, sdrsLoadResultRepository, prisonApiClient, adminService)
+    OffenceService(
+      offenceRepository,
+      offenceSchedulePartRepository,
+      sdrsLoadResultRepository,
+      prisonApiClient,
+      adminService
+    )
 
   @BeforeEach
   fun setup() {
@@ -177,6 +185,35 @@ class OffenceServiceTest {
     verify(prisonApiClient, times(1)).createStatutes(any())
   }
 
+  @Test
+  fun `Finding a parent offence returns all associated children`() {
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+      listOf(
+        OFFENCE_A123992,
+        OFFENCE_A123991,
+        OFFENCE_A123996A,
+      )
+    )
+    whenever(offenceRepository.findByParentOffenceId(OFFENCE_A123992.id)).thenReturn(
+      listOf(
+        OFFENCE_A123993,
+        OFFENCE_A123995,
+      )
+    )
+
+    val offences = offenceService.findOffencesByCode("A")
+
+    assertThat(offences)
+      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("loadDate")
+      .isEqualTo(
+        listOf(
+          MODEL_OFFENCE_A123992,
+          MODEL_OFFENCE_A123991,
+          MODEL_OFFENCE_A123996A
+        )
+      )
+  }
+
   companion object {
     private val OFFENCE_B123AA6 = Offence(
       code = "B123AA6",
@@ -234,6 +271,15 @@ class OffenceServiceTest {
       code = "A167995",
     )
 
+    val OFFENCE_A123996A = Offence(
+      id = 997,
+      cjsTitle = "Descriptiom",
+      code = "A123996A",
+      startDate = LocalDate.of(2021, 5, 6),
+      actsAndSections = "Statute 997",
+      parentOffenceId = 996,
+    )
+
     private val NOMIS_STATUTE_B123 =
       PrisonApiStatute(code = "B123", description = "Statute desc", activeFlag = "Y", legislatingBodyCode = "UK")
     private val NOMIS_STATUTE_A123 =
@@ -278,6 +324,33 @@ class OffenceServiceTest {
       listOf(
         NOMIS_OFFENCE_A1234AAB
       )
+    )
+
+    val MODEL_OFFENCE_A123992 = ModelOffence(
+      id = 992,
+      code = "A123992",
+      startDate = LocalDate.of(2021, 6, 1),
+      cjsTitle = "Descriptiom",
+      childOffenceIds = listOf(993, 995),
+      homeOfficeStatsCode = "001/02"
+    )
+
+    val MODEL_OFFENCE_A123991 = ModelOffence(
+      id = 991,
+      code = "A123991",
+      startDate = LocalDate.of(2021, 5, 6),
+      cjsTitle = "Descriptiom",
+      childOffenceIds = emptyList()
+    )
+
+    val MODEL_OFFENCE_A123996A = ModelOffence(
+      id = 997,
+      code = "A123996A",
+      startDate = LocalDate.of(2021, 5, 6),
+      cjsTitle = "Descriptiom",
+      isChild = true,
+      childOffenceIds = emptyList(),
+      parentOffenceId = 996,
     )
 
     private fun createPrisonApiOffencesResponse(

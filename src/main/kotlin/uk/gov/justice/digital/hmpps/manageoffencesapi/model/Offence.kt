@@ -28,4 +28,10 @@ data class Offence(
   val loadDate: LocalDateTime? = null,
   @Schema(description = "The schedules linked to this offence")
   val schedules: List<ScheduleDetails>? = emptyList(),
+  @Schema(description = "If true then this is a inchoate offence; i.e. a child of another offence")
+  val isChild: Boolean = false,
+  @Schema(description = "The parent offence id of an inchoate offence")
+  val parentOffenceId: Long? = null,
+  @Schema(description = "A list of child offence ID's; i.e. inchoate offences linked to this offence")
+  val childOffenceIds: List<Long>? = emptyList(),
 )

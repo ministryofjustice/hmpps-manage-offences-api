@@ -54,9 +54,70 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     )
 
     val linkedScheduleAndOffenceIds = mutableListOf<SchedulePartIdAndOffenceId>()
-    extract(scheduleAfterLinkingOffences!!.scheduleParts?.get(0)!!, linkedScheduleAndOffenceIds)
-    extract(scheduleAfterLinkingOffences.scheduleParts?.get(1)!!, linkedScheduleAndOffenceIds)
+    populateSchedulePartIdAndOffenceIdsObjects(
+      scheduleAfterLinkingOffences!!.scheduleParts?.get(0)!!,
+      linkedScheduleAndOffenceIds
+    )
+    populateSchedulePartIdAndOffenceIdsObjects(
+      scheduleAfterLinkingOffences.scheduleParts?.get(1)!!,
+      linkedScheduleAndOffenceIds
+    )
     unlinkOffencesToSchedulePart(linkedScheduleAndOffenceIds)
+    val scheduleAfterUnlinkingOffences = getScheduleDetails(createdScheduleId)
+
+    assertThatScheduleMatches(scheduleAfterUnlinkingOffences, SCHEDULE)
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-with-children.sql"
+  )
+  fun `Create schedule with 3 parts, link offence that has children, then unlink the offence and check all children are unlinked`() {
+    createSchedule()
+    val allSchedules = getAllSchedules()
+    assertThat(allSchedules)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes("id")
+      .isEqualTo(
+        listOf(
+          SCHEDULE.copy(scheduleParts = null)
+        )
+      )
+
+    val createdScheduleId = allSchedules!![0].id
+    val scheduleBefore = getScheduleDetails(createdScheduleId)
+
+    assertThatScheduleMatches(scheduleBefore, SCHEDULE)
+
+    val firstSchedulePartId = scheduleBefore!!.scheduleParts!![0].id
+    val offenceParent = getOffences("AF06999")!!.first { it.code == "AF06999" }
+    val allAFOffences = getOffences("AF")
+
+    linkOffencesToSchedulePart(firstSchedulePartId, mutableListOf(offenceParent))
+
+    val scheduleAfterLinkingOffences = getScheduleDetails(createdScheduleId)
+
+    assertThat(allAFOffences).hasSize(4)
+    assertThatScheduleMatches(
+      scheduleAfterLinkingOffences,
+      SCHEDULE.copy(
+        scheduleParts = listOf(
+          SchedulePart(partNumber = 1, offences = allAFOffences!!.map { it.copy(childOffenceIds = emptyList()) }),
+          SchedulePart(partNumber = 2),
+          SchedulePart(partNumber = 3),
+        )
+      )
+    )
+
+    unlinkOffencesToSchedulePart(
+      listOf(
+        SchedulePartIdAndOffenceId(
+          schedulePartId = scheduleAfterLinkingOffences!!.scheduleParts?.get(0)!!.id!!,
+          offenceId = offenceParent.id,
+        )
+      )
+    )
     val scheduleAfterUnlinkingOffences = getScheduleDetails(createdScheduleId)
 
     assertThatScheduleMatches(scheduleAfterUnlinkingOffences, SCHEDULE)
@@ -69,7 +130,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .isEqualTo(schedule)
   }
 
-  private fun extract(
+  private fun populateSchedulePartIdAndOffenceIdsObjects(
     part: SchedulePart,
     schedulePartIdAndOffenceIds: MutableList<SchedulePartIdAndOffenceId>
   ) {
