@@ -205,11 +205,12 @@ class OffenceServiceTest {
     val offences = offenceService.findOffencesByCode("A")
 
     assertThat(offences)
-      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("loadDate")
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*dDate")
       .isEqualTo(
         listOf(
-          MODEL_OFFENCE_A123992,
           MODEL_OFFENCE_A123991,
+          MODEL_OFFENCE_A123992,
           MODEL_OFFENCE_A123996A
         )
       )

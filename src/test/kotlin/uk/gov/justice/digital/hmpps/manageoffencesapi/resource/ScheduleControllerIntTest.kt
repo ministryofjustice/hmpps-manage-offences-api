@@ -92,7 +92,6 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     .expectBodyList(Schedule::class.java)
     .returnResult().responseBody
 
-
   private fun linkOffencesToSchedulePart(
     schedulePartId: Long?,
     offences: MutableList<Offence>
