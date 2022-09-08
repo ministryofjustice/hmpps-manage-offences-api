@@ -187,14 +187,15 @@ class OffenceServiceTest {
 
   @Test
   fun `Finding a parent offence returns all associated children`() {
-    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
-      listOf(
-        OFFENCE_A123992,
-        OFFENCE_A123991,
-        OFFENCE_A123996A,
-      )
+    val matchingOffences = listOf(
+      OFFENCE_A123992,
+      OFFENCE_A123991,
+      OFFENCE_A123996A,
     )
-    whenever(offenceRepository.findByParentOffenceId(OFFENCE_A123992.id)).thenReturn(
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+      matchingOffences
+    )
+    whenever(offenceRepository.findByParentOffenceIdIn(matchingOffences.map { it.id })).thenReturn(
       listOf(
         OFFENCE_A123993,
         OFFENCE_A123995,
@@ -253,7 +254,8 @@ class OffenceServiceTest {
       cjsTitle = "Descriptiom",
       code = "A123993",
       startDate = LocalDate.of(2022, 7, 7),
-      actsAndSections = "Statute 993"
+      actsAndSections = "Statute 993",
+      parentOffenceId = 992,
     )
 
     val OFFENCE_A123995 = Offence(
@@ -262,7 +264,8 @@ class OffenceServiceTest {
       code = "A123995",
       startDate = LocalDate.of(2022, 5, 7),
       endDate = LocalDate.of(2022, 5, 8),
-      actsAndSections = "Statute 995"
+      actsAndSections = "Statute 995",
+      parentOffenceId = 992,
     )
 
     val OFFENCE_A167996 = Offence(

@@ -120,6 +120,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .usingRecursiveComparison()
       .ignoringFieldsMatchingRegexes(".*dDate")
       .ignoringFieldsMatchingRegexes(".*id")
+      .ignoringFieldsMatchingRegexes(".*schedules")
+      .ignoringCollectionOrder()
       .isEqualTo(
         listOf(
           ModelOffence(
@@ -131,21 +133,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             startDate = LocalDate.of(2015, 3, 13),
             endDate = null,
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
-            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
-            schedules = listOf(
-              ScheduleDetails(
-                act = "Criminal Justice Act",
-                code = "15",
-                url = "https://www.legislation.gov.uk/ukpga/2003/44/schedule/15",
-                schedulePartNumbers = listOf(1, 2)
-              ),
-              ScheduleDetails(
-                act = "Sentencing Act 2020",
-                code = "13",
-                url = "https://www.legislation.gov.uk/ukpga/2020/17/schedule/13",
-                schedulePartNumbers = listOf(1)
-              )
-            )
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000)
           ),
           ModelOffence(
             id = 1,
@@ -157,14 +145,41 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             endDate = null,
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
-            schedules = listOf(
-              ScheduleDetails(
-                act = "Criminal Justice Act",
-                code = "15",
-                url = "https://www.legislation.gov.uk/ukpga/2003/44/schedule/15",
-                schedulePartNumbers = listOf(1)
-              )
-            )
+          )
+        )
+      )
+
+    assertThat(result!!.first { it.code == "XX99001" }!!.schedules)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*id")
+      .ignoringCollectionOrder()
+      .isEqualTo(
+        listOf(
+          ScheduleDetails(
+            act = "Criminal Justice Act 2003",
+            code = "15",
+            url = "https://www.legislation.gov.uk/ukpga/2003/44/schedule/15",
+            schedulePartNumbers = listOf(1, 2)
+          ),
+          ScheduleDetails(
+            act = "Sentencing Act 2020",
+            code = "13",
+            url = "https://www.legislation.gov.uk/ukpga/2020/17/schedule/13",
+            schedulePartNumbers = listOf(1)
+          )
+        )
+      )
+
+    assertThat(result.first { it.code == "XX99002" }!!.schedules)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*id")
+      .isEqualTo(
+        listOf(
+          ScheduleDetails(
+            act = "Criminal Justice Act 2003",
+            code = "15",
+            url = "https://www.legislation.gov.uk/ukpga/2003/44/schedule/15",
+            schedulePartNumbers = listOf(1)
           )
         )
       )

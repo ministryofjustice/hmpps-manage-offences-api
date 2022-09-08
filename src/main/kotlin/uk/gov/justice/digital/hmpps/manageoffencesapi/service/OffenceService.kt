@@ -27,13 +27,20 @@ class OffenceService(
 ) {
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
-    val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code).map { it ->
-      val children = offenceRepository.findByParentOffenceId(it.id)
-      transform(it, children.map { child -> child.id })
+    val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code)
+    val offenceIds = offences.map { it.id }
+    val childrenByParentId = offenceRepository.findByParentOffenceIdIn(offenceIds).groupBy { it.parentOffenceId }
+    val matchingOffences = offences.map { it ->
+      val children = childrenByParentId[it.id]
+      transform(it, children?.map { child -> child.id })
     }
-    return offences.map {
-      it.copy(schedules = transform(offenceSchedulePartRepository.findByOffenceId(it.id)))
-    }
+
+    val matchingOffenceIds = matchingOffences.map { it.id }
+    val offenceSchedulePartsByOffenceId =
+      offenceSchedulePartRepository.findByOffenceIdIn(matchingOffenceIds).groupBy { it.offence.id }
+    return matchingOffences.map {
+      it.copy(schedules = transform(offenceSchedulePartsByOffenceId[it.id]))
+    }.sortedBy { it.code }
   }
 
   fun findLoadResults(): List<MostRecentLoadResult> {
