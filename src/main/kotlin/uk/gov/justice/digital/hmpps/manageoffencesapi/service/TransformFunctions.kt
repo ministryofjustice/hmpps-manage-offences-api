@@ -31,11 +31,12 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     loadDate = offence.lastUpdatedDate,
     isChild = offence.parentCode != null,
     parentOffenceId = offence.parentOffenceId,
-    childOffenceIds = childOffenceIds,
+    childOffenceIds = childOffenceIds ?: emptyList(),
   )
 
 fun transform(offenceScheduleParts: List<OffenceSchedulePart>?): List<ScheduleDetails>? =
-  offenceScheduleParts?.groupBy { it.schedulePart.schedule }?.map {
+  if (offenceScheduleParts == null) emptyList()
+  else offenceScheduleParts?.groupBy { it.schedulePart.schedule }?.map {
     ScheduleDetails(
       id = it.key.id,
       act = it.key.act,
