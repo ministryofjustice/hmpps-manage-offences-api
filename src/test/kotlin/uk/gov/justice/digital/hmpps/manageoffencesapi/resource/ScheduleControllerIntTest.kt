@@ -96,14 +96,14 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     schedulePartId: Long?,
     offences: MutableList<Offence>
   ) = webTestClient.post().uri("/schedule/link-offences/$schedulePartId")
-    .headers(setAuthorisation())
+    .headers(setAuthorisation(roles = listOf("ROLE_UPDATE_OFFENCE_SCHEDULES")))
     .bodyValue(offences.map { it.id })
     .exchange()
     .expectStatus().isOk
 
   private fun unlinkOffencesToSchedulePart(schedulePartIdAndOffenceIds: List<SchedulePartIdAndOffenceId>) =
     webTestClient.post().uri("/schedule/unlink-offences")
-      .headers(setAuthorisation())
+      .headers(setAuthorisation(roles = listOf("ROLE_UPDATE_OFFENCE_SCHEDULES")))
       .bodyValue(schedulePartIdAndOffenceIds)
       .exchange()
       .expectStatus().isOk
