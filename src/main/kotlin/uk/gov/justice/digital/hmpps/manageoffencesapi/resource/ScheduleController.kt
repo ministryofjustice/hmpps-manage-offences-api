@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,6 +22,7 @@ class ScheduleController(
   private val scheduleService: ScheduleService,
 ) {
   @PostMapping(value = ["/create"])
+  @PreAuthorize("hasRole('ROLE_UPDATE_OFFENCE_SCHEDULES')")
   @Operation(
     summary = "Create a schedule"
   )
@@ -30,6 +32,7 @@ class ScheduleController(
   }
 
   @PostMapping(value = ["/link-offences/{schedulePartId}"])
+  @PreAuthorize("hasRole('ROLE_UPDATE_OFFENCE_SCHEDULES')")
   @Operation(
     summary = "Link offences to a schedule part - will also link any associated inchoate offences (i.e. if any of the passed in offences have children they will also be linked)"
   )
@@ -44,6 +47,7 @@ class ScheduleController(
   }
 
   @PostMapping(value = ["/unlink-offences"])
+  @PreAuthorize("hasRole('ROLE_UPDATE_OFFENCE_SCHEDULES')")
   @Operation(
     summary = "Unlink offences from schedules - will also unlink any associated inchoate offences (i.e. if any of the passed in offences have children they will also be unlinked)"
   )

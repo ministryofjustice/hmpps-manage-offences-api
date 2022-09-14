@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -18,6 +19,7 @@ class AdminController(
   private val adminService: AdminService,
 ) {
   @PutMapping(value = ["/toggle-feature"])
+  @PreAuthorize("hasRole('ROLE_MANAGE_OFFENCES_ADMIN')")
   @Operation(
     summary = "Enable / disable a feature"
   )
@@ -25,6 +27,7 @@ class AdminController(
     log.info("Request received to toggle features")
     return adminService.toggleFeature(featureToggles)
   }
+
   @GetMapping(value = ["/feature-toggles"])
   @Operation(
     summary = "Get values of all feature toggles"
