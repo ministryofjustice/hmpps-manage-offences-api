@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
@@ -34,9 +36,8 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     childOffenceIds = childOffenceIds ?: emptyList(),
   )
 
-fun transform(offenceScheduleParts: List<OffenceSchedulePart>?): List<ScheduleDetails>? =
-  if (offenceScheduleParts == null) emptyList()
-  else offenceScheduleParts?.groupBy { it.schedulePart.schedule }?.map {
+fun transform(offenceScheduleParts: List<OffenceSchedulePart>?): List<ScheduleDetails> =
+  offenceScheduleParts?.groupBy { it.schedulePart.schedule }?.map {
     ScheduleDetails(
       id = it.key.id,
       act = it.key.act,
@@ -44,7 +45,7 @@ fun transform(offenceScheduleParts: List<OffenceSchedulePart>?): List<ScheduleDe
       url = it.key.url,
       schedulePartNumbers = it.value.map { offenceSchedulePart -> offenceSchedulePart.schedulePart.partNumber }
     )
-  }
+  } ?: emptyList()
 
 fun transform(sdrsOffence: SdrsOffence): Offence = Offence(
   code = sdrsOffence.code,
@@ -122,3 +123,13 @@ fun transform(it: EntitySchedule) = ModelSchedule(
   code = it.code,
   url = it.url,
 )
+
+fun transform(osp: OffenceSchedulePart, changeType: ChangeType) =
+  OffenceToScheduleHistory(
+    scheduleCode = osp.schedulePart.schedule.code,
+    schedulePartId = osp.schedulePart.id,
+    schedulePartNumber = osp.schedulePart.partNumber,
+    offenceId = osp.offence.id,
+    offenceCode = osp.offence.code,
+    changeType = changeType,
+  )

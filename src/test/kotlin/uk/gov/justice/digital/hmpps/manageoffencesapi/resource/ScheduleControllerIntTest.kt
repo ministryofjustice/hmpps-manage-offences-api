@@ -2,21 +2,30 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.DELETE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToScheduleHistoryRepository
 
 class ScheduleControllerIntTest : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var offenceToScheduleHistoryRepository: OffenceToScheduleHistoryRepository
 
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/insert-offence-data-with-children.sql"
   )
-  fun `Create schedule with 3 parts, link offence that has children, then unlink the offence and check all children are unlinked`() {
+  fun `Create schedule with 3 parts, link offence that has children, then unlink the offence and check all children are unlinked and that the history is created`() {
     val allSchedules = getAllSchedules()
     val schedule13Id = allSchedules!!.filter { it.code == "13" }[0].id
     val scheduleBefore = getScheduleDetails(schedule13Id)
@@ -66,9 +75,29 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       )
     )
     val scheduleAfterUnlinkingOffences = getScheduleDetails(schedule13Id)
-
     assertThatScheduleMatches(scheduleAfterUnlinkingOffences, SCHEDULE)
+    val history = offenceToScheduleHistoryRepository.findAll()
+    assertThat(history)
+      .usingRecursiveComparison()
+      .ignoringCollectionOrder()
+      .ignoringFields("id", "createdDate")
+      .isEqualTo(
+        allAFOffences.map { transformToHistory(it, INSERT, firstSchedulePartId, 1) }
+          .plus(allAFOffences.map { transformToHistory(it, DELETE, firstSchedulePartId, 1) })
+          .plus(allAHOffences.map { transformToHistory(it, INSERT, secondSchedulePartId, 2) })
+          .plus(allAHOffences.map { transformToHistory(it, DELETE, secondSchedulePartId, 2) })
+      )
   }
+
+  private fun transformToHistory(offence: Offence, changeType: ChangeType, schedulePartId: Long, partNumber: Int) =
+    OffenceToScheduleHistory(
+      scheduleCode = SCHEDULE.code,
+      schedulePartId = schedulePartId,
+      schedulePartNumber = partNumber,
+      offenceId = offence.id,
+      offenceCode = offence.code!!,
+      changeType = changeType,
+    )
 
   private fun assertThatScheduleMatches(scheduleBefore: Schedule?, schedule: Schedule) {
     assertThat(scheduleBefore)

@@ -195,7 +195,7 @@ class OffenceServiceTest {
     whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
       matchingOffences
     )
-    whenever(offenceRepository.findByParentOffenceIdIn(matchingOffences.map { it.id })).thenReturn(
+    whenever(offenceRepository.findByParentOffenceIdIn(matchingOffences.map { it.id }.toSet())).thenReturn(
       listOf(
         OFFENCE_A123993,
         OFFENCE_A123995,

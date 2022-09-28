@@ -28,7 +28,7 @@ class OffenceService(
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
     val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code)
-    val offenceIds = offences.map { it.id }
+    val offenceIds = offences.map { it.id }.toSet()
     val childrenByParentId = offenceRepository.findByParentOffenceIdIn(offenceIds).groupBy { it.parentOffenceId }
     val matchingOffences = offences.map { it ->
       val children = childrenByParentId[it.id]

@@ -5,9 +5,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.DELETE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToScheduleHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
 import javax.persistence.EntityExistsException
@@ -20,6 +24,7 @@ class ScheduleService(
   private val schedulePartRepository: SchedulePartRepository,
   private val offenceSchedulePartRepository: OffenceSchedulePartRepository,
   private val offenceRepository: OffenceRepository,
+  private val offenceToScheduleHistoryRepository: OffenceToScheduleHistoryRepository,
 ) {
   @Transactional
   fun createSchedule(schedule: ModelSchedule) {
@@ -44,17 +49,19 @@ class ScheduleService(
     Any offences in @offenceIds that are themselves children will be ignored
    */
   @Transactional
-  fun linkOffences(schedulePartId: Long, offenceIds: List<Long>) {
+  fun linkOffences(schedulePartId: Long, offenceIds: Set<Long>) {
     val schedulePart = schedulePartRepository.findById(schedulePartId)
       .orElseThrow { EntityNotFoundException("No schedulePart exists for $schedulePartId") }
 
-    val childOffenceIds = offenceRepository.findByParentOffenceIdIn(offenceIds).map { it.id }
+    val childOffences = offenceRepository.findByParentOffenceIdIn(offenceIds)
+    val childOffenceIds = childOffences.map { it.id }.toSet()
 
-    val offences = offenceRepository
-      .findAllById(offenceIds.plus(childOffenceIds).distinct())
-      .filter { it.parentCode == null || childOffenceIds.contains(it.id) }
+    val parentOffences = offenceRepository.findAllById(offenceIds.minus(childOffenceIds))
+      .filter { it.parentCode == null }
 
-    offenceSchedulePartRepository.saveAll(
+    val offences = parentOffences.plus(childOffences)
+
+    val offenceScheduleParts = offenceSchedulePartRepository.saveAll(
       offences.map { offence ->
         OffenceSchedulePart(
           schedulePart = schedulePart,
@@ -62,6 +69,7 @@ class ScheduleService(
         )
       }
     )
+    offenceToScheduleHistoryRepository.saveAll(offenceScheduleParts.map { transform(it, INSERT) })
   }
 
   /*
@@ -70,25 +78,27 @@ class ScheduleService(
    */
   @Transactional
   fun unlinkOffences(offenceSchedulePartIds: List<SchedulePartIdAndOffenceId>) {
-
     val allOffenceIds = offenceSchedulePartIds.map { it.offenceId }
     val parentOffenceIds = offenceRepository.findAllById(allOffenceIds).filter { it.parentCode == null }.map { it.id }
 
     offenceSchedulePartIds.forEach {
       if (!parentOffenceIds.contains(it.offenceId)) return@forEach // ignore any children that have been directly passed in
+      deleteSchedulePart(it.schedulePartId, it.offenceId)
 
       val childOffenceIds = offenceRepository.findByParentOffenceId(it.offenceId).map { child -> child.id }
-      offenceSchedulePartRepository.deleteBySchedulePartIdAndOffenceId(
-        it.schedulePartId,
-        it.offenceId
-      )
-      childOffenceIds.forEach { childOffenceId ->
-        offenceSchedulePartRepository.deleteBySchedulePartIdAndOffenceId(
-          it.schedulePartId,
-          childOffenceId
-        )
-      }
+      childOffenceIds.forEach { childOffenceId -> deleteSchedulePart(it.schedulePartId, childOffenceId) }
     }
+  }
+
+  private fun deleteSchedulePart(schedulePartId: Long, offenceId: Long) {
+    saveToHistory(schedulePartId, offenceId, DELETE)
+    offenceSchedulePartRepository.deleteBySchedulePartIdAndOffenceId(schedulePartId, offenceId)
+  }
+
+  private fun saveToHistory(schedulePartId: Long, offenceId: Long, changeType: ChangeType) {
+    val osp = offenceSchedulePartRepository.findOneBySchedulePartIdAndOffenceId(schedulePartId, offenceId)
+      .orElseThrow { EntityNotFoundException("No offenceSchedulePart exists for $schedulePartId and $offenceId") }
+    offenceToScheduleHistoryRepository.save(transform(osp, changeType))
   }
 
   @Transactional(readOnly = true)

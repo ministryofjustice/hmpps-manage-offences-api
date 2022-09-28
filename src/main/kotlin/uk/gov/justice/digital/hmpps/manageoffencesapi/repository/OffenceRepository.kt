@@ -16,5 +16,5 @@ interface OffenceRepository : JpaRepository<Offence, Long> {
 
   fun findByParentOffenceId(parentOffenceId: Long): List<Offence>
 
-  fun findByParentOffenceIdIn(parentOffenceIds: List<Long>): List<Offence>
+  fun findByParentOffenceIdIn(parentOffenceIds: Set<Long>): List<Offence>
 }
