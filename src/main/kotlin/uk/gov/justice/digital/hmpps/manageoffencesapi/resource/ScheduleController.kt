@@ -40,7 +40,7 @@ class ScheduleController(
     @Parameter(required = true, example = "1000011", description = "The schedule part ID")
     @PathVariable("schedulePartId")
     schedulePartId: Long,
-    @RequestBody offenceIds: List<Long>
+    @RequestBody offenceIds: Set<Long>
   ) {
     log.info("Request received to link offences to schedule part {}", schedulePartId)
     scheduleService.linkOffences(schedulePartId, offenceIds)
