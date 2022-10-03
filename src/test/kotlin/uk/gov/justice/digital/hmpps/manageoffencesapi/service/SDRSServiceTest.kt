@@ -35,6 +35,7 @@ class SDRSServiceTest {
   private val offenceSchedulePartRepository = mock<OffenceSchedulePartRepository>()
   private val adminService = mock<AdminService>()
   private val offenceService = mock<OffenceService>()
+  private val scheduleService = mock<ScheduleService>()
   private val sdrsApiClient = mock<SDRSApiClient>()
 
   private val sdrsService = SDRSService(
@@ -44,6 +45,7 @@ class SDRSServiceTest {
     sdrsLoadResultHistoryRepository,
     offenceSchedulePartRepository,
     offenceService,
+    scheduleService,
     adminService
   )
 

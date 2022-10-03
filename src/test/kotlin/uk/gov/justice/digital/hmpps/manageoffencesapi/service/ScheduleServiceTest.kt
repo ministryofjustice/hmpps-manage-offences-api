@@ -7,20 +7,26 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.DELETE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToScheduleHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
+import java.time.LocalDateTime
 import java.util.Optional
 
 class ScheduleServiceTest {
@@ -29,6 +35,9 @@ class ScheduleServiceTest {
   private val offenceSchedulePartRepository = mock<OffenceSchedulePartRepository>()
   private val offenceRepository = mock<OffenceRepository>()
   private val offenceToScheduleHistoryRepository = mock<OffenceToScheduleHistoryRepository>()
+  private val nomisScheduleMappingRepository = mock<NomisScheduleMappingRepository>()
+  private val adminService = mock<AdminService>()
+  private val prisonApiClient = mock<PrisonApiClient>()
 
   private val scheduleService =
     ScheduleService(
@@ -37,6 +46,9 @@ class ScheduleServiceTest {
       offenceSchedulePartRepository,
       offenceRepository,
       offenceToScheduleHistoryRepository,
+      nomisScheduleMappingRepository,
+      adminService,
+      prisonApiClient
     )
 
   private inline fun <reified T : Any> argumentCaptor(): ArgumentCaptor<T> = ArgumentCaptor.forClass(T::class.java)
@@ -124,14 +136,7 @@ class ScheduleServiceTest {
       .ignoringCollectionOrder()
       .isEqualTo(
         listOf(
-          OffenceToScheduleHistory(
-            offenceCode = OFFENCE_A123AA6.code,
-            changeType = INSERT,
-            schedulePartId = SCHEDULE_PART_1.id,
-            schedulePartNumber = SCHEDULE_PART_1.partNumber,
-            scheduleCode = SCHEDULE.code,
-            offenceId = OFFENCE_A123AA6.id,
-          )
+          OSH_A123AA6_INSERT
         )
       )
   }
@@ -183,6 +188,40 @@ class ScheduleServiceTest {
       OFFENCE_B123AA6A_CHILD.id
     )
   }
+
+  @Test
+  fun `No Offence to schedule mappings are sent to NOMIS if none exist`() {
+    whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(true)
+    whenever(offenceToScheduleHistoryRepository.findByPushedToNomisOrderByCreatedDateDesc(false)).thenReturn(emptyList())
+
+    scheduleService.deltaSyncScheduleMappingsToNomis()
+
+    verifyNoInteractions(nomisScheduleMappingRepository)
+    verifyNoInteractions(prisonApiClient)
+  }
+
+  @Test
+  fun `Offence to schedule mappings are sent to NOMIS`() {
+    val mappingsToPush = listOf(OSH_A123AA6_INSERT, OSH_A123AA6_DELETE, OSH_B123AA6_INSERT, OSH_B123AA6_DELETE)
+    val mappingsByScheduleAndOffence = mappingsToPush.groupBy { Pair(it.schedulePartId, it.offenceCode) }
+    whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(true)
+    whenever(offenceToScheduleHistoryRepository.findByPushedToNomisOrderByCreatedDateDesc(false)).thenReturn(mappingsToPush)
+    whenever(nomisScheduleMappingRepository.findAll()).thenReturn(NOMIS_SCHEDULE_MAPPINGS)
+
+    scheduleService.deltaSyncScheduleMappingsToNomis()
+
+    verify(prisonApiClient, times(1)).linkToSchedule(convertToNomisMapping(mappingsByScheduleAndOffence.values, INSERT))
+    verify(prisonApiClient, times(1)).unlinkFromSchedule(convertToNomisMapping(mappingsByScheduleAndOffence.values, DELETE))
+  }
+
+  private fun convertToNomisMapping(
+    mappingsByScheduleAndOffence: Collection<List<OffenceToScheduleHistory>>,
+    changeType: ChangeType
+  ) = mappingsByScheduleAndOffence
+    .filter { it.first().changeType == changeType }
+    .map { mapping ->
+      transform(mapping.first(), NOMIS_SCHEDULE_MAPPINGS)
+    }
 
   companion object {
     private val SCHEDULE = Schedule(
@@ -236,6 +275,53 @@ class ScheduleServiceTest {
     private val OSP_B123AA6A_CHILD = OffenceSchedulePart(
       schedulePart = SCHEDULE_PART_1,
       offence = OFFENCE_B123AA6A_CHILD
+    )
+
+    private val OSH_A123AA6_DELETE = OffenceToScheduleHistory(
+      offenceCode = OFFENCE_A123AA6.code,
+      changeType = DELETE,
+      schedulePartId = SCHEDULE_PART_1.id,
+      schedulePartNumber = SCHEDULE_PART_1.partNumber,
+      scheduleCode = SCHEDULE.code,
+      offenceId = OFFENCE_A123AA6.id,
+      createdDate = LocalDateTime.of(2022, 10, 3, 9, 1, 0, 0)
+    )
+
+    private val OSH_A123AA6_INSERT = OffenceToScheduleHistory(
+      offenceCode = OFFENCE_A123AA6.code,
+      changeType = INSERT,
+      schedulePartId = SCHEDULE_PART_1.id,
+      schedulePartNumber = SCHEDULE_PART_1.partNumber,
+      scheduleCode = SCHEDULE.code,
+      offenceId = OFFENCE_A123AA6.id,
+      createdDate = LocalDateTime.of(2022, 10, 3, 9, 2, 0, 0)
+    )
+
+    private val OSH_B123AA6_INSERT = OffenceToScheduleHistory(
+      offenceCode = OFFENCE_B123AA6.code,
+      changeType = INSERT,
+      schedulePartId = SCHEDULE_PART_1.id,
+      schedulePartNumber = SCHEDULE_PART_1.partNumber,
+      scheduleCode = SCHEDULE.code,
+      offenceId = OFFENCE_B123AA6.id,
+      createdDate = LocalDateTime.of(2022, 10, 3, 9, 2, 0, 0)
+    )
+
+    private val OSH_B123AA6_DELETE = OffenceToScheduleHistory(
+      offenceCode = OFFENCE_A123AA6.code,
+      changeType = DELETE,
+      schedulePartId = SCHEDULE_PART_1.id,
+      schedulePartNumber = SCHEDULE_PART_1.partNumber,
+      scheduleCode = SCHEDULE.code,
+      offenceId = OFFENCE_B123AA6.id,
+      createdDate = LocalDateTime.of(2022, 10, 3, 9, 3, 0, 0)
+    )
+
+    private val NOMIS_SCHEDULE_MAPPINGS = listOf(
+      NomisScheduleMapping(
+        schedulePartId = SCHEDULE_PART_1.id,
+        nomisScheduleName = "NOMIS_13"
+      )
     )
   }
 }

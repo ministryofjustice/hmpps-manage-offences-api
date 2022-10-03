@@ -45,6 +45,7 @@ class SDRSService(
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
   private val offenceSchedulePartRepository: OffenceSchedulePartRepository,
   private val offenceService: OffenceService,
+  private val scheduleService: ScheduleService,
   private val adminService: AdminService,
 ) {
   @Scheduled(cron = "0 0 */1 * * *")
@@ -59,7 +60,7 @@ class SDRSService(
     loadAllOffences()
   }
 
-  @Scheduled(cron = "0 */20 * * * *")
+  @Scheduled(cron = "0 */10 * * * *")
   @SchedulerLock(name = "deltaSynchroniseWithSdrsLock")
   @Transactional
   fun deltaSynchroniseWithSdrs() {
@@ -72,6 +73,7 @@ class SDRSService(
 
     log.info("The 'Synchronise with SDRS' job is checking for any updates since the last load")
     loadOffenceUpdates(sdrsLoadResults)
+    scheduleService.deltaSyncScheduleMappingsToNomis()
   }
 
   private fun loadAllOffences() {
@@ -163,8 +165,8 @@ class SDRSService(
   private fun loadOffenceUpdates(sdrsLoadResults: List<SdrsLoadResult>) {
     val lastLoadDateByAlphaChar = sdrsLoadResults.groupBy({ it.lastSuccessfulLoadDate }, { it.alphaChar.single() })
     val loadDate = LocalDateTime.now()
+    val deltaSyncToNomisEnabled = adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)
     lastLoadDateByAlphaChar.forEach { (lastSuccessfulLoadDate, affectedCaches) ->
-      val deltaSyncToNomisEnabled = adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)
       if (lastSuccessfulLoadDate == null) {
         // This code should never be called - it will only run if the initial full load failed on any of the alpha chars
         fullLoadOfAlphaCharDuringUpdate(affectedCaches, loadDate, deltaSyncToNomisEnabled)

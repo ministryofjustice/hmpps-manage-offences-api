@@ -4,11 +4,15 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.DELETE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToScheduleHistoryRepository
@@ -25,6 +29,9 @@ class ScheduleService(
   private val offenceSchedulePartRepository: OffenceSchedulePartRepository,
   private val offenceRepository: OffenceRepository,
   private val offenceToScheduleHistoryRepository: OffenceToScheduleHistoryRepository,
+  private val nomisScheduleMappingRepository: NomisScheduleMappingRepository,
+  private val adminService: AdminService,
+  private val prisonApiClient: PrisonApiClient,
 ) {
   @Transactional
   fun createSchedule(schedule: ModelSchedule) {
@@ -125,6 +132,35 @@ class ScheduleService(
       transform(it)
     }
   }
+
+  fun deltaSyncScheduleMappingsToNomis() {
+    if (!adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)) return
+
+    val mappingsToPush = offenceToScheduleHistoryRepository.findByPushedToNomisOrderByCreatedDateDesc(false)
+    if (mappingsToPush.isEmpty()) return
+
+    val nomisScheduleMappings = nomisScheduleMappingRepository.findAll()
+    val mappingsByScheduleAndOffence = mappingsToPush.groupBy { Pair(it.schedulePartId, it.offenceCode) }
+    val mappingDtosToInsert = convertToNomisMapping(mappingsByScheduleAndOffence.values, nomisScheduleMappings, INSERT)
+    val mappingDtosToDelete = convertToNomisMapping(mappingsByScheduleAndOffence.values, nomisScheduleMappings, DELETE)
+
+    prisonApiClient.linkToSchedule(mappingDtosToInsert)
+    prisonApiClient.unlinkFromSchedule(mappingDtosToDelete)
+
+    offenceToScheduleHistoryRepository.saveAll(
+      mappingsToPush.map { it.copy(pushedToNomis = true) }
+    )
+  }
+
+  private fun convertToNomisMapping(
+    mappingsByScheduleAndOffence: Collection<List<OffenceToScheduleHistory>>,
+    nomisScheduleMappings: List<NomisScheduleMapping>,
+    changeType: ChangeType
+  ) = mappingsByScheduleAndOffence
+    .filter { it.first().changeType == changeType }
+    .map { mapping ->
+      transform(mapping.first(), nomisScheduleMappings)
+    }
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

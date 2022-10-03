@@ -5,26 +5,27 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiHoCode
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.ApiOffence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 
 @Service
 class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: WebClient) {
   private inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
   private val log = LoggerFactory.getLogger(this::class.java)
 
-  fun findByOffenceCodeStartsWith(offenceCode: String, pageNumber: Int): RestResponsePage<PrisonApiOffence> {
+  fun findByOffenceCodeStartsWith(offenceCode: String, pageNumber: Int): RestResponsePage<ApiOffence> {
     log.info("Fetching all offences from prison-api for page number $pageNumber")
     return webClient.get()
       .uri("/api/offences/code/$offenceCode?page=$pageNumber&size=1000&sort=code,ASC")
       .retrieve()
-      .bodyToMono(typeReference<RestResponsePage<PrisonApiOffence>>())
+      .bodyToMono(typeReference<RestResponsePage<ApiOffence>>())
       .block()!!
   }
 
-  fun createHomeOfficeCodes(prisonApiHoCode: List<PrisonApiHoCode>) {
+  fun createHomeOfficeCodes(prisonApiHoCode: List<HoCode>) {
     log.info("Making prison-api call to create home office offence codes")
     webClient.post()
       .uri("/api/offences/ho-code")
@@ -34,7 +35,7 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .block()
   }
 
-  fun createStatutes(prisonApiStatute: List<PrisonApiStatute>) {
+  fun createStatutes(prisonApiStatute: List<Statute>) {
     log.info("Making prison-api call to create statutes")
     webClient.post()
       .uri("/api/offences/statute")
@@ -44,7 +45,7 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .block()
   }
 
-  fun createOffences(prisonApiOffence: List<PrisonApiOffence>) {
+  fun createOffences(prisonApiOffence: List<ApiOffence>) {
     log.info("Making prison-api call to create offences")
     webClient.post()
       .uri("/api/offences/offence")
@@ -54,11 +55,31 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .block()
   }
 
-  fun updateOffences(updatedNomisOffences: List<PrisonApiOffence>) {
+  fun updateOffences(updatedNomisOffences: List<ApiOffence>) {
     log.info("Making prison-api call to update offences")
     webClient.put()
       .uri("/api/offences/offence")
       .bodyValue(updatedNomisOffences)
+      .retrieve()
+      .toBodilessEntity()
+      .block()
+  }
+
+  fun linkToSchedule(offenceToScheduleMappingDtos: List<OffenceToScheduleMappingDto>) {
+    log.info("Making prison-api call to link offences to schedules")
+    webClient.post()
+      .uri("/api/offences/link-to-schedule")
+      .bodyValue(offenceToScheduleMappingDtos)
+      .retrieve()
+      .toBodilessEntity()
+      .block()
+  }
+
+  fun unlinkFromSchedule(offenceToScheduleMappingDtos: List<OffenceToScheduleMappingDto>) {
+    log.info("Making prison-api call to unlink offences from schedules")
+    webClient.post()
+      .uri("/api/offences/unlink-from-schedule")
+      .bodyValue(offenceToScheduleMappingDtos)
       .retrieve()
       .toBodilessEntity()
       .block()
