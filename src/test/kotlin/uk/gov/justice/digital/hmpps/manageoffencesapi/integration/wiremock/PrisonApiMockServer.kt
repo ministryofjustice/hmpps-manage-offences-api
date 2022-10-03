@@ -113,12 +113,12 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
             "offenceCode" : "XX99002",
             "schedule" : "SCHEDULE_13"
           } ]
-          """.trimIndent()
+    """.trimIndent()
     private val unlinkOffenceRequest = """ [ {                         
             "offenceCode" : "XX99001",
             "schedule" : "SCHEDULE_13"
           } ]
-          """.trimIndent()
+    """.trimIndent()
     private val nomisOffences = """ {
                   "content": [
                     {
