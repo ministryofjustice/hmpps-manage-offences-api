@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
@@ -8,6 +9,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart as EntitySchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle as ModelFeatureToggle
@@ -133,3 +135,11 @@ fun transform(osp: OffenceSchedulePart, changeType: ChangeType) =
     offenceCode = osp.offence.code,
     changeType = changeType,
   )
+
+fun transform(
+  mapping: OffenceToScheduleHistory,
+  nomisScheduleMappings: List<NomisScheduleMapping>
+) = OffenceToScheduleMappingDto(
+  offenceCode = mapping.offenceCode,
+  schedule = nomisScheduleMappings.first { nomisSchedule -> nomisSchedule.schedulePartId == mapping.schedulePartId }.nomisScheduleName
+)

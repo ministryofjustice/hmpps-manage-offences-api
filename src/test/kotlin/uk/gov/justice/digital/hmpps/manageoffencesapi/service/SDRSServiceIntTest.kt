@@ -205,8 +205,6 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     sdrsService.fullSynchroniseWithSdrs()
 
     val offences = offenceRepository.findAll()
-    val statusRecords = sdrsLoadResultRepository.findAll()
-    val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
     val parentOne = offences.first { it.code == "AX99001" }
     val parentTwo = offences.first { it.code == "AX99002" }
 
@@ -276,5 +274,20 @@ class SDRSServiceIntTest : IntegrationTestBase() {
           ),
         )
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-to-schedule-history.sql",
+    "classpath:test_data/set-delta-sync-toggle.sql",
+  )
+  fun `Send offence-to-schedule mappings to NOMIS `() {
+    sdrsApiMockServer.stubControlTableRequest()
+    sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    prisonApiMockServer.stubLinkOffence()
+    prisonApiMockServer.stubUnlinkOffence()
+
+    sdrsService.deltaSynchroniseWithSdrs()
   }
 }

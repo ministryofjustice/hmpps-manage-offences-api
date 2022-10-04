@@ -85,8 +85,40 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
+  fun stubLinkOffence(): StubMapping =
+    stubFor(
+      WireMock.post("/api/offences/link-to-schedule")
+        .withRequestBody(WireMock.equalToJson(linkOffenceRequest))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+        )
+    )
+
+  fun stubUnlinkOffence(): StubMapping =
+    stubFor(
+      WireMock.post("/api/offences/unlink-from-schedule")
+        .withRequestBody(WireMock.equalToJson(unlinkOffenceRequest))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+        )
+    )
+
   companion object {
     private const val WIREMOCK_PORT = 8333
+    private val linkOffenceRequest = """ [ {                         
+            "offenceCode" : "XX99002",
+            "schedule" : "SCHEDULE_13"
+          } ]
+    """.trimIndent()
+    private val unlinkOffenceRequest = """ [ {                         
+            "offenceCode" : "XX99001",
+            "schedule" : "SCHEDULE_13"
+          } ]
+    """.trimIndent()
     private val nomisOffences = """ {
                   "content": [
                     {

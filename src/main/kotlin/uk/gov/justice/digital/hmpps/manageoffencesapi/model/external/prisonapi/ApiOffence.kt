@@ -1,12 +1,12 @@
-package uk.gov.justice.digital.hmpps.manageoffencesapi.model
+package uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi
 
 import java.time.LocalDate
 
-data class PrisonApiOffence(
+data class ApiOffence(
   val code: String,
   val description: String,
-  val statuteCode: PrisonApiStatute,
-  val hoCode: PrisonApiHoCode? = null,
+  val statuteCode: Statute,
+  val hoCode: HoCode? = null,
   val severityRanking: String? = null,
   val activeFlag: String,
   val listSequence: Int? = null,

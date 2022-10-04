@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
 
 @Repository
-interface OffenceToScheduleHistoryRepository : JpaRepository<OffenceToScheduleHistory, Long>
+interface OffenceToScheduleHistoryRepository : JpaRepository<OffenceToScheduleHistory, Long> {
+  fun findByPushedToNomisOrderByCreatedDateDesc(pushedToNomis: Boolean): List<OffenceToScheduleHistory>
+}

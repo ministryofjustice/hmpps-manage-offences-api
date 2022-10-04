@@ -14,9 +14,9 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiOffence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.ApiOffence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
@@ -285,32 +285,32 @@ class OffenceServiceTest {
     )
 
     private val NOMIS_STATUTE_B123 =
-      PrisonApiStatute(code = "B123", description = "Statute desc", activeFlag = "Y", legislatingBodyCode = "UK")
+      Statute(code = "B123", description = "Statute desc", activeFlag = "Y", legislatingBodyCode = "UK")
     private val NOMIS_STATUTE_A123 =
-      PrisonApiStatute(code = "A123", description = "Statute 993", activeFlag = "Y", legislatingBodyCode = "UK")
+      Statute(code = "A123", description = "Statute 993", activeFlag = "Y", legislatingBodyCode = "UK")
     private val NOMIS_STATUTE_A167 =
-      PrisonApiStatute(code = "A167", description = "A167", activeFlag = "Y", legislatingBodyCode = "UK")
-    private val NOMIS_OFFENCE_A1234AAA = PrisonApiOffence(
+      Statute(code = "A167", description = "A167", activeFlag = "Y", legislatingBodyCode = "UK")
+    private val NOMIS_OFFENCE_A1234AAA = ApiOffence(
       code = "A1234AAA",
       description = "A Desc 1",
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y"
     )
 
-    private val NOMIS_OFFENCE_A123AA6 = PrisonApiOffence(
+    private val NOMIS_OFFENCE_A123AA6 = ApiOffence(
       code = "A123AA6",
       description = "A Desc 1",
       statuteCode = NOMIS_STATUTE_A123,
       severityRanking = "99",
       activeFlag = "Y"
     )
-    private val NOMIS_OFFENCE_A1234AAA_UPDATED = PrisonApiOffence(
+    private val NOMIS_OFFENCE_A1234AAA_UPDATED = ApiOffence(
       code = "A1234AAA",
       description = "A NEW DESC",
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y"
     )
-    private val NOMIS_OFFENCE_A1234AAB = PrisonApiOffence(
+    private val NOMIS_OFFENCE_A1234AAB = ApiOffence(
       code = "A1234AAB",
       description = "A Desc 2",
       statuteCode = NOMIS_STATUTE_A123,
@@ -359,8 +359,8 @@ class OffenceServiceTest {
 
     private fun createPrisonApiOffencesResponse(
       totalPages: Int,
-      content: List<PrisonApiOffence>
-    ): RestResponsePage<PrisonApiOffence> = RestResponsePage(
+      content: List<ApiOffence>
+    ): RestResponsePage<ApiOffence> = RestResponsePage(
       content = content,
       number = 1,
       size = 1,
