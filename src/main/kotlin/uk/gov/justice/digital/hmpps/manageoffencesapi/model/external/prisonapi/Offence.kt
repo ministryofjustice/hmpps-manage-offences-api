@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi
 
 import java.time.LocalDate
 
-data class ApiOffence(
+data class Offence(
   val code: String,
   val description: String,
   val statuteCode: Statute,

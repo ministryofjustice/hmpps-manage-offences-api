@@ -8,6 +8,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
@@ -15,11 +16,11 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.DELETE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
@@ -202,26 +203,54 @@ class ScheduleServiceTest {
 
   @Test
   fun `Offence to schedule mappings are sent to NOMIS`() {
-    val mappingsToPush = listOf(OSH_A123AA6_INSERT, OSH_A123AA6_DELETE, OSH_B123AA6_INSERT, OSH_B123AA6_DELETE)
-    val mappingsByScheduleAndOffence = mappingsToPush.groupBy { Pair(it.schedulePartId, it.offenceCode) }
+    val mappingsToPush = listOf(OSH_A123AA6_INSERT, OSH_A123AA6_DELETE, OSH_B123AA6_DELETE, OSH_B123AA6_INSERT)
     whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(true)
-    whenever(offenceToScheduleHistoryRepository.findByPushedToNomisOrderByCreatedDateDesc(false)).thenReturn(mappingsToPush)
+    whenever(offenceToScheduleHistoryRepository.findByPushedToNomisOrderByCreatedDateDesc(false)).thenReturn(
+      mappingsToPush
+    )
     whenever(nomisScheduleMappingRepository.findAll()).thenReturn(NOMIS_SCHEDULE_MAPPINGS)
 
     scheduleService.deltaSyncScheduleMappingsToNomis()
 
-    verify(prisonApiClient, times(1)).linkToSchedule(convertToNomisMapping(mappingsByScheduleAndOffence.values, INSERT))
-    verify(prisonApiClient, times(1)).unlinkFromSchedule(convertToNomisMapping(mappingsByScheduleAndOffence.values, DELETE))
+    verify(prisonApiClient, times(1)).linkToSchedule(
+      listOf(
+        OffenceToScheduleMappingDto(
+          offenceCode = "A123AA6",
+          schedule = "NOMIS_13"
+        )
+      )
+    )
+    verify(prisonApiClient, times(1)).unlinkFromSchedule(
+      listOf(
+        OffenceToScheduleMappingDto(
+          offenceCode = "B123AA6",
+          schedule = "NOMIS_13"
+        )
+      )
+    )
   }
 
-  private fun convertToNomisMapping(
-    mappingsByScheduleAndOffence: Collection<List<OffenceToScheduleHistory>>,
-    changeType: ChangeType
-  ) = mappingsByScheduleAndOffence
-    .filter { it.first().changeType == changeType }
-    .map { mapping ->
-      transform(mapping.first(), NOMIS_SCHEDULE_MAPPINGS)
-    }
+  @Test
+  fun `Prison-api is not called to unlink offence-to-schedule if there are no delete mappings`() {
+    val mappingsToPush = listOf(OSH_A123AA6_INSERT, OSH_A123AA6_DELETE)
+    whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(true)
+    whenever(offenceToScheduleHistoryRepository.findByPushedToNomisOrderByCreatedDateDesc(false)).thenReturn(
+      mappingsToPush
+    )
+    whenever(nomisScheduleMappingRepository.findAll()).thenReturn(NOMIS_SCHEDULE_MAPPINGS)
+
+    scheduleService.deltaSyncScheduleMappingsToNomis()
+
+    verify(prisonApiClient, times(1)).linkToSchedule(
+      listOf(
+        OffenceToScheduleMappingDto(
+          offenceCode = "A123AA6",
+          schedule = "NOMIS_13"
+        )
+      )
+    )
+    verifyNoMoreInteractions(prisonApiClient)
+  }
 
   companion object {
     private val SCHEDULE = Schedule(
@@ -308,7 +337,7 @@ class ScheduleServiceTest {
     )
 
     private val OSH_B123AA6_DELETE = OffenceToScheduleHistory(
-      offenceCode = OFFENCE_A123AA6.code,
+      offenceCode = OFFENCE_B123AA6.code,
       changeType = DELETE,
       schedulePartId = SCHEDULE_PART_1.id,
       schedulePartNumber = SCHEDULE_PART_1.partNumber,

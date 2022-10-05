@@ -135,7 +135,7 @@ class ScheduleService(
 
   fun deltaSyncScheduleMappingsToNomis() {
     if (!adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)) return
-
+    log.info("Starting job to synchronise offence-to-schedule mappings with NOMIS")
     val mappingsToPush = offenceToScheduleHistoryRepository.findByPushedToNomisOrderByCreatedDateDesc(false)
     if (mappingsToPush.isEmpty()) return
 
@@ -144,8 +144,8 @@ class ScheduleService(
     val mappingDtosToInsert = convertToNomisMapping(mappingsByScheduleAndOffence.values, nomisScheduleMappings, INSERT)
     val mappingDtosToDelete = convertToNomisMapping(mappingsByScheduleAndOffence.values, nomisScheduleMappings, DELETE)
 
-    prisonApiClient.linkToSchedule(mappingDtosToInsert)
-    prisonApiClient.unlinkFromSchedule(mappingDtosToDelete)
+    if (mappingDtosToInsert.isNotEmpty()) prisonApiClient.linkToSchedule(mappingDtosToInsert)
+    if (mappingDtosToDelete.isNotEmpty()) prisonApiClient.unlinkFromSchedule(mappingDtosToDelete)
 
     offenceToScheduleHistoryRepository.saveAll(
       mappingsToPush.map { it.copy(pushedToNomis = true) }
