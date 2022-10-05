@@ -6,8 +6,8 @@ import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.ApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 
@@ -16,12 +16,12 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
   private inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
   private val log = LoggerFactory.getLogger(this::class.java)
 
-  fun findByOffenceCodeStartsWith(offenceCode: String, pageNumber: Int): RestResponsePage<ApiOffence> {
+  fun findByOffenceCodeStartsWith(offenceCode: String, pageNumber: Int): RestResponsePage<Offence> {
     log.info("Fetching all offences from prison-api for page number $pageNumber")
     return webClient.get()
       .uri("/api/offences/code/$offenceCode?page=$pageNumber&size=1000&sort=code,ASC")
       .retrieve()
-      .bodyToMono(typeReference<RestResponsePage<ApiOffence>>())
+      .bodyToMono(typeReference<RestResponsePage<Offence>>())
       .block()!!
   }
 
@@ -45,17 +45,17 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .block()
   }
 
-  fun createOffences(prisonApiOffence: List<ApiOffence>) {
+  fun createOffences(offences: List<Offence>) {
     log.info("Making prison-api call to create offences")
     webClient.post()
       .uri("/api/offences/offence")
-      .bodyValue(prisonApiOffence)
+      .bodyValue(offences)
       .retrieve()
       .toBodilessEntity()
       .block()
   }
 
-  fun updateOffences(updatedNomisOffences: List<ApiOffence>) {
+  fun updateOffences(updatedNomisOffences: List<Offence>) {
     log.info("Making prison-api call to update offences")
     webClient.put()
       .uri("/api/offences/offence")

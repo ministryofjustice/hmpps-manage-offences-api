@@ -15,7 +15,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.ApiOffence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence as PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
@@ -290,27 +290,27 @@ class OffenceServiceTest {
       Statute(code = "A123", description = "Statute 993", activeFlag = "Y", legislatingBodyCode = "UK")
     private val NOMIS_STATUTE_A167 =
       Statute(code = "A167", description = "A167", activeFlag = "Y", legislatingBodyCode = "UK")
-    private val NOMIS_OFFENCE_A1234AAA = ApiOffence(
+    private val NOMIS_OFFENCE_A1234AAA = PrisonApiOffence(
       code = "A1234AAA",
       description = "A Desc 1",
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y"
     )
 
-    private val NOMIS_OFFENCE_A123AA6 = ApiOffence(
+    private val NOMIS_OFFENCE_A123AA6 = PrisonApiOffence(
       code = "A123AA6",
       description = "A Desc 1",
       statuteCode = NOMIS_STATUTE_A123,
       severityRanking = "99",
       activeFlag = "Y"
     )
-    private val NOMIS_OFFENCE_A1234AAA_UPDATED = ApiOffence(
+    private val NOMIS_OFFENCE_A1234AAA_UPDATED = PrisonApiOffence(
       code = "A1234AAA",
       description = "A NEW DESC",
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y"
     )
-    private val NOMIS_OFFENCE_A1234AAB = ApiOffence(
+    private val NOMIS_OFFENCE_A1234AAB = PrisonApiOffence(
       code = "A1234AAB",
       description = "A Desc 2",
       statuteCode = NOMIS_STATUTE_A123,
@@ -359,8 +359,8 @@ class OffenceServiceTest {
 
     private fun createPrisonApiOffencesResponse(
       totalPages: Int,
-      content: List<ApiOffence>
-    ): RestResponsePage<ApiOffence> = RestResponsePage(
+      content: List<PrisonApiOffence>
+    ): RestResponsePage<PrisonApiOffence> = RestResponsePage(
       content = content,
       number = 1,
       size = 1,
