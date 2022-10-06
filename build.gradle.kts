@@ -13,7 +13,7 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.3.4")
+  runtimeOnly("org.postgresql:postgresql:42.5.0")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-security")
@@ -24,9 +24,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.9")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
+  implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.11")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.11")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
 
   // Schedule locking
