@@ -110,6 +110,7 @@ class SDRSService(
       sdrsLoadResultRepository.save(SdrsLoadResult(alphaChar = alphaChar.toString()))
     }
     offenceSchedulePartRepository.deleteAll()
+    offenceRepository.deleteByParentOffenceIdIsNotNull()
     offenceRepository.deleteAll()
     offenceRepository.flush()
     offenceSchedulePartRepository.flush()
