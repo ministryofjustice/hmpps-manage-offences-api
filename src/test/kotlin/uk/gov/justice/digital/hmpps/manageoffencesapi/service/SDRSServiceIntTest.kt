@@ -197,6 +197,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/set-full-sdrs-load-toggle.sql",
+    "classpath:test_data/insert-offence-data-with-children.sql",
   )
   fun `Perform a full load of offences when there are incohate offences`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
