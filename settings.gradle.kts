@@ -1,1 +1,1 @@
-rootProject.name = "manage-offences-api"
+rootProject.name = "hmpps-manage-offences-api"

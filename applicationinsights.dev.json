@@ -1,6 +1,6 @@
 {
   "role": {
-    "name": "manage-offences-api"
+    "name": "hmpps-manage-offences-api"
   },
   "customDimensions": {
     "service.version": "${BUILD_NUMBER}"
