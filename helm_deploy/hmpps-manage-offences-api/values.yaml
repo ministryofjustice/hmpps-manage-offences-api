@@ -1,11 +1,11 @@
 ---
 generic-service:
-  nameOverride: manage-offences-api
+  nameOverride: hmpps-manage-offences-api
 
   replicaCount: 4
 
   image:
-    repository: quay.io/hmpps/manage-offences-api
+    repository: quay.io/hmpps/hmpps-manage-offences-api
     tag: app_version    # override at deployment time
     port: 8080
 
@@ -29,7 +29,7 @@ generic-service:
   #     [name of environment variable as seen by app]: [key of kubernetes secret to load]
 
   namespace_secrets:
-    manage-offences-api:
+    hmpps-manage-offences-api:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
@@ -50,4 +50,4 @@ generic-service:
     cloudplatform-live-3: "35.177.252.54/32"
 
 generic-prometheus-alerts:
-  targetApplication: manage-offences-api
+  targetApplication: hmpps-manage-offences-api
