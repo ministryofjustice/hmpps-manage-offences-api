@@ -4,7 +4,7 @@ info.app:
 
 spring:
   application:
-    name: manage-offences-api
+    name: hmpps-manage-offences-api
   codec:
     max-in-memory-size: 50MB
 
