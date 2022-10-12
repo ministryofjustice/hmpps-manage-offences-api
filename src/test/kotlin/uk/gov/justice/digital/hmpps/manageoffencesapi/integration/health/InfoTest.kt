@@ -16,7 +16,7 @@ class InfoTest : IntegrationTestBase() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("build.name").isEqualTo("manage-offences-api")
+      .jsonPath("build.name").isEqualTo("hmpps-manage-offences-api")
   }
 
   @Test
