@@ -5,6 +5,11 @@ generic-service:
   ingress:
     host: manage-offences-api.hmpps.service.justice.gov.uk
 
+  env:
+    HMPPS_AUTH_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
+    API_BASE_URL_SDRS: https://crime-reference-data-api.service.justice.gov.uk
+    API_BASE_URL_PRISON_API: https://api.prison.service.justice.gov.uk
+
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
