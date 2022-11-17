@@ -48,7 +48,7 @@ class SDRSService(
   private val scheduleService: ScheduleService,
   private val adminService: AdminService,
 ) {
-  @Scheduled(cron = "0 */1 * * * *")
+  @Scheduled(cron = "0 0 */1 * * *")
   @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
   @Transactional
   fun fullSynchroniseWithSdrs() {
