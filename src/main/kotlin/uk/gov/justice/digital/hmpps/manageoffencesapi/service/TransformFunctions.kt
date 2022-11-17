@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.HOME_OFFICE_CODE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFENCE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATUTE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
@@ -167,14 +166,6 @@ fun transform(statute: PrisonApiStatute, changeType: ChangeType) =
     description = statute.description,
     changeType = changeType,
     nomisChangeType = STATUTE
-  )
-
-fun transform(hoCode: PrisonApiHoCode, changeType: ChangeType) =
-  NomisChangeHistory(
-    code = hoCode.code,
-    description = hoCode.description,
-    changeType = changeType,
-    nomisChangeType = HOME_OFFICE_CODE
   )
 
 fun transform(it: EntityNomisChangeHistory): ModelNomisChangeHistory =

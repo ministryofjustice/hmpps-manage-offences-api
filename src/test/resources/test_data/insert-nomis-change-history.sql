@@ -1,9 +1,4 @@
 INSERT INTO nomis_change_history (code, description, change_type, nomis_change_type, sent_to_nomis_date)
-VALUES ('097/01', '097/01', 'INSERT', 'HOME_OFFICE_CODE', '2022-11-16 00:00:01.83061+00'),
-       ('097/02', '097/02', 'INSERT', 'HOME_OFFICE_CODE', '2022-11-15 23:59:03.83069+00');
-
-
-INSERT INTO nomis_change_history (code, description, change_type, nomis_change_type, sent_to_nomis_date)
 VALUES ('AP04003', 'Knowingly furnish false/misleading info to person acting in execution of these Reg''s', 'UPDATE',
         'OFFENCE', '2022-11-16 10:46:04.631477+00'),
        ('AN86004', 'Breeding schedule 2 animal for use in regulated procedures in uncertificated establishment',
