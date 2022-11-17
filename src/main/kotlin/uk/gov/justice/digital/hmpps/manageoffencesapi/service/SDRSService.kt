@@ -49,7 +49,7 @@ class SDRSService(
   private val adminService: AdminService,
 ) {
   @Scheduled(cron = "0 */1 * * * *")
-//  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
+  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
   @Transactional
   fun fullSynchroniseWithSdrs() {
     if (!adminService.isFeatureEnabled(FULL_SYNC_SDRS)) {
