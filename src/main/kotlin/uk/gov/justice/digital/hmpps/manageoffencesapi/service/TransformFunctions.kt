@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.NomisChangeHistory a
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule as ModelSchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart as ModelSchedulePart
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode as PrisonApiHoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence as PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute as PrisonApiStatute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence as SdrsOffence
