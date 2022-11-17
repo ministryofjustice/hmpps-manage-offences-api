@@ -24,7 +24,6 @@ class LoadHistoryService(
       .map { transform(it) }
   }
 
-
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }

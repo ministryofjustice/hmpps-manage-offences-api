@@ -14,14 +14,14 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATU
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory as EntityNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart as EntitySchedulePart
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory as EntityNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle as ModelFeatureToggle
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.NomisChangeHistory as ModelNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule as ModelSchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart as ModelSchedulePart
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.NomisChangeHistory as ModelNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode as PrisonApiHoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence as PrisonApiOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute as PrisonApiStatute
