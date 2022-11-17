@@ -4,6 +4,7 @@ import com.vladmihalcea.hibernate.type.json.internal.JacksonUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -12,14 +13,21 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFENCE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATUTE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
+import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence as ModelOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence as PrisonApiOffence
 
@@ -27,6 +35,7 @@ class OffenceServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
   private val offenceSchedulePartRepository = mock<OffenceSchedulePartRepository>()
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
+  private val nomisChangeHistoryRepository = mock<NomisChangeHistoryRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val adminService = mock<AdminService>()
 
@@ -35,9 +44,12 @@ class OffenceServiceTest {
       offenceRepository,
       offenceSchedulePartRepository,
       sdrsLoadResultRepository,
+      nomisChangeHistoryRepository,
       prisonApiClient,
       adminService
     )
+
+  private inline fun <reified T : Any> argumentCaptor(): ArgumentCaptor<T> = ArgumentCaptor.forClass(T::class.java)
 
   @BeforeEach
   fun setup() {
@@ -105,6 +117,39 @@ class OffenceServiceTest {
       prisonApiClient,
       times(1)
     ).createStatutes(listOf(NOMIS_STATUTE_B123.copy(description = "Statute description B123")))
+
+    val nomisChangeHistoryCaptor = argumentCaptor<List<NomisChangeHistory>>()
+    verify(nomisChangeHistoryRepository, times(2)).saveAll(nomisChangeHistoryCaptor.capture())
+    assertThat(nomisChangeHistoryCaptor.allValues[0])
+      .usingRecursiveComparison()
+      .ignoringFields("sentToNomisDate")
+      .isEqualTo(
+        listOf(
+          NomisChangeHistory(
+            id = -1,
+            code = NOMIS_STATUTE_B123.code,
+            description = "Statute description B123",
+            changeType = INSERT,
+            nomisChangeType = STATUTE,
+            sentToNomisDate = LocalDateTime.now()
+          )
+        ),
+      )
+    assertThat(nomisChangeHistoryCaptor.allValues[1])
+      .usingRecursiveComparison()
+      .ignoringFields("sentToNomisDate")
+      .isEqualTo(
+        listOf(
+          NomisChangeHistory(
+            id = -1,
+            code = OFFENCE_B123AA6.code,
+            description = OFFENCE_B123AA6.description!!,
+            changeType = INSERT,
+            nomisChangeType = OFFENCE,
+            sentToNomisDate = LocalDateTime.now()
+          )
+        ),
+      )
   }
 
   @Test
@@ -132,6 +177,38 @@ class OffenceServiceTest {
     verify(prisonApiClient, times(1)).createOffences(listOf(NOMIS_OFFENCE_A123AA6))
     verify(prisonApiClient, times(1)).updateOffences(listOf(NOMIS_OFFENCE_A1234AAA_UPDATED))
     verifyNoMoreInteractions(prisonApiClient)
+    val nomisChangeHistoryCaptor = argumentCaptor<List<NomisChangeHistory>>()
+    verify(nomisChangeHistoryRepository, times(2)).saveAll(nomisChangeHistoryCaptor.capture())
+    assertThat(nomisChangeHistoryCaptor.allValues[0])
+      .usingRecursiveComparison()
+      .ignoringFields("sentToNomisDate")
+      .isEqualTo(
+        listOf(
+          NomisChangeHistory(
+            id = -1,
+            code = NOMIS_OFFENCE_A123AA6.code,
+            description = NOMIS_OFFENCE_A123AA6.description,
+            changeType = INSERT,
+            nomisChangeType = OFFENCE,
+            sentToNomisDate = LocalDateTime.now()
+          )
+        ),
+      )
+    assertThat(nomisChangeHistoryCaptor.allValues[1])
+      .usingRecursiveComparison()
+      .ignoringFields("sentToNomisDate")
+      .isEqualTo(
+        listOf(
+          NomisChangeHistory(
+            id = -1,
+            code = NOMIS_OFFENCE_A1234AAA_UPDATED.code,
+            description = NOMIS_OFFENCE_A1234AAA_UPDATED.description,
+            changeType = UPDATE,
+            nomisChangeType = OFFENCE,
+            sentToNomisDate = LocalDateTime.now()
+          )
+        ),
+      )
   }
 
   @Test

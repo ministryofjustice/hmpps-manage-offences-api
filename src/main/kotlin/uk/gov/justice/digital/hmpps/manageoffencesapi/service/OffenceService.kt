@@ -6,11 +6,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
@@ -22,6 +25,7 @@ class OffenceService(
   private val offenceRepository: OffenceRepository,
   private val offenceSchedulePartRepository: OffenceSchedulePartRepository,
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
+  private val nomisChangeHistoryRepository: NomisChangeHistoryRepository,
   private val prisonApiClient: PrisonApiClient,
   private val adminService: AdminService,
 ) {
@@ -50,7 +54,7 @@ class OffenceService(
 
   @Scheduled(cron = "0 0 */1 * * *")
   @SchedulerLock(name = "fullSyncWithNomisLock")
-  @Transactional(readOnly = true)
+  @Transactional
   fun fullSyncWithNomis() {
     if (!adminService.isFeatureEnabled(FULL_SYNC_NOMIS)) {
       log.info("Full sync with NOMIS not running - disabled")
@@ -92,8 +96,8 @@ class OffenceService(
       }
     }
 
-    createStatutes(newNomisStatutes)
-    createHomeOfficeCodes(newNomisHoCodes)
+    createNomisStatutes(newNomisStatutes)
+    createNomisHomeOfficeCodes(newNomisHoCodes)
     createNomisOffences(newNomisOffences)
     updateNomisOffences(updatedNomisOffences)
   }
@@ -136,16 +140,18 @@ class OffenceService(
         )
       }.toSet()
 
-  private fun createStatutes(nomisStatutesToCreate: Set<Statute>) {
+  private fun createNomisStatutes(nomisStatutesToCreate: Set<Statute>) {
     nomisStatutesToCreate.chunked(MAX_RECORDS_IN_POST_PAYLOAD).forEach {
       prisonApiClient.createStatutes(it)
+      nomisChangeHistoryRepository.saveAll(it.map { o -> transform(o, INSERT) })
     }
   }
 
-  private fun createHomeOfficeCodes(homeOfficeCodesToCreate: Set<HoCode>) {
+  private fun createNomisHomeOfficeCodes(homeOfficeCodesToCreate: Set<HoCode>) {
     if (homeOfficeCodesToCreate.isNotEmpty()) {
       homeOfficeCodesToCreate.chunked(MAX_RECORDS_IN_POST_PAYLOAD).forEach {
         prisonApiClient.createHomeOfficeCodes(it)
+        nomisChangeHistoryRepository.saveAll(it.map { o -> transform(o, INSERT) })
       }
     }
   }
@@ -154,6 +160,7 @@ class OffenceService(
     if (nomisOffencesToCreate.isNotEmpty()) {
       nomisOffencesToCreate.chunked(MAX_RECORDS_IN_POST_PAYLOAD).forEach {
         prisonApiClient.createOffences(it)
+        nomisChangeHistoryRepository.saveAll(it.map { o -> transform(o, INSERT) })
       }
     }
   }
@@ -162,6 +169,7 @@ class OffenceService(
     if (nomisOffencedToUpdate.isNotEmpty()) {
       nomisOffencedToUpdate.chunked(MAX_RECORDS_IN_POST_PAYLOAD).forEach {
         prisonApiClient.updateOffences(it)
+        nomisChangeHistoryRepository.saveAll(it.map { o -> transform(o, UPDATE) })
       }
     }
   }
