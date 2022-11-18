@@ -151,7 +151,6 @@ class OffenceService(
     if (homeOfficeCodesToCreate.isNotEmpty()) {
       homeOfficeCodesToCreate.chunked(MAX_RECORDS_IN_POST_PAYLOAD).forEach {
         prisonApiClient.createHomeOfficeCodes(it)
-        nomisChangeHistoryRepository.saveAll(it.map { o -> transform(o, INSERT) })
       }
     }
   }

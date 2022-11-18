@@ -14,7 +14,7 @@ data class NomisChangeHistory(
   val description: String,
   @Schema(description = "Could be INSERT or UPDATE")
   val changeType: ChangeType,
-  @Schema(description = "Could be OFFENCE, STATUTE or HOME_OFFICE_CODE")
+  @Schema(description = "Could be OFFENCE or STATUTE")
   val nomisChangeType: NomisChangeType,
   @Schema(description = "The date this change was made in NOMIS")
   val sentToNomisDate: LocalDateTime,

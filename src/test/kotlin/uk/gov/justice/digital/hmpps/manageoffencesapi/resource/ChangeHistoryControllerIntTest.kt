@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.HOME_OFFICE_CODE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFENCE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATUTE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
@@ -55,14 +54,6 @@ class ChangeHistoryControllerIntTest : IntegrationTestBase() {
             changeType = UPDATE,
             nomisChangeType = OFFENCE,
             sentToNomisDate = LocalDateTime.of(2022, 11, 16, 10, 46, 4)
-          ),
-          NomisChangeHistory(
-            id = -1,
-            code = "097/01",
-            description = "097/01",
-            changeType = INSERT,
-            nomisChangeType = HOME_OFFICE_CODE,
-            sentToNomisDate = LocalDateTime.of(2022, 11, 16, 0, 0, 1)
           ),
         )
       )
