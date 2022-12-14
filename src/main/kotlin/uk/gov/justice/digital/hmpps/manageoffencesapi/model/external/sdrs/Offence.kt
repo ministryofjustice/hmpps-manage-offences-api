@@ -15,9 +15,9 @@ data class Offence(
   val cjsTitle: String? = null,
   @JsonProperty("MOJStatsCode")
   val mojStatsCode: String? = null,
-  val offenceStartDate: LocalDate? = null,
+  val offenceStartDate: LocalDate,
   val offenceEndDate: LocalDate? = null,
-  val changedDate: LocalDateTime? = null,
+  val changedDate: LocalDateTime,
   val offenceActsAndSections: String? = null,
 ) {
   val category: Int?
