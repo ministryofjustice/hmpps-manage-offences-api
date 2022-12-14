@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFENCE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATUTE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
@@ -56,7 +57,7 @@ fun transform(offenceScheduleParts: List<OffenceSchedulePart>?): List<ScheduleDe
     )
   } ?: emptyList()
 
-fun transform(sdrsOffence: SdrsOffence): Offence = Offence(
+fun transform(sdrsOffence: SdrsOffence, cache: SdrsCache): Offence = Offence(
   code = sdrsOffence.code,
   description = sdrsOffence.description,
   cjsTitle = sdrsOffence.cjsTitle,
@@ -67,9 +68,10 @@ fun transform(sdrsOffence: SdrsOffence): Offence = Offence(
   subCategory = sdrsOffence.subCategory,
   changedDate = sdrsOffence.changedDate,
   actsAndSections = sdrsOffence.offenceActsAndSections,
+  sdrsCache = cache,
 )
 
-fun transform(sdrsOffence: SdrsOffence, offence: Offence): Offence =
+fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache): Offence =
   offence.copy(
     description = sdrsOffence.description,
     cjsTitle = sdrsOffence.cjsTitle,
@@ -80,11 +82,12 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence): Offence =
     subCategory = sdrsOffence.subCategory,
     changedDate = sdrsOffence.changedDate,
     actsAndSections = sdrsOffence.offenceActsAndSections,
+    sdrsCache = sdrsCache
   )
 
 fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
   MostRecentLoadResult(
-    alphaChar = loadResult.alphaChar,
+    sdrsCache = loadResult.cache,
     status = loadResult.status,
     type = loadResult.loadType,
     loadDate = loadResult.loadDate,
