@@ -9,12 +9,15 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.FAIL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.UPDATE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_A
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_B
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class SDRSServiceIntTest : IntegrationTestBase() {
   @Autowired
@@ -40,6 +43,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   )
   fun `Perform a full load of offences retrieved from SDRS`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+    sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForAMultipleOffences()
 
     sdrsService.fullSynchroniseWithSdrs()
@@ -50,7 +55,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     val offenceScheduleParts = offenceSchedulePartRepository.findAll()
 
     assertThat(offences)
-      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
+      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate", "changedDate")
       .isEqualTo(
         listOf(
           Offence(
@@ -62,7 +67,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             category = 195,
             subCategory = 99,
-            changedDate = null
+            changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
           ),
           Offence(
             code = "XX99002",
@@ -73,18 +78,18 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             category = 195,
             subCategory = 99,
-            changedDate = null
+            changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
           ),
         )
       )
 
-    assertThat(statusRecords.size).isEqualTo(26)
+    assertThat(statusRecords.size).isEqualTo(28)
     statusRecords.forEach {
       assertThat(it.status).isEqualTo(SUCCESS)
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
     }
 
-    assertThat(statusHistoryRecords.size).isEqualTo(26)
+    assertThat(statusHistoryRecords.size).isEqualTo(28)
     statusHistoryRecords.forEach {
       assertThat(it.status).isEqualTo(SUCCESS)
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
@@ -100,11 +105,15 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   )
   fun `Update any offences that have changed`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+    sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
     sdrsApiMockServer.stubGetChangedOffencesForA()
     sdrsApiMockServer.stubControlTableRequest()
     ('A'..'Z').forEach { alphaChar ->
       prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
     }
+    prisonApiMockServer.stubCreateStatute()
+    prisonApiMockServer.stubCreateOffence()
 
     sdrsService.deltaSynchroniseWithSdrs()
 
@@ -113,7 +122,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
 
     assertThat(offences)
-      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
+      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate", "changedDate")
       .isEqualTo(
         listOf(
           Offence(
@@ -123,20 +132,21 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             revisionId = 99991,
             startDate = LocalDate.of(2014, 1, 1),
             endDate = null,
-            changedDate = null
+            changedDate = LocalDateTime.now(),
+            sdrsCache = OFFENCES_A,
           ),
         )
       )
 
     statusRecords
-      .filter { it.alphaChar == "A" || it.alphaChar == "B" }
+      .filter { it.cache == OFFENCES_A || it.cache == OFFENCES_B }
       .forEach {
         assertThat(it.status).isEqualTo(SUCCESS)
         assertThat(it.loadType).isEqualTo(UPDATE)
       }
 
     statusHistoryRecords
-      .filter { it.alphaChar == "A" || it.alphaChar == "B" }
+      .filter { it.cache == OFFENCES_A || it.cache == OFFENCES_B }
       .forEach {
         assertThat(it.status).isEqualTo(SUCCESS)
         assertThat(it.loadType).isEqualTo(UPDATE)
@@ -151,6 +161,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   )
   fun `Handle SDRS-99918 as a success ie no offences exist for that cache (cache doesnt exist)`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+    sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForQHasNoCache()
     sdrsApiMockServer.stubControlTableRequest()
     sdrsService.fullSynchroniseWithSdrs()
@@ -160,13 +172,13 @@ class SDRSServiceIntTest : IntegrationTestBase() {
 
     assertThat(offences).isEmpty()
 
-    assertThat(statusRecords.size).isEqualTo(26)
+    assertThat(statusRecords.size).isEqualTo(28)
     statusRecords.forEach {
       assertThat(it.status).isEqualTo(SUCCESS)
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
     }
 
-    assertThat(statusHistoryRecords.size).isEqualTo(26)
+    assertThat(statusHistoryRecords.size).isEqualTo(28)
     statusHistoryRecords.forEach {
       assertThat(it.status).isEqualTo(SUCCESS)
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
@@ -180,6 +192,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   )
   fun `Handle unexpected exception from SDRS - Bad JSON is returned from SDRS thus causing a generic exception`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+    sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
     sdrsApiMockServer.stubGetChangedOffencesForAHasBadJson()
     sdrsApiMockServer.stubControlTableRequest()
     sdrsService.deltaSynchroniseWithSdrs()
@@ -187,10 +201,10 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     val statusRecords = sdrsLoadResultRepository.findAll()
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
 
-    assertThat(statusRecords.first { it.alphaChar == "A" }.status).isEqualTo(FAIL)
-    assertThat(statusRecords.first { it.alphaChar == "A" }.loadType).isEqualTo(UPDATE)
-    assertThat(statusHistoryRecords.first { it.alphaChar == "A" }.status).isEqualTo(FAIL)
-    assertThat(statusHistoryRecords.first { it.alphaChar == "A" }.loadType).isEqualTo(UPDATE)
+    assertThat(statusRecords.first { it.cache == OFFENCES_A }.status).isEqualTo(FAIL)
+    assertThat(statusRecords.first { it.cache == OFFENCES_A }.loadType).isEqualTo(UPDATE)
+    assertThat(statusHistoryRecords.first { it.cache == OFFENCES_A }.status).isEqualTo(FAIL)
+    assertThat(statusHistoryRecords.first { it.cache == OFFENCES_A }.loadType).isEqualTo(UPDATE)
   }
 
   @Test
@@ -201,6 +215,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   )
   fun `Perform a full load of offences when there are incohate offences`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+    sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesWithChildren()
 
     sdrsService.fullSynchroniseWithSdrs()
@@ -210,7 +226,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     val parentTwo = offences.first { it.code == "AX99002" }
 
     assertThat(offences)
-      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate")
+      .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate", "changedDate")
       .containsAnyElementsOf(
         listOf(
           Offence(
@@ -222,7 +238,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             category = 195,
             subCategory = 99,
-            changedDate = null,
+            changedDate = LocalDateTime.now(),
+            sdrsCache = OFFENCES_A,
             parentOffenceId = null,
           ),
           Offence(
@@ -234,7 +251,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             category = 195,
             subCategory = 99,
-            changedDate = null,
+            changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
             parentOffenceId = parentOne.id,
           ),
           Offence(
@@ -246,7 +263,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             category = 195,
             subCategory = 99,
-            changedDate = null,
+            changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
             parentOffenceId = parentOne.id,
           ),
           Offence(
@@ -258,7 +275,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             category = 195,
             subCategory = 99,
-            changedDate = null,
+            changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
             parentOffenceId = null,
           ),
           Offence(
@@ -270,7 +287,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             category = 195,
             subCategory = 99,
-            changedDate = null,
+            changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
             parentOffenceId = parentTwo.id,
           ),
         )
@@ -286,6 +303,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   fun `Send offence-to-schedule mappings to NOMIS `() {
     sdrsApiMockServer.stubControlTableRequest()
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+    sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
     prisonApiMockServer.stubLinkOffence()
     prisonApiMockServer.stubUnlinkOffence()
 

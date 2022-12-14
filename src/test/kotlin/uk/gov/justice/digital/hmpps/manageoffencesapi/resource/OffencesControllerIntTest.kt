@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
@@ -79,6 +80,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   )
   fun `Get results of latest load`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+    sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+    sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
     sdrsApiMockServer.stubGetAllOffencesForA()
     sdrsService.fullSynchroniseWithSdrs()
     val results = webTestClient.get().uri("/offences/load-results")
@@ -88,14 +91,14 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .expectBodyList(MostRecentLoadResult::class.java)
       .returnResult().responseBody
 
-    ('A'..'Z').forEach { alphaChar ->
-      val result = results?.find { e -> e.alphaChar == alphaChar.toString() }
+    SdrsCache.values().forEach { cache ->
+      val result = results?.find { e -> e.sdrsCache == cache }
       assertThat(result)
         .usingRecursiveComparison()
         .ignoringFieldsMatchingRegexes(".*dDate")
         .isEqualTo(
           MostRecentLoadResult(
-            alphaChar = alphaChar.toString(),
+            sdrsCache = cache,
             status = result!!.status,
             type = result.type,
           )
