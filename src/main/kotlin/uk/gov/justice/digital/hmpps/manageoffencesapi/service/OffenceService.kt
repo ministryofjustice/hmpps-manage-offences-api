@@ -61,9 +61,10 @@ class OffenceService(
       log.info("Full sync with NOMIS not running - disabled")
       return
     }
-    (SdrsCache.values().filter { it.alphaChar != null }).forEach { cache ->
-      log.info("Starting full sync with NOMIS for offence group {} ", cache.alphaChar)
-      fullySyncWithNomisWhereOffenceStartsWith(cache.alphaChar!!)
+    // When we do a full sync to nomis, we split it into 26 chunks (A to Z)
+    ('A'..'Z').forEach { alphaChar ->
+      log.info("Starting full sync with NOMIS for offence group {} ", alphaChar)
+      fullySyncWithNomisWhereOffenceStartsWith(alphaChar)
     }
   }
 
