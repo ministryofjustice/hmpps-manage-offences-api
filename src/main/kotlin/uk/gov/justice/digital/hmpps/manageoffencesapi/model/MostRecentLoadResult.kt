@@ -3,12 +3,13 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.model
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import java.time.LocalDateTime
 
-@Schema(description = "Details of the load by alpha char (A to Z)")
+@Schema(description = "Details of the load by SDRS Cache")
 data class MostRecentLoadResult(
-  @Schema(description = "Single alphabetic character between A and Z - indicates the part of the SDRS load this status relates to")
-  val alphaChar: String,
+  @Schema(description = "Associated SDRS Cache - indicates the part of the SDRS load this status relates to")
+  val sdrsCache: SdrsCache,
   @Schema(description = "Load Status: SUCCESS or FAIL")
   val status: LoadStatus? = null,
   @Schema(description = "Load Type: FULL_LOAD or UPDATE")

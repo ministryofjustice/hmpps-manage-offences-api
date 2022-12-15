@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.entity
 
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import java.time.LocalDateTime
 import javax.persistence.Entity
 import javax.persistence.EnumType
@@ -13,7 +14,8 @@ import javax.persistence.Table
 @Table
 data class SdrsLoadResult(
   @Id
-  val alphaChar: String,
+  @Enumerated(EnumType.STRING)
+  val cache: SdrsCache,
   @Enumerated(EnumType.STRING)
   val status: LoadStatus? = null,
   @Enumerated(EnumType.STRING)

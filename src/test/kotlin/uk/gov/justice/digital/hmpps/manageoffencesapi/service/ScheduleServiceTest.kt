@@ -19,6 +19,9 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.DELETE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_A
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_B
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_Z
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
@@ -27,6 +30,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToScheduleHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
 
@@ -253,6 +257,7 @@ class ScheduleServiceTest {
   }
 
   companion object {
+    private val BASE_OFFENCE = Offence(code = "AABB011", changedDate = LocalDateTime.now(), revisionId = 1, startDate = LocalDate.now(), sdrsCache = OFFENCES_A)
     private val SCHEDULE = Schedule(
       act = "Sentencing Act 2020",
       url = "https://www.legislation.gov.uk/ukpga/2020/17/schedule/13",
@@ -265,30 +270,34 @@ class ScheduleServiceTest {
       partNumber = 1
     )
 
-    private val OFFENCE_B123AA6 = Offence(
+    private val OFFENCE_B123AA6 = BASE_OFFENCE.copy(
       id = 981,
       code = "B123AA6",
       description = "B Desc 1",
+      sdrsCache = OFFENCES_B,
     )
 
-    private val OFFENCE_B123AA6A_CHILD = Offence(
+    private val OFFENCE_B123AA6A_CHILD = BASE_OFFENCE.copy(
       id = 982,
       code = "B123AA6A",
       description = "Inchoate B Desc 1",
+      sdrsCache = OFFENCES_B,
     )
 
-    private val OFFENCE_A123AA6 = Offence(
+    private val OFFENCE_A123AA6 = BASE_OFFENCE.copy(
       id = 983,
       code = "A123AA6",
       description = "A Desc 1",
       actsAndSections = "Statute desc A123",
+      sdrsCache = OFFENCES_B,
     )
 
-    private val OFFENCE_Z123AA6A_ORPHAN = Offence(
+    private val OFFENCE_Z123AA6A_ORPHAN = BASE_OFFENCE.copy(
       id = 984,
       code = "Z123AA6A",
       description = "Z Desc 1",
       actsAndSections = "Statute desc Z123AA6A",
+      sdrsCache = OFFENCES_Z,
     )
 
     private val OSP_A123AA6 = OffenceSchedulePart(

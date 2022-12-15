@@ -95,7 +95,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       schedulePartId = schedulePartId,
       schedulePartNumber = partNumber,
       offenceId = offence.id,
-      offenceCode = offence.code!!,
+      offenceCode = offence.code,
       changeType = changeType,
     )
 

@@ -14,6 +14,9 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetControlTable
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetOffence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.ControlTableRecord
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetControlTableResponse
@@ -25,6 +28,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReposito
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
 
@@ -51,20 +55,20 @@ class SDRSServiceTest {
 
   @BeforeEach
   fun setup() {
-    ('A'..'Z').forEach { alphaChar ->
-      whenever(sdrsLoadResultRepository.findById(alphaChar.toString())).thenReturn(
+    SdrsCache.values().forEach { cache ->
+      whenever(sdrsLoadResultRepository.findById(cache)).thenReturn(
         Optional.of(
           SdrsLoadResult(
-            alphaChar = alphaChar.toString(),
+            cache = cache,
             status = SUCCESS,
             lastSuccessfulLoadDate = NOW
           )
         )
       )
     }
-    val loadResults = ('A'..'Z').map { alphaChar ->
+    val loadResults = SdrsCache.values().map { cache ->
       SdrsLoadResult(
-        alphaChar = alphaChar.toString(),
+        cache = cache,
         status = SUCCESS,
         lastSuccessfulLoadDate = NOW
       )
@@ -86,12 +90,16 @@ class SDRSServiceTest {
 
   @Test
   fun `Ensure delta sync with nomis is called for only the alphaChar affected (there are records to update for A) `() {
-    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetControlTable" })).thenReturn(CONTROL_TABLE_RESPONSE)
-    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetOffence" })).thenReturn(GET_OFFENCE_RESPONSE)
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetControlTable })).thenReturn(
+      CONTROL_TABLE_RESPONSE
+    )
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetOffence })).thenReturn(
+      GET_OFFENCE_RESPONSE
+    )
 
     sdrsService.deltaSynchroniseWithSdrs()
 
-    verify(offenceService, times(1)).fullySyncOffenceGroupWithNomis("A")
+    verify(offenceService, times(1)).fullySyncWithNomis(SdrsCache.OFFENCES_A)
   }
 
   @Test
@@ -106,9 +114,13 @@ class SDRSServiceTest {
 
   @Test
   fun `Ensure children are updated with parent offence id (there are records to update for A) `() {
-    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetControlTable" })).thenReturn(CONTROL_TABLE_RESPONSE)
-    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == "GetOffence" })).thenReturn(GET_OFFENCE_RESPONSE)
-    whenever(offenceRepository.findChildOffencesWithNoParent('A')).thenReturn(listOf(OFFENCE_B123AA6A))
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetControlTable })).thenReturn(
+      CONTROL_TABLE_RESPONSE
+    )
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetOffence })).thenReturn(
+      GET_OFFENCE_RESPONSE
+    )
+    whenever(offenceRepository.findChildOffencesWithNoParent(SdrsCache.OFFENCES_A)).thenReturn(listOf(OFFENCE_B123AA6A))
     whenever(offenceRepository.findOneByCode(OFFENCE_B123AA6A.parentCode!!)).thenReturn(Optional.of(OFFENCE_B123AA6))
 
     sdrsService.deltaSynchroniseWithSdrs()
@@ -141,13 +153,21 @@ class SDRSServiceTest {
       messageStatus = MessageStatusResponse(status = "SUCCESS")
     )
 
-    private val OFFENCE_B123AA6 = Offence(
+    private val BASE_OFFENCE = Offence(
+      code = "AABB011",
+      changedDate = LocalDateTime.now(),
+      revisionId = 1,
+      startDate = LocalDate.now(),
+      sdrsCache = SdrsCache.OFFENCES_A
+    )
+
+    private val OFFENCE_B123AA6 = BASE_OFFENCE.copy(
       id = 991,
       code = "B123AA6",
       description = "B Desc 1 -= parent",
     )
 
-    private val OFFENCE_B123AA6A = Offence(
+    private val OFFENCE_B123AA6A = BASE_OFFENCE.copy(
       id = 992,
       code = "B123AA6A",
       description = "B Desc 1 - child",

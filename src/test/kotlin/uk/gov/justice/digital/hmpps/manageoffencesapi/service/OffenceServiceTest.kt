@@ -20,6 +20,8 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFENCE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATUTE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_A
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_B
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
@@ -91,7 +93,7 @@ class OffenceServiceTest {
 
   @Test
   fun `When creating a statute in NOMIS, the description should be set to the statute code if there is no ActsAndSections value`() {
-    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("B")).thenReturn(listOf(OFFENCE_B123AA6))
+    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(listOf(OFFENCE_B123AA6))
 
     offenceService.fullSyncWithNomis()
 
@@ -221,7 +223,7 @@ class OffenceServiceTest {
         )
       )
     )
-    whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+    whenever(offenceRepository.findBySdrsCache(OFFENCES_A)).thenReturn(
       listOf(
         OFFENCE_A1234AAA.copy(description = NOMIS_OFFENCE_A1234AAA.description)
       )
@@ -294,22 +296,28 @@ class OffenceServiceTest {
   }
 
   companion object {
-    private val OFFENCE_B123AA6 = Offence(
+    private val BASE_OFFENCE = Offence(code = "AABB011", changedDate = LocalDateTime.now(), revisionId = 1, startDate = LocalDate.now(), sdrsCache = OFFENCES_A)
+    private val BASE_MODEL_OFFENCE = ModelOffence(code = "AABB", id = 1, changedDate = LocalDateTime.now(), revisionId = 1, startDate = LocalDate.now())
+    private val OFFENCE_B123AA6 = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_B,
       code = "B123AA6",
       description = "B Desc 1",
     )
-    private val OFFENCE_A123AA6 = Offence(
+    private val OFFENCE_A123AA6 = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
       code = "A123AA6",
       description = "A Desc 1",
       actsAndSections = "Statute desc A123",
     )
-    private val OFFENCE_A1234AAA = Offence(
+    private val OFFENCE_A1234AAA = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
       code = "A1234AAA",
       description = "A NEW DESC",
       actsAndSections = "Statute desc A123",
     )
 
-    val OFFENCE_A123992 = Offence(
+    val OFFENCE_A123992 = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
       id = 992,
       category = 1,
       subCategory = 2,
@@ -319,7 +327,8 @@ class OffenceServiceTest {
       actsAndSections = "Statute 992"
     )
 
-    val OFFENCE_A123991 = Offence(
+    val OFFENCE_A123991 = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
       id = 991,
       cjsTitle = "Descriptiom",
       code = "A123991",
@@ -327,7 +336,8 @@ class OffenceServiceTest {
       actsAndSections = "Statute 991"
     )
 
-    val OFFENCE_A123993 = Offence(
+    val OFFENCE_A123993 = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
       id = 993,
       cjsTitle = "Descriptiom",
       code = "A123993",
@@ -336,7 +346,8 @@ class OffenceServiceTest {
       parentOffenceId = 992,
     )
 
-    val OFFENCE_A123995 = Offence(
+    val OFFENCE_A123995 = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
       id = 995,
       cjsTitle = "Descriptiom",
       code = "A123995",
@@ -346,13 +357,15 @@ class OffenceServiceTest {
       parentOffenceId = 992,
     )
 
-    val OFFENCE_A167996 = Offence(
+    val OFFENCE_A167996 = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
       id = 996,
       cjsTitle = "Descriptiom",
       code = "A167995",
     )
 
-    val OFFENCE_A123996A = Offence(
+    val OFFENCE_A123996A = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
       id = 997,
       cjsTitle = "Descriptiom",
       code = "A123996A",
@@ -407,7 +420,7 @@ class OffenceServiceTest {
       )
     )
 
-    val MODEL_OFFENCE_A123992 = ModelOffence(
+    val MODEL_OFFENCE_A123992 = BASE_MODEL_OFFENCE.copy(
       id = 992,
       code = "A123992",
       startDate = LocalDate.of(2021, 6, 1),
@@ -416,7 +429,7 @@ class OffenceServiceTest {
       homeOfficeStatsCode = "001/02"
     )
 
-    val MODEL_OFFENCE_A123991 = ModelOffence(
+    val MODEL_OFFENCE_A123991 = BASE_MODEL_OFFENCE.copy(
       id = 991,
       code = "A123991",
       startDate = LocalDate.of(2021, 5, 6),
@@ -424,7 +437,7 @@ class OffenceServiceTest {
       childOffenceIds = emptyList()
     )
 
-    val MODEL_OFFENCE_A123996A = ModelOffence(
+    val MODEL_OFFENCE_A123996A = BASE_MODEL_OFFENCE.copy(
       id = 997,
       code = "A123996A",
       startDate = LocalDate.of(2021, 5, 6),
@@ -436,7 +449,7 @@ class OffenceServiceTest {
 
     private fun createPrisonApiOffencesResponse(
       totalPages: Int,
-      content: List<PrisonApiOffence>
+      content: List<PrisonApiOffence>,
     ): RestResponsePage<PrisonApiOffence> = RestResponsePage(
       content = content,
       number = 1,

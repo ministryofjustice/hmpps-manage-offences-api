@@ -9,21 +9,21 @@ data class Offence(
   @Schema(description = "Unique ID of the offence")
   val id: Long,
   @Schema(description = "The offence code")
-  val code: String? = null,
+  val code: String,
   @Schema(description = "The offence description")
   val description: String? = null,
   @Schema(description = "The CJS Title (usually the same as description)")
   val cjsTitle: String? = null,
   @Schema(description = "The revision number of the offence")
-  val revisionId: Int? = null,
+  val revisionId: Int,
   @Schema(description = "The offence start date")
-  val startDate: LocalDate? = null,
+  val startDate: LocalDate,
   @Schema(description = "The offence end date")
   val endDate: LocalDate? = null,
   @Schema(description = "The offence's home office stats code")
   val homeOfficeStatsCode: String? = null,
   @Schema(description = "The date this offence was last changed in SDRS")
-  val changedDate: LocalDateTime? = null,
+  val changedDate: LocalDateTime,
   @Schema(description = "The date this offence was loaded into manage-offences from SDRS")
   val loadDate: LocalDateTime? = null,
   @Schema(description = "The schedules linked to this offence")

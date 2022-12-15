@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.entity
 
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
@@ -17,14 +20,16 @@ data class Offence(
   val code: String,
   val description: String? = null,
   val cjsTitle: String? = null,
-  val revisionId: Int? = null,
-  val startDate: LocalDate? = null,
+  val revisionId: Int,
+  val startDate: LocalDate,
   val endDate: LocalDate? = null,
   val category: Int? = null,
   val subCategory: Int? = null,
   val actsAndSections: String? = null,
   val parentOffenceId: Long? = null,
-  val changedDate: LocalDateTime? = null,
+  @Enumerated(EnumType.STRING)
+  val sdrsCache: SdrsCache,
+  val changedDate: LocalDateTime,
   val createdDate: LocalDateTime = LocalDateTime.now(),
   val lastUpdatedDate: LocalDateTime = LocalDateTime.now(),
 ) {

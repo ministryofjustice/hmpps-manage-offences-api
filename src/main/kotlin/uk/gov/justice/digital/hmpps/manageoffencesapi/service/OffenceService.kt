@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
@@ -34,7 +35,7 @@ class OffenceService(
     val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code)
     val offenceIds = offences.map { it.id }.toSet()
     val childrenByParentId = offenceRepository.findByParentOffenceIdIn(offenceIds).groupBy { it.parentOffenceId }
-    val matchingOffences = offences.map { it ->
+    val matchingOffences = offences.map {
       val children = childrenByParentId[it.id]
       transform(it, children?.map { child -> child.id })
     }
@@ -49,7 +50,7 @@ class OffenceService(
 
   fun findLoadResults(): List<MostRecentLoadResult> {
     log.info("Fetching offences by offenceCode")
-    return sdrsLoadResultRepository.findAllByOrderByAlphaCharAsc().map { transform(it) }
+    return sdrsLoadResultRepository.findAllByOrderByCacheAsc().map { transform(it) }
   }
 
   @Scheduled(cron = "0 0 */1 * * *")
@@ -60,16 +61,39 @@ class OffenceService(
       log.info("Full sync with NOMIS not running - disabled")
       return
     }
+    // When we do a full sync to nomis, we split it into 26 chunks (A to Z)
     ('A'..'Z').forEach { alphaChar ->
-      log.info("Starting full sync with NOMIS for alphaChar {} ", alphaChar)
-      fullySyncOffenceGroupWithNomis(alphaChar.toString())
+      log.info("Starting full sync with NOMIS for offence group {} ", alphaChar)
+      fullySyncWithNomisWhereOffenceStartsWith(alphaChar)
     }
   }
 
-  fun fullySyncOffenceGroupWithNomis(alphaChar: String) {
-    val allOffences = offenceRepository.findByCodeStartsWithIgnoreCase(alphaChar)
+  //  This syncs all offences that start with the passed character with NOMIS - independent of caches
+  fun fullySyncWithNomisWhereOffenceStartsWith(alphaChar: Char) {
+    val allOffences = offenceRepository.findByCodeStartsWithIgnoreCase(alphaChar.toString())
+    val (nomisOffencesById, nomisOffences) = getAllNomisOffencesThatStartWith(alphaChar.toString())
+
+    fullySyncWithNomis(allOffences, nomisOffencesById, nomisOffences)
+  }
+
+  fun fullySyncWithNomis(cache: SdrsCache) {
+    log.info("Starting full sync with NOMIS for cache: {}", cache)
+    val allOffences = offenceRepository.findBySdrsCache(cache)
+    val (nomisOffencesById, nomisOffences) = if (cache.alphaChar != null) {
+      getAllNomisOffencesThatStartWith(cache.alphaChar.toString())
+    } else {
+      getAllNomisOffencecsForNonAlphaCache(allOffences)
+    }
+
+    fullySyncWithNomis(allOffences, nomisOffencesById, nomisOffences)
+  }
+
+  private fun fullySyncWithNomis(
+    allOffences: List<EntityOffence>,
+    nomisOffencesById: Map<Pair<String, String>, PrisonApiOffence>,
+    nomisOffences: List<PrisonApiOffence>
+  ) {
     val offencesByCode = allOffences.associateBy { it.code }
-    val (nomisOffencesById, nomisOffences) = getAllNomisOffencecsForAlphaChar(alphaChar)
 
     // the keys here represent the NOMIS keys, each key is a pair of the offenceCode and the statuteCode
     val (existingOffenceKeys, newOffenceKeys) = offencesByCode.keys.map { Pair(it, offencesByCode[it]!!.statuteCode) }
@@ -104,7 +128,7 @@ class OffenceService(
 
   private fun determineNewStatutesToCreate(
     allOffences: List<EntityOffence>,
-    nomisOffences: MutableList<PrisonApiOffence>
+    nomisOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence>
   ): Set<Statute> {
     val offencesByNewStatuteCode = allOffences
       .filter { nomisOffences.none { o -> o.statuteCode.code == it.statuteCode } }
@@ -128,7 +152,7 @@ class OffenceService(
 
   private fun determineNewHoCodesToCreate(
     allOffences: List<EntityOffence>,
-    nomisOffences: MutableList<PrisonApiOffence>
+    nomisOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence>
   ): Set<HoCode> =
     allOffences
       .filter { !it.homeOfficeStatsCode.isNullOrBlank() && nomisOffences.none { o -> o.hoCode?.code == it.homeOfficeStatsCode } }
@@ -240,7 +264,12 @@ class OffenceService(
     return newStatutes.first { it.code == offence.statuteCode }
   }
 
-  fun getAllNomisOffencecsForAlphaChar(alphaChar: String): Pair<Map<Pair<String, String>, PrisonApiOffence>, MutableList<PrisonApiOffence>> {
+  private fun getAllNomisOffencesThatStartWith(alphaChar: String): Pair<Map<Pair<String, String>, PrisonApiOffence>, List<PrisonApiOffence>> {
+    val nomisOffences: List<PrisonApiOffence> = findNomisOffencesThatStartWith(alphaChar)
+    return nomisOffences.associateBy { it.code to it.statuteCode.code } to nomisOffences
+  }
+
+  private fun findNomisOffencesThatStartWith(alphaChar: String): List<PrisonApiOffence> {
     var pageNumber = 0
     var totalPages = 1
     val nomisOffences: MutableList<PrisonApiOffence> = mutableListOf()
@@ -249,6 +278,15 @@ class OffenceService(
       totalPages = response.totalPages
       pageNumber++
       nomisOffences.addAll(response.content)
+    }
+    return nomisOffences
+  }
+
+  private fun getAllNomisOffencecsForNonAlphaCache(offences: List<EntityOffence>): Pair<Map<Pair<String, String>, PrisonApiOffence>, List<PrisonApiOffence>> {
+    val offencesStartWith = offences.map { it.code.first() }.toSet()
+    val nomisOffences: MutableList<PrisonApiOffence> = mutableListOf()
+    offencesStartWith.forEach {
+      nomisOffences.addAll(findNomisOffencesThatStartWith(it.toString()))
     }
     return nomisOffences.associateBy { it.code to it.statuteCode.code } to nomisOffences
   }
