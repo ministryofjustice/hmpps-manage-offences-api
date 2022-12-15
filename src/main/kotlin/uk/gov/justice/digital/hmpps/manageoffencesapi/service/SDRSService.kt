@@ -93,7 +93,7 @@ class SDRSService(
     val loadDate = LocalDateTime.now()
     (SdrsCache.values()).forEach { cache ->
       log.info("Starting full load for cache {} ", cache)
-      if (cache.isPrimaryCache()) fullLoadPrimaryCache(cache, loadDate)
+      if (cache.isPrimaryCache) fullLoadPrimaryCache(cache, loadDate)
       else fullLoadSecondaryCache(cache, loadDate)
     }
 
@@ -253,7 +253,7 @@ class SDRSService(
   ) {
     affectedCaches.forEach {
       log.info("Cache has not been previously loaded, so attempting full load of {} in update job", it)
-      if (it.isPrimaryCache()) fullLoadPrimaryCache(it, loadDate)
+      if (it.isPrimaryCache) fullLoadPrimaryCache(it, loadDate)
       else fullLoadSecondaryCache(it, loadDate)
       if (deltaSyncToNomisEnabled) offenceService.fullySyncWithNomis(it)
     }
