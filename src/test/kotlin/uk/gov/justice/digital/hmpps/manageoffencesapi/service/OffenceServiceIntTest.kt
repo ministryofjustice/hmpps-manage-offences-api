@@ -56,8 +56,8 @@ class OffenceServiceIntTest : IntegrationTestBase() {
     "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/insert-offence-data-with-ho-code.sql",
   )
-  fun `Get ho-code for offence`() {
-    val res = offenceService.findHoCodeByOffenceCode("HO06999")
+  fun `Get ho-code for an offence code`() {
+    val res = offenceService.findHoCodeByOffenceCode("ho06999")
 
     assertThat(res).isEqualTo("001/13")
   }
