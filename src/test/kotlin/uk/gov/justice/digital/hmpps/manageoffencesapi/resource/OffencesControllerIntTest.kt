@@ -264,4 +264,20 @@ class OffencesControllerIntTest : IntegrationTestBase() {
         )
       )
   }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-with-ho-code.sql",
+  )
+  fun `Get HO Code associated with an offence`() {
+    val result = webTestClient.get().uri("/offences/ho-code/HO06999")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(String::class.java)
+      .returnResult().responseBody
+
+    assertThat(result).isEqualTo("001/13")
+  }
 }

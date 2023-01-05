@@ -23,7 +23,7 @@ class OffenceController(
   @ResponseBody
   @Operation(
     summary = "Get all offences matching the passed offence code, does a start with match",
-    description = "This endpoint will return the the offences that start with the passed offence code"
+    description = "This endpoint will return the offences that start with the passed offence code"
   )
   fun getOffencesByOffenceCode(
     @Parameter(required = true, example = "AA1256A", description = "The offence code")
@@ -32,6 +32,21 @@ class OffenceController(
   ): List<Offence> {
     log.info("Request received to fetch offences that start with offenceCode {}", offenceCode)
     return offenceService.findOffencesByCode(offenceCode)
+  }
+
+  @GetMapping(value = ["/ho-code/{offenceCode}"])
+  @ResponseBody
+  @Operation(
+    summary = "Get the HO Code associated with an offence code",
+    description = "This endpoint will return the HO Code associated with an offence code, could be null"
+  )
+  fun getHoCodeByOffenceCode(
+    @Parameter(required = true, example = "AA1256A", description = "The offence code")
+    @PathVariable("offenceCode")
+    offenceCode: String
+  ): String? {
+    log.info("Request received to fetch HO Code for offenceCode {}", offenceCode)
+    return offenceService.findHoCodeByOffenceCode(offenceCode)
   }
 
   @GetMapping(value = ["/load-results"])

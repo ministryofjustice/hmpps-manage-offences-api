@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import com.github.tomakehurst.wiremock.client.WireMock
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
@@ -29,6 +30,36 @@ class OffenceServiceIntTest : IntegrationTestBase() {
     offenceService.fullSyncWithNomis()
 
     verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES)
+  }
+
+  @Test
+  @Sql("classpath:test_data/reset-all-data.sql")
+  fun `Get ho-code for offence that doesnt exist returns null`() {
+    val res = offenceService.findHoCodeByOffenceCode("NOT_EXIST")
+
+    assertThat(res).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql",
+  )
+  fun `Get ho-code for offence that has empty ho_code`() {
+    val res = offenceService.findHoCodeByOffenceCode("AF06999")
+
+    assertThat(res).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-with-ho-code.sql",
+  )
+  fun `Get ho-code for offence`() {
+    val res = offenceService.findHoCodeByOffenceCode("HO06999")
+
+    assertThat(res).isEqualTo("001/13")
   }
 
   private fun verifyPostOffenceToPrisonApi(json: String) =
