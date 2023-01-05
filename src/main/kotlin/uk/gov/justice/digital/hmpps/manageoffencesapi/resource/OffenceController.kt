@@ -38,7 +38,7 @@ class OffenceController(
   @ResponseBody
   @Operation(
     summary = "Get the HO Code associated with an offence code",
-    description = "This endpoint will return the HO Code associated with an offence code, could be null"
+    description = "This endpoint will return the HO Code associated with an offence code, could return null"
   )
   fun getHoCodeByOffenceCode(
     @Parameter(required = true, example = "AA1256A", description = "The offence code")
