@@ -76,6 +76,9 @@ class OffenceService(
     fullySyncWithNomis(allOffences, nomisOffencesById, nomisOffences)
   }
 
+  @Transactional(readOnly = true)
+  fun findHoCodeByOffenceCode(code: String): String? = offenceRepository.findByCodeIgnoreCase(code)?.homeOfficeStatsCode
+
   fun fullySyncWithNomis(cache: SdrsCache) {
     log.info("Starting full sync with NOMIS for cache: {}", cache)
     val allOffences = offenceRepository.findBySdrsCache(cache)
