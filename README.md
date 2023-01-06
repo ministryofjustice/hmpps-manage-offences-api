@@ -6,7 +6,7 @@ This service requires a postgresql database.
 
 # Building the project
 Tools required:
-* JDK v17+
+* JDK v18+
 * Kotlin
 * docker
 * docker-compose
