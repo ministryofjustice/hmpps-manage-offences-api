@@ -448,7 +448,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  private fun getAllOffences(offences: String, alphaChar: Char = 'A') {
+  private fun getAllOffences(offences: String) {
     stubFor(
       post("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetOffence')]"))
