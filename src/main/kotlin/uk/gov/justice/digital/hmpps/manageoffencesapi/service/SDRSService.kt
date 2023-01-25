@@ -56,6 +56,7 @@ class SDRSService(
   private val offenceService: OffenceService,
   private val scheduleService: ScheduleService,
   private val adminService: AdminService,
+  private val eventService: EventService,
 ) {
   @Scheduled(cron = "0 0 */1 * * *")
   @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
@@ -282,6 +283,7 @@ class SDRSService(
               },
               { offenceRepository.save(transform(it, cache)) }
             )
+          sendOffenceChangedEvent(it)
         }
         saveLoad(cache, loadDate, SUCCESS, UPDATE)
         setParentOffences(cache)
@@ -292,6 +294,17 @@ class SDRSService(
         "Failed for updating a single cache from SDRS for cache {} - error message = {}", cache, e.message
       )
       handleSdrsError(cache = cache, loadDate = loadDate, loadType = UPDATE)
+    }
+  }
+
+  private fun sendOffenceChangedEvent(it: Offence) {
+    runCatching {
+      eventService.publishOffenceChangedEvent(it.code)
+    }.onFailure { error ->
+      log.error(
+        "Failed to send changed-event for offence code  ${it.code}",
+        error
+      )
     }
   }
 
