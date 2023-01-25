@@ -34,6 +34,9 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.1.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.1.0")
 
+  // SQS
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.2.0")
+
   // Test dependencies
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.3")

@@ -41,6 +41,7 @@ class SDRSServiceTest {
   private val offenceService = mock<OffenceService>()
   private val scheduleService = mock<ScheduleService>()
   private val sdrsApiClient = mock<SDRSApiClient>()
+  private val eventService = mock<EventService>()
 
   private val sdrsService = SDRSService(
     sdrsApiClient,
@@ -50,7 +51,8 @@ class SDRSServiceTest {
     offenceSchedulePartRepository,
     offenceService,
     scheduleService,
-    adminService
+    adminService,
+    eventService
   )
 
   @BeforeEach
@@ -94,7 +96,7 @@ class SDRSServiceTest {
       CONTROL_TABLE_RESPONSE
     )
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetOffence })).thenReturn(
-      GET_OFFENCE_RESPONSE
+      GET_OFFENCE_RESPONSE_NO_OFFENCES
     )
 
     sdrsService.deltaSynchroniseWithSdrs()
@@ -118,7 +120,7 @@ class SDRSServiceTest {
       CONTROL_TABLE_RESPONSE
     )
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetOffence })).thenReturn(
-      GET_OFFENCE_RESPONSE
+      GET_OFFENCE_RESPONSE_NO_OFFENCES
     )
     whenever(offenceRepository.findChildOffencesWithNoParent(SdrsCache.OFFENCES_A)).thenReturn(listOf(OFFENCE_B123AA6A))
     whenever(offenceRepository.findOneByCode(OFFENCE_B123AA6A.parentCode!!)).thenReturn(Optional.of(OFFENCE_B123AA6))
@@ -126,6 +128,21 @@ class SDRSServiceTest {
     sdrsService.deltaSynchroniseWithSdrs()
 
     verify(offenceRepository, times(1)).save(OFFENCE_B123AA6A.copy(parentOffenceId = OFFENCE_B123AA6.id))
+  }
+
+  @Test
+  fun `Ensure event is published when an offence is updated`() {
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetControlTable })).thenReturn(
+      CONTROL_TABLE_RESPONSE
+    )
+    whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetOffence })).thenReturn(
+      GET_OFFENCE_RESPONSE
+    )
+
+    sdrsService.deltaSynchroniseWithSdrs()
+
+    verify(offenceService, times(1)).fullySyncWithNomis(SdrsCache.OFFENCES_A)
+    verify(eventService).publishOffenceChangedEvent(SDRS_OFFENCE.code)
   }
 
   companion object {
@@ -142,11 +159,28 @@ class SDRSServiceTest {
       messageStatus = MessageStatusResponse(status = "SUCCESS")
     )
 
-    private val GET_OFFENCE_RESPONSE = SDRSResponse(
+    private val GET_OFFENCE_RESPONSE_NO_OFFENCES = SDRSResponse(
       messageBody = MessageBodyResponse(
         gatewayOperationType = GatewayOperationTypeResponse(
           getOffenceResponse = GetOffenceResponse(
             offences = emptyList()
+          )
+        ),
+      ),
+      messageStatus = MessageStatusResponse(status = "SUCCESS")
+    )
+
+    val SDRS_OFFENCE = uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence(
+      offenceRevisionId = 1,
+      code = "OF1",
+      changedDate = LocalDateTime.now(),
+      offenceStartDate = LocalDate.now(),
+    )
+    private val GET_OFFENCE_RESPONSE = SDRSResponse(
+      messageBody = MessageBodyResponse(
+        gatewayOperationType = GatewayOperationTypeResponse(
+          getOffenceResponse = GetOffenceResponse(
+            offences = listOf(SDRS_OFFENCE)
           )
         ),
       ),
