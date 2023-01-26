@@ -27,7 +27,7 @@ class EventService(
       PublishRequest(domainTopic.arn, mapper.writeValueAsString(event))
         .addMessageAttributesEntry("eventType", MessageAttributeValue().withDataType("String").withStringValue(event.eventType))
     )
-    log.info("Published event: $event")
+    log.info("Published 'offence changed event' for: $offenceCode")
   }
 
   companion object {
