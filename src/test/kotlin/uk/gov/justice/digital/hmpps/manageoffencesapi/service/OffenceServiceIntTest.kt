@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import com.github.tomakehurst.wiremock.client.WireMock
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
+import javax.persistence.EntityNotFoundException
 
 class OffenceServiceIntTest : IntegrationTestBase() {
   @Autowired
@@ -34,10 +36,12 @@ class OffenceServiceIntTest : IntegrationTestBase() {
 
   @Test
   @Sql("classpath:test_data/reset-all-data.sql")
-  fun `Get ho-code for offence that doesnt exist returns null`() {
-    val res = offenceService.findHoCodeByOffenceCode("NOT_EXIST")
-
-    assertThat(res).isNull()
+  fun `Get ho-code for offence that doesnt exist throws 404`() {
+    Assertions.assertThatThrownBy {
+      offenceService.findHoCodeByOffenceCode("NOT_EXIST")
+    }
+      .isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessage("No offence exists for the passed in offence code")
   }
 
   @Test

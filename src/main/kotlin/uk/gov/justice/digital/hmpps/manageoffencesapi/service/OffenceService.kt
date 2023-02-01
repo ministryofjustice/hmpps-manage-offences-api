@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHist
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
+import javax.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence as PrisonApiOffence
 
@@ -77,7 +78,10 @@ class OffenceService(
   }
 
   @Transactional(readOnly = true)
-  fun findHoCodeByOffenceCode(code: String): String? = offenceRepository.findByCodeIgnoreCase(code)?.homeOfficeStatsCode
+  fun findHoCodeByOffenceCode(code: String): String? {
+    val offence = offenceRepository.findByCodeIgnoreCase(code) ?: throw EntityNotFoundException("No offence exists for the passed in offence code")
+    return offence.homeOfficeStatsCode
+  }
 
   fun fullySyncWithNomis(cache: SdrsCache) {
     log.info("Starting full sync with NOMIS for cache: {}", cache)

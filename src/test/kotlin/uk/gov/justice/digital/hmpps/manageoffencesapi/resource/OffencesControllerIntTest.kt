@@ -280,4 +280,15 @@ class OffencesControllerIntTest : IntegrationTestBase() {
 
     assertThat(result).isEqualTo("001/13")
   }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+  )
+  fun `Get HO Code when offence doesnt exist throws 404`() {
+    webTestClient.get().uri("/offences/ho-code/NO_OFFENCE")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isNotFound
+  }
 }
