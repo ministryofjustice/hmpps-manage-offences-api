@@ -46,7 +46,7 @@ class OffenceController(
     value = [
       ApiResponse(
         responseCode = "200",
-        description = "Offence code exists and associate hoCode returned (could be null/empty)",
+        description = "Offence code exists and associated hoCode returned (could be null/empty)",
       ),
       ApiResponse(
         responseCode = "404",
