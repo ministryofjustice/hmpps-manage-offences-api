@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
@@ -39,6 +41,18 @@ class OffenceController(
   @Operation(
     summary = "Get the HO Code associated with an offence code",
     description = "This endpoint will return the HO Code associated with an offence code, could return null"
+  )
+  @ApiResponses(
+    value = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Offence code exists and associated hoCode returned (could be null/empty)",
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "No offence exists for the passed in offence code",
+      )
+    ]
   )
   fun getHoCodeByOffenceCode(
     @Parameter(required = true, example = "AA1256A", description = "The offence code")
