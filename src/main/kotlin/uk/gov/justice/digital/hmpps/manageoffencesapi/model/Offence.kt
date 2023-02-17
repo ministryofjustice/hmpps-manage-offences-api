@@ -14,6 +14,8 @@ data class Offence(
   val description: String? = null,
   @Schema(description = "The CJS Title (usually the same as description)")
   val cjsTitle: String? = null,
+  @Schema(description = "The offence type (e.g CI)")
+  val offenceType: String? = null,
   @Schema(description = "The revision number of the offence")
   val revisionId: Int,
   @Schema(description = "The offence start date")

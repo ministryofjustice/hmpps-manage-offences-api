@@ -19,6 +19,7 @@ data class Offence(
   val offenceEndDate: LocalDate? = null,
   val changedDate: LocalDateTime,
   val offenceActsAndSections: String? = null,
+  val offenceType: String? = null,
 ) {
   val category: Int?
     get() = mojStatsCode?.substringBefore('/')?.toIntOrNull()
