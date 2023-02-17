@@ -25,6 +25,7 @@ data class Offence(
   val endDate: LocalDate? = null,
   val category: Int? = null,
   val subCategory: Int? = null,
+  val offenceType: String? = null,
   val actsAndSections: String? = null,
   val parentOffenceId: Long? = null,
   @Enumerated(EnumType.STRING)
@@ -32,6 +33,9 @@ data class Offence(
   val changedDate: LocalDateTime,
   val createdDate: LocalDateTime = LocalDateTime.now(),
   val lastUpdatedDate: LocalDateTime = LocalDateTime.now(),
+  // The maxPeriodIsLife and maxPeriodOfIndictmentYears columns are populated via the schedule data supplied by the HMCTS NSD team
+  val maxPeriodIsLife: Boolean? = false,
+  val maxPeriodOfIndictmentYears: Int? = null,
 ) {
   val statuteCode
     get() = code.substring(0, 4)

@@ -67,6 +67,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             endDate = LocalDate.of(2013, 3, 2),
             category = 195,
             subCategory = 99,
+            offenceType = "CI",
             changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
           ),
           Offence(

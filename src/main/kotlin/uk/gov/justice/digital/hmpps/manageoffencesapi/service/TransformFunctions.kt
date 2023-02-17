@@ -34,6 +34,7 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     id = offence.id,
     code = offence.code,
     description = offence.description,
+    offenceType = offence.offenceType,
     cjsTitle = offence.cjsTitle,
     revisionId = offence.revisionId,
     startDate = offence.startDate,
@@ -69,6 +70,7 @@ fun transform(sdrsOffence: SdrsOffence, cache: SdrsCache): Offence = Offence(
   changedDate = sdrsOffence.changedDate,
   actsAndSections = sdrsOffence.offenceActsAndSections,
   sdrsCache = cache,
+  offenceType = sdrsOffence.offenceType,
 )
 
 fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache): Offence =
@@ -82,6 +84,7 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache):
     subCategory = sdrsOffence.subCategory,
     changedDate = sdrsOffence.changedDate,
     actsAndSections = sdrsOffence.offenceActsAndSections,
+    offenceType = sdrsOffence.offenceType,
     sdrsCache = sdrsCache
   )
 

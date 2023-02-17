@@ -45,6 +45,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                               "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                               "MOJStatsCode": "195/99",
                               "code": "XX99001",
+                              "OffenceType": "CI",
                               "ChangedDate": "2014-07-16T16:30:46"
                             },
                             {
@@ -54,6 +55,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                               "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                               "MOJStatsCode": "195/99",
                               "code": "XX99001",
+                              "OffenceType": "CS",
                               "ChangedDate": "2014-07-16T16:30:46"
                             },
                             {

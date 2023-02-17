@@ -45,7 +45,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             startDate = LocalDate.of(2015, 3, 13),
             endDate = null,
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
-            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000)
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            offenceType = "CI",
           ),
           ModelOffence(
             id = 3,
