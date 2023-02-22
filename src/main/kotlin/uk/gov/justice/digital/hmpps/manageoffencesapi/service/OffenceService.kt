@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.H
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import javax.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.O
 @Service
 class OffenceService(
   private val offenceRepository: OffenceRepository,
-  private val offenceSchedulePartRepository: OffenceSchedulePartRepository,
+  private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val nomisChangeHistoryRepository: NomisChangeHistoryRepository,
   private val prisonApiClient: PrisonApiClient,
@@ -42,10 +42,10 @@ class OffenceService(
     }
 
     val matchingOffenceIds = matchingOffences.map { it.id }
-    val offenceSchedulePartsByOffenceId =
-      offenceSchedulePartRepository.findByOffenceIdIn(matchingOffenceIds).groupBy { it.offence.id }
+    val offenceMappingsByOffenceId =
+      offenceScheduleMappingRepository.findByOffenceIdIn(matchingOffenceIds).groupBy { it.offence.id }
     return matchingOffences.map {
-      it.copy(schedules = transform(offenceSchedulePartsByOffenceId[it.id]))
+      it.copy(schedules = transform(offenceMappingsByOffenceId[it.id]))
     }.sortedBy { it.code }
   }
 

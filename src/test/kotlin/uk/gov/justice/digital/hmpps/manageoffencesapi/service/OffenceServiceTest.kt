@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -35,7 +35,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.O
 
 class OffenceServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
-  private val offenceSchedulePartRepository = mock<OffenceSchedulePartRepository>()
+  private val offenceScheduleMappingRepository = mock<OffenceScheduleMappingRepository>()
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
   private val nomisChangeHistoryRepository = mock<NomisChangeHistoryRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
@@ -44,7 +44,7 @@ class OffenceServiceTest {
   private val offenceService =
     OffenceService(
       offenceRepository,
-      offenceSchedulePartRepository,
+      offenceScheduleMappingRepository,
       sdrsLoadResultRepository,
       nomisChangeHistoryRepository,
       prisonApiClient,

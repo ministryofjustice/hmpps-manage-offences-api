@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Messag
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageStatusResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
@@ -36,7 +36,7 @@ class SDRSServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
   private val sdrsLoadResultHistoryRepository = mock<SdrsLoadResultHistoryRepository>()
-  private val offenceSchedulePartRepository = mock<OffenceSchedulePartRepository>()
+  private val offenceScheduleMappingRepository = mock<OffenceScheduleMappingRepository>()
   private val adminService = mock<AdminService>()
   private val offenceService = mock<OffenceService>()
   private val scheduleService = mock<ScheduleService>()
@@ -48,7 +48,7 @@ class SDRSServiceTest {
     offenceRepository,
     sdrsLoadResultRepository,
     sdrsLoadResultHistoryRepository,
-    offenceSchedulePartRepository,
+    offenceScheduleMappingRepository,
     offenceService,
     scheduleService,
     adminService,

@@ -2,10 +2,8 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToScheduleHistory
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFENCE
@@ -13,7 +11,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATU
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory as EntityNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart as EntitySchedulePart
@@ -47,14 +44,14 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     childOffenceIds = childOffenceIds ?: emptyList(),
   )
 
-fun transform(offenceScheduleParts: List<OffenceSchedulePart>?): List<ScheduleDetails> =
-  offenceScheduleParts?.groupBy { it.schedulePart.schedule }?.map {
+fun transform(offenceScheduleMappings: List<OffenceScheduleMapping>?): List<ScheduleDetails> =
+  offenceScheduleMappings?.groupBy { it.scheduleParagraph.schedulePart.schedule }?.map {
     ScheduleDetails(
       id = it.key.id,
       act = it.key.act,
       code = it.key.code,
       url = it.key.url,
-      schedulePartNumbers = it.value.map { offenceSchedulePart -> offenceSchedulePart.schedulePart.partNumber }
+      schedulePartNumbers = it.value.map { offenceSchedulePart -> offenceSchedulePart.scheduleParagraph.schedulePart.partNumber }
     )
   } ?: emptyList()
 
@@ -114,7 +111,7 @@ fun transform(schedule: ModelSchedule) =
 
 fun transform(
   it: EntitySchedulePart,
-  offencesByParts: Map<Long, List<OffenceSchedulePart>>
+  offencesByParts: Map<Long, List<OffenceScheduleMapping>>
 ) = ModelSchedulePart(
   id = it.id,
   partNumber = it.partNumber,
@@ -137,24 +134,6 @@ fun transform(it: EntitySchedule) = ModelSchedule(
   act = it.act,
   code = it.code,
   url = it.url,
-)
-
-fun transform(osp: OffenceSchedulePart, changeType: ChangeType) =
-  OffenceToScheduleHistory(
-    scheduleCode = osp.schedulePart.schedule.code,
-    schedulePartId = osp.schedulePart.id,
-    schedulePartNumber = osp.schedulePart.partNumber,
-    offenceId = osp.offence.id,
-    offenceCode = osp.offence.code,
-    changeType = changeType,
-  )
-
-fun transform(
-  mapping: OffenceToScheduleHistory,
-  nomisScheduleMappings: List<NomisScheduleMapping>
-) = OffenceToScheduleMappingDto(
-  offenceCode = mapping.offenceCode,
-  schedule = nomisScheduleMappings.first { nomisSchedule -> nomisSchedule.schedulePartId == mapping.schedulePartId }.nomisScheduleName
 )
 
 fun transform(offence: PrisonApiOffence, changeType: ChangeType) =
