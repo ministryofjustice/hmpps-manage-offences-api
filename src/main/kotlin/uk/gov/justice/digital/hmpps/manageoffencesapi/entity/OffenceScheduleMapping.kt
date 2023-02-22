@@ -18,8 +18,8 @@ data class OffenceScheduleMapping(
   @ManyToOne
   @Fetch(FetchMode.JOIN)
   val scheduleParagraph: ScheduleParagraph,
-  val lineReference: String? = "",
-  val legislationText: String? = "",
+  val lineReference: String?,
+  val legislationText: String?,
   @ManyToOne
   @Fetch(FetchMode.JOIN)
   val offence: Offence,

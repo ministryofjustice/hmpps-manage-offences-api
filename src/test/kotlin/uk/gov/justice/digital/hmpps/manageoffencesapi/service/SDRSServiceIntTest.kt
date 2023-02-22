@@ -96,7 +96,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
     }
 
-    assertThat(offenceScheduleParts.size).isEqualTo(1)
+    assertThat(offenceScheduleParts).hasSize(1)
   }
 
   @Test

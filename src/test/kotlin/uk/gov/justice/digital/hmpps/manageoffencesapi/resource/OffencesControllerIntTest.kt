@@ -168,10 +168,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
         )
       )
 
-    assertThat(result.first { it.code == "XX99002" }!!.schedules)
-      .usingRecursiveComparison()
-      .ignoringFieldsMatchingRegexes(".*id")
-      .isEqualTo(emptyList<ScheduleDetails> ())
+    assertThat(result.first { it.code == "XX99002" }!!.schedules).isEmpty()
   }
 
   @Test
