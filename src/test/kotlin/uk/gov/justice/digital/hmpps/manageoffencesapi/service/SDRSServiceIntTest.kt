@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_A
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_B
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
@@ -33,7 +33,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
   lateinit var sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository
 
   @Autowired
-  lateinit var offenceSchedulePartRepository: OffenceSchedulePartRepository
+  lateinit var offenceScheduleMappingRepository: OffenceScheduleMappingRepository
 
   @Test
   @Sql(
@@ -52,7 +52,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     val offences = offenceRepository.findAll()
     val statusRecords = sdrsLoadResultRepository.findAll()
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
-    val offenceScheduleParts = offenceSchedulePartRepository.findAll()
+    val offenceScheduleParts = offenceScheduleMappingRepository.findAll()
 
     assertThat(offences)
       .usingRecursiveFieldByFieldElementComparatorIgnoringFields("id", "createdDate", "lastUpdatedDate", "changedDate")
@@ -96,7 +96,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       assertThat(it.loadType).isEqualTo(FULL_LOAD)
     }
 
-    assertThat(offenceScheduleParts.size).isEqualTo(4)
+    assertThat(offenceScheduleParts.size).isEqualTo(1)
   }
 
   @Test
@@ -293,22 +293,5 @@ class SDRSServiceIntTest : IntegrationTestBase() {
           ),
         )
       )
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-to-schedule-history.sql",
-    "classpath:test_data/set-delta-sync-toggle.sql",
-  )
-  fun `Send offence-to-schedule mappings to NOMIS `() {
-    sdrsApiMockServer.stubControlTableRequest()
-    sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
-    sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
-    sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
-    prisonApiMockServer.stubLinkOffence()
-    prisonApiMockServer.stubUnlinkOffence()
-
-    sdrsService.deltaSynchroniseWithSdrs()
   }
 }

@@ -160,12 +160,6 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .isEqualTo(
         listOf(
           ScheduleDetails(
-            act = "Criminal Justice Act 2003",
-            code = "15",
-            url = "https://www.legislation.gov.uk/ukpga/2003/44/schedule/15",
-            schedulePartNumbers = listOf(1, 2)
-          ),
-          ScheduleDetails(
             act = "Sentencing Act 2020",
             code = "13",
             url = "https://www.legislation.gov.uk/ukpga/2020/17/schedule/13",
@@ -177,16 +171,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
     assertThat(result.first { it.code == "XX99002" }!!.schedules)
       .usingRecursiveComparison()
       .ignoringFieldsMatchingRegexes(".*id")
-      .isEqualTo(
-        listOf(
-          ScheduleDetails(
-            act = "Criminal Justice Act 2003",
-            code = "15",
-            url = "https://www.legislation.gov.uk/ukpga/2003/44/schedule/15",
-            schedulePartNumbers = listOf(1)
-          )
-        )
-      )
+      .isEqualTo(emptyList<ScheduleDetails> ())
   }
 
   @Test

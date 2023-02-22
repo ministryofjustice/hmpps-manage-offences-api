@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceSchedulePart
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
@@ -37,7 +37,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offenc
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceSchedulePartRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDateTime
@@ -52,7 +52,7 @@ class SDRSService(
   private val offenceRepository: OffenceRepository,
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
-  private val offenceSchedulePartRepository: OffenceSchedulePartRepository,
+  private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val offenceService: OffenceService,
   private val scheduleService: ScheduleService,
   private val adminService: AdminService,
@@ -83,12 +83,11 @@ class SDRSService(
 
     log.info("The 'Synchronise with SDRS' job is checking for any updates since the last load")
     loadOffenceUpdates(sdrsLoadResults)
-    scheduleService.deltaSyncScheduleMappingsToNomis()
   }
 
   private fun loadAllOffences() {
     // These offenceToScheduleParts mappings will be re-inserted after all offences have been re-loaded (from SDRS)
-    val offenceToScheduleParts = offenceSchedulePartRepository.findAll()
+    val offenceToScheduleMappings = offenceScheduleMappingRepository.findAll()
     resetLoadResultAndDeleteOffences()
 
     val loadDate = LocalDateTime.now()
@@ -98,10 +97,10 @@ class SDRSService(
       else fullLoadSecondaryCache(cache, loadDate)
     }
 
-    offenceToScheduleParts.forEach {
+    offenceToScheduleMappings.forEach {
       val offence = offenceRepository.findOneByCode(it.offence.code)
         .orElseThrow { EntityNotFoundException("Offence code ${it.offence.code} missing that was previously assigned to a schedule") }
-      offenceSchedulePartRepository.save(OffenceSchedulePart(offence = offence, schedulePart = it.schedulePart))
+      offenceScheduleMappingRepository.save(OffenceScheduleMapping(offence = offence, scheduleParagraph = it.scheduleParagraph, legislationText = it.legislationText, lineReference = it.lineReference))
     }
   }
 
@@ -120,11 +119,11 @@ class SDRSService(
     SdrsCache.values().forEach { cache ->
       sdrsLoadResultRepository.save(SdrsLoadResult(cache = cache))
     }
-    offenceSchedulePartRepository.deleteAll()
+    offenceScheduleMappingRepository.deleteAll()
     offenceRepository.deleteByParentOffenceIdIsNotNull()
     offenceRepository.deleteAll()
     offenceRepository.flush()
-    offenceSchedulePartRepository.flush()
+    offenceScheduleMappingRepository.flush()
   }
 
   private fun makeControlTableRequest(changedDateTime: LocalDateTime): SDRSResponse {
