@@ -8,4 +8,5 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapp
 interface OffenceScheduleMappingRepository : JpaRepository<OffenceScheduleMapping, Long> {
   fun findByScheduleParagraphSchedulePartScheduleId(scheduleId: Long): List<OffenceScheduleMapping>
   fun findByOffenceIdIn(offenceId: List<Long>): List<OffenceScheduleMapping>
+  fun deleteByScheduleParagraphIdAndOffenceId(scheduleParagraphId: Long, offenceId: Long): Long
 }

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFEN
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATUTE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceMappedToSchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory as EntityNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
@@ -42,6 +43,26 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     isChild = offence.parentCode != null,
     parentOffenceId = offence.parentOffenceId,
     childOffenceIds = childOffenceIds ?: emptyList(),
+  )
+
+fun transform(offenceScheduleMapping: OffenceScheduleMapping, scheduleParagraphId: Long): OffenceMappedToSchedule =
+  OffenceMappedToSchedule(
+    id = offenceScheduleMapping.offence.id,
+    code = offenceScheduleMapping.offence.code,
+    description = offenceScheduleMapping.offence.description,
+    offenceType = offenceScheduleMapping.offence.offenceType,
+    cjsTitle = offenceScheduleMapping.offence.cjsTitle,
+    revisionId = offenceScheduleMapping.offence.revisionId,
+    startDate = offenceScheduleMapping.offence.startDate,
+    endDate = offenceScheduleMapping.offence.endDate,
+    homeOfficeStatsCode = offenceScheduleMapping.offence.homeOfficeStatsCode,
+    changedDate = offenceScheduleMapping.offence.changedDate,
+    loadDate = offenceScheduleMapping.offence.lastUpdatedDate,
+    isChild = offenceScheduleMapping.offence.parentCode != null,
+    parentOffenceId = offenceScheduleMapping.offence.parentOffenceId,
+    lineReference = offenceScheduleMapping.lineReference,
+    legislationText = offenceScheduleMapping.legislationText,
+    scheduleParagraphId = scheduleParagraphId,
   )
 
 fun transform(offenceScheduleMappings: List<OffenceScheduleMapping>?): List<ScheduleDetails> =
@@ -108,16 +129,6 @@ fun transform(schedule: ModelSchedule) =
     code = schedule.code,
     url = schedule.url,
   )
-
-fun transform(
-  it: EntitySchedulePart,
-  offencesByParts: Map<Long, List<OffenceScheduleMapping>>
-) = ModelSchedulePart(
-  id = it.id,
-  partNumber = it.partNumber,
-  offences = offencesByParts[it.id]?.map { o -> transform(o.offence) }
-)
-
 fun transform(
   schedule: EntitySchedule,
   scheduleParts: List<ModelSchedulePart>
@@ -134,6 +145,7 @@ fun transform(it: EntitySchedule) = ModelSchedule(
   act = it.act,
   code = it.code,
   url = it.url,
+  scheduleParts = null,
 )
 
 fun transform(offence: PrisonApiOffence, changeType: ChangeType) =
