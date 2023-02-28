@@ -14,6 +14,6 @@ VALUES ('XX99002',
         'CJS Title 2Fail to give to an authorised person information / assistance / provide facilities that person may require',
         '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07 16:05:58.178');
 
-INSERT INTO offence_schedule_mapping (schedule_paragraph_id, offence_id)
-VALUES ((select id from schedule_paragraph where paragraph_number = 1  and schedule_part_id = (select id from schedule_part where schedule_id = (select id from schedule where code = '13' and part_number = 1))),
+INSERT INTO offence_schedule_mapping (schedule_part_id, offence_id)
+VALUES ((select id from schedule_part where schedule_id = (select id from schedule where code = '13' and part_number = 1)),
         (select id from offence where code = 'XX99001'));

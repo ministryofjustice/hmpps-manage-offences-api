@@ -6,5 +6,5 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class SchedulePart(
   val id: Long,
   val partNumber: Int,
-  val scheduleParagraphs: List<ScheduleParagraph>? = null,
+  val offences: List<OffenceWithScheduleData>? = null,
 )

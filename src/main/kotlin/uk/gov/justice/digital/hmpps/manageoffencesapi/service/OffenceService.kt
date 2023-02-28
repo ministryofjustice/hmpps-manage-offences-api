@@ -300,7 +300,8 @@ class OffenceService(
 
   fun findOffenceById(offenceId: Long): Offence {
     val offence = offenceRepository.findById(offenceId).orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
-    return transform(offence)
+    val children = offenceRepository.findByParentOffenceId(offenceId)
+    return transform(offence, children.map { it.id })
   }
 
   companion object {

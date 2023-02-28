@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
@@ -54,13 +53,11 @@ class SDRSService(
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val offenceService: OffenceService,
-  private val scheduleService: ScheduleService,
   private val adminService: AdminService,
   private val eventService: EventService,
 ) {
-  // @Scheduled(cron = "0 0 */1 * * *")
-  @Scheduled(cron = "0 */1 * * * *")
-  // @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
+  @Scheduled(cron = "0 0 */1 * * *")
+  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
   @Transactional
   fun fullSynchroniseWithSdrs() {
     if (!adminService.isFeatureEnabled(FULL_SYNC_SDRS)) {
@@ -101,7 +98,7 @@ class SDRSService(
     offenceToScheduleMappings.forEach {
       val offence = offenceRepository.findOneByCode(it.offence.code)
         .orElseThrow { EntityNotFoundException("Offence code ${it.offence.code} missing that was previously assigned to a schedule") }
-      offenceScheduleMappingRepository.save(OffenceScheduleMapping(offence = offence, scheduleParagraph = it.scheduleParagraph, legislationText = it.legislationText, lineReference = it.lineReference))
+      offenceScheduleMappingRepository.save(transform(offence, it))
     }
   }
 
