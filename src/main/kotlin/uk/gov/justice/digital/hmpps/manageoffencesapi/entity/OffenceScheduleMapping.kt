@@ -17,10 +17,12 @@ data class OffenceScheduleMapping(
   val id: Long = -1,
   @ManyToOne
   @Fetch(FetchMode.JOIN)
-  val scheduleParagraph: ScheduleParagraph,
-  val lineReference: String?,
-  val legislationText: String?,
+  val schedulePart: SchedulePart,
   @ManyToOne
   @Fetch(FetchMode.JOIN)
   val offence: Offence,
+  val lineReference: String? = null,
+  val legislationText: String? = null,
+  val paragraphNumber: Int? = null,
+  val paragraphTitle: String? = null,
 )

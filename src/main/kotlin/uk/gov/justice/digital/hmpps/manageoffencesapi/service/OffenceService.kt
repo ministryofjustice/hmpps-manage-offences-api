@@ -298,6 +298,12 @@ class OffenceService(
     return nomisOffences.associateBy { it.code to it.statuteCode.code } to nomisOffences
   }
 
+  fun findOffenceById(offenceId: Long): Offence {
+    val offence = offenceRepository.findById(offenceId).orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
+    val children = offenceRepository.findByParentOffenceId(offenceId)
+    return transform(offence, children.map { it.id })
+  }
+
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     private const val MAX_RECORDS_IN_POST_PAYLOAD = 100

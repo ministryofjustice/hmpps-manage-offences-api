@@ -36,6 +36,21 @@ class OffenceController(
     return offenceService.findOffencesByCode(offenceCode)
   }
 
+  @GetMapping(value = ["/id/{offenceId}"])
+  @ResponseBody
+  @Operation(
+    summary = "Get offence matching the passed ID",
+    description = "This endpoint will return the offence that matches the unique ID passed in"
+  )
+  fun getOffenceById(
+    @Parameter(required = true, example = "123456", description = "The offence ID")
+    @PathVariable("offenceId")
+    offenceId: Long
+  ): Offence {
+    log.info("Request received to fetch offence for offenceId {}", offenceId)
+    return offenceService.findOffenceById(offenceId)
+  }
+
   @GetMapping(value = ["/ho-code/{offenceCode}"])
   @ResponseBody
   @Operation(
