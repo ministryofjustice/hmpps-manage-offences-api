@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.BasicOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceWithScheduleData
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory as EntityNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
@@ -48,8 +48,8 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     childOffenceIds = childOffenceIds ?: emptyList(),
   )
 
-fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceWithScheduleData =
-  OffenceWithScheduleData(
+fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToScheduleMapping =
+  OffenceToScheduleMapping(
     id = offenceScheduleMapping.offence.id,
     code = offenceScheduleMapping.offence.code,
     description = offenceScheduleMapping.offence.description,
@@ -201,8 +201,8 @@ fun transform(
     lineReference = it.lineReference
   )
 
-fun transform(offence: Offence, children: List<Offence>): OffenceWithScheduleData =
-  OffenceWithScheduleData(
+fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMapping =
+  OffenceToScheduleMapping(
     id = offence.id,
     code = offence.code,
     description = offence.description,

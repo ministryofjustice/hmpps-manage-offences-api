@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceWithScheduleData
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService
@@ -80,17 +80,17 @@ class ScheduleController(
     return scheduleService.findAllSchedules()
   }
 
-  @GetMapping(value = ["/offence/id/{offenceId}"])
+  @GetMapping(value = ["/offence-mapping/id/{offenceId}"])
   @ResponseBody
   @Operation(
     summary = "Get offence matching the passed ID - with schedule related data",
     description = "This endpoint will return the offence that matches the unique ID passed in"
   )
-  fun getOffenceById(
+  fun getOffenceToScheduleMapping(
     @Parameter(required = true, example = "123456", description = "The offence ID")
     @PathVariable("offenceId")
     offenceId: Long
-  ): OffenceWithScheduleData {
+  ): OffenceToScheduleMapping {
     log.info("Request received to fetch OffenceWithScheduleData for offenceId {}", offenceId)
     return scheduleService.findOffenceById(offenceId)
   }

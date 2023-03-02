@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceWithScheduleData
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
@@ -106,7 +106,7 @@ class ScheduleService(
     }
   }
 
-  fun findOffenceById(offenceId: Long): OffenceWithScheduleData {
+  fun findOffenceById(offenceId: Long): OffenceToScheduleMapping {
     val offence = offenceRepository.findById(offenceId)
       .orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
     val children = offenceRepository.findByParentOffenceId(offenceId)

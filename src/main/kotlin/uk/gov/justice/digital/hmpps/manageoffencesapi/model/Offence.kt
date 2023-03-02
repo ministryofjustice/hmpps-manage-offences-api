@@ -38,7 +38,7 @@ data class Offence(
   val childOffenceIds: List<Long>? = emptyList(),
 )
 
-data class OffenceWithScheduleData(
+data class OffenceToScheduleMapping(
   @Schema(description = "Unique ID of the offence")
   val id: Long,
   @Schema(description = "The offence code")
