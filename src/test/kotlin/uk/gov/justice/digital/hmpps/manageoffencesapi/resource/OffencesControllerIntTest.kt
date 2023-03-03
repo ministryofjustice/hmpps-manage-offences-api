@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkedScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.SDRSService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -47,6 +47,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             offenceType = "CI",
+            childOffenceIds = emptyList(),
           ),
           ModelOffence(
             id = 3,
@@ -57,7 +58,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             startDate = LocalDate.of(2015, 3, 13),
             endDate = null,
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
-            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000)
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            childOffenceIds = emptyList(),
           ),
           ModelOffence(
             id = 4,
@@ -68,7 +70,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             startDate = LocalDate.of(2015, 3, 13),
             endDate = null,
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
-            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000)
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            childOffenceIds = emptyList(),
           )
         )
       )
@@ -137,7 +140,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             startDate = LocalDate.of(2015, 3, 13),
             endDate = null,
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
-            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000)
+            loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            childOffenceIds = emptyList(),
           ),
           ModelOffence(
             id = 1,
@@ -149,6 +153,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             endDate = null,
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+            childOffenceIds = emptyList(),
           )
         )
       )
@@ -159,16 +164,17 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .ignoringCollectionOrder()
       .isEqualTo(
         listOf(
-          ScheduleDetails(
+          LinkedScheduleDetails(
+            id = 1,
             act = "Sentencing Act 2020",
             code = "13",
             url = "https://www.legislation.gov.uk/ukpga/2020/17/schedule/13",
-            schedulePartNumbers = listOf(1)
+            partNumber = 1,
           )
         )
       )
 
-    assertThat(result.first { it.code == "XX99002" }!!.schedules).isEmpty()
+    assertThat(result.first { it.code == "XX99002" }!!.schedules).isNull()
   }
 
   @Test
@@ -217,6 +223,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             parentOffenceId = parentOffenceId,
             isChild = true,
+            childOffenceIds = emptyList(),
           ),
           ModelOffence(
             id = 3,
@@ -230,6 +237,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             parentOffenceId = parentOffenceId,
             isChild = true,
+            childOffenceIds = emptyList(),
           ),
           ModelOffence(
             id = 4,
@@ -243,6 +251,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             parentOffenceId = parentOffenceId,
             isChild = true,
+            childOffenceIds = emptyList(),
           ),
         )
       )
