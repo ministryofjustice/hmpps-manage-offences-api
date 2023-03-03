@@ -12,9 +12,9 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATU
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.BasicOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkedScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceWithScheduleData
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleDetails
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory as EntityNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart as EntitySchedulePart
@@ -48,8 +48,8 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     childOffenceIds = childOffenceIds ?: emptyList(),
   )
 
-fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceWithScheduleData =
-  OffenceWithScheduleData(
+fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToScheduleMapping =
+  OffenceToScheduleMapping(
     id = offenceScheduleMapping.offence.id,
     code = offenceScheduleMapping.offence.code,
     description = offenceScheduleMapping.offence.description,
@@ -69,16 +69,20 @@ fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceWithSchedu
     paragraphNumber = offenceScheduleMapping.paragraphNumber,
   )
 
-fun transform(offenceScheduleMappings: List<OffenceScheduleMapping>?): List<ScheduleDetails> =
-  offenceScheduleMappings?.groupBy { it.schedulePart.schedule }?.map {
-    ScheduleDetails(
-      id = it.key.id,
-      act = it.key.act,
-      code = it.key.code,
-      url = it.key.url,
-      schedulePartNumbers = it.value.map { offenceSchedulePart -> offenceSchedulePart.schedulePart.partNumber }
+fun transform(offenceScheduleMappings: List<OffenceScheduleMapping>?): List<LinkedScheduleDetails>? =
+  offenceScheduleMappings?.map {
+    LinkedScheduleDetails(
+      id = it.schedulePart.schedule.id,
+      act = it.schedulePart.schedule.act,
+      code = it.schedulePart.schedule.code,
+      url = it.schedulePart.schedule.url,
+      partNumber = it.schedulePart.partNumber,
+      paragraphNumber = it.paragraphNumber,
+      paragraphTitle = it.paragraphTitle,
+      lineReference = it.lineReference,
+      legislationText = it.legislationText,
     )
-  } ?: emptyList()
+  }
 
 fun transform(sdrsOffence: SdrsOffence, cache: SdrsCache): Offence = Offence(
   code = sdrsOffence.code,
@@ -201,8 +205,8 @@ fun transform(
     lineReference = it.lineReference
   )
 
-fun transform(offence: Offence, children: List<Offence>): OffenceWithScheduleData =
-  OffenceWithScheduleData(
+fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMapping =
+  OffenceToScheduleMapping(
     id = offence.id,
     code = offence.code,
     description = offence.description,
