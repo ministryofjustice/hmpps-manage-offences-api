@@ -34,9 +34,8 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
   ModelOffence(
     id = offence.id,
     code = offence.code,
-    description = offence.description,
+    description = offence.cjsTitle,
     offenceType = offence.offenceType,
-    cjsTitle = offence.cjsTitle,
     revisionId = offence.revisionId,
     startDate = offence.startDate,
     endDate = offence.endDate,
@@ -45,6 +44,9 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     loadDate = offence.lastUpdatedDate,
     isChild = offence.parentCode != null,
     parentOffenceId = offence.parentOffenceId,
+    legislation = offence.actsAndSections,
+    maxPeriodIsLife = offence.maxPeriodIsLife,
+    maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
     childOffenceIds = childOffenceIds ?: emptyList(),
   )
 
@@ -52,9 +54,8 @@ fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToSchedule
   OffenceToScheduleMapping(
     id = offenceScheduleMapping.offence.id,
     code = offenceScheduleMapping.offence.code,
-    description = offenceScheduleMapping.offence.description,
+    description = offenceScheduleMapping.offence.cjsTitle,
     offenceType = offenceScheduleMapping.offence.offenceType,
-    cjsTitle = offenceScheduleMapping.offence.cjsTitle,
     revisionId = offenceScheduleMapping.offence.revisionId,
     startDate = offenceScheduleMapping.offence.startDate,
     endDate = offenceScheduleMapping.offence.endDate,
@@ -209,9 +210,8 @@ fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMappi
   OffenceToScheduleMapping(
     id = offence.id,
     code = offence.code,
-    description = offence.description,
+    description = offence.cjsTitle,
     offenceType = offence.offenceType,
-    cjsTitle = offence.cjsTitle,
     revisionId = offence.revisionId,
     startDate = offence.startDate,
     endDate = offence.endDate,
@@ -226,7 +226,7 @@ fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMappi
 fun transform(it: Offence): BasicOffence = BasicOffence(
   id = it.id,
   code = it.code,
-  title = it.cjsTitle,
+  description = it.cjsTitle,
   startDate = it.startDate,
   endDate = it.endDate,
 )

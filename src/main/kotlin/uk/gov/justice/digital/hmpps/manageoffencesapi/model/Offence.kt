@@ -10,10 +10,8 @@ data class Offence(
   val id: Long,
   @Schema(description = "The offence code")
   val code: String,
-  @Schema(description = "The offence description")
+  @Schema(description = "The offence description (taken from SDRS CJSTitle field)")
   val description: String? = null,
-  @Schema(description = "The CJS Title (usually the same as description)")
-  val cjsTitle: String? = null,
   @Schema(description = "The offence type (e.g CI)")
   val offenceType: String? = null,
   @Schema(description = "The revision number of the offence")
@@ -36,6 +34,13 @@ data class Offence(
   val parentOffenceId: Long? = null,
   @Schema(description = "A list of child offence ID's; i.e. inchoate offences linked to this offence")
   val childOffenceIds: List<Long>? = null,
+  @Schema(description = "The legislation associated to this offence (from actsAndSections in the SDRS response)")
+  val legislation: String? = null,
+  // The maxPeriodIsLife and maxPeriodOfIndictmentYears fields are populated via the schedule data supplied by the HMCTS NSD team
+  @Schema(description = "Set to true if max period is life")
+  val maxPeriodIsLife: Boolean? = null,
+  @Schema(description = "Set to the max period of indictment in years")
+  val maxPeriodOfIndictmentYears: Int? = null,
 )
 
 data class OffenceToScheduleMapping(
@@ -43,10 +48,8 @@ data class OffenceToScheduleMapping(
   val id: Long,
   @Schema(description = "The offence code")
   val code: String,
-  @Schema(description = "The offence description")
+  @Schema(description = "The offence description (taken from SDRS CJSTitle field)")
   val description: String? = null,
-  @Schema(description = "The CJS Title (usually the same as description)")
-  val cjsTitle: String? = null,
   @Schema(description = "The offence type (e.g CI)")
   val offenceType: String? = null,
   @Schema(description = "The revision number of the offence")
@@ -99,8 +102,8 @@ data class BasicOffence(
   val id: Long,
   @Schema(description = "The offence code")
   val code: String,
-  @Schema(description = "The CJS Title (usually the same as description)")
-  val title: String? = null,
+  @Schema(description = "The offence description (taken from SDRS CJSTitle field)")
+  val description: String? = null,
   @Schema(description = "The offence start date")
   val startDate: LocalDate,
   @Schema(description = "The offence end date")
