@@ -424,27 +424,33 @@ class OffenceServiceTest {
       id = 992,
       code = "A123992",
       startDate = LocalDate.of(2021, 6, 1),
-      cjsTitle = "Descriptiom",
+      description = "Descriptiom",
       childOffenceIds = listOf(993, 995),
-      homeOfficeStatsCode = "001/02"
+      homeOfficeStatsCode = "001/02",
+      legislation = "Statute 992",
+      maxPeriodIsLife = false,
     )
 
     val MODEL_OFFENCE_A123991 = BASE_MODEL_OFFENCE.copy(
       id = 991,
       code = "A123991",
       startDate = LocalDate.of(2021, 5, 6),
-      cjsTitle = "Descriptiom",
-      childOffenceIds = emptyList()
+      description = "Descriptiom",
+      childOffenceIds = emptyList(),
+      legislation = "Statute 991",
+      maxPeriodIsLife = false,
     )
 
     val MODEL_OFFENCE_A123996A = BASE_MODEL_OFFENCE.copy(
       id = 997,
       code = "A123996A",
       startDate = LocalDate.of(2021, 5, 6),
-      cjsTitle = "Descriptiom",
+      description = "Descriptiom",
       isChild = true,
       childOffenceIds = emptyList(),
       parentOffenceId = 996,
+      legislation = "Statute 997",
+      maxPeriodIsLife = false,
     )
 
     private fun createPrisonApiOffencesResponse(
