@@ -10,6 +10,7 @@ import java.util.Optional
 @Repository
 interface OffenceRepository : JpaRepository<Offence, Long> {
   fun findByCodeStartsWithIgnoreCase(code: String): List<Offence>
+  fun findByCodeStartsWithIgnoreCaseOrCjsTitleContainsIgnoreCaseOrLegislationContainsIgnoreCase(codeSearch: String, descriptionSearch: String, legislationSearch: String): List<Offence>
   fun findBySdrsCache(sdrsCache: SdrsCache): List<Offence>
   fun findOneByCode(code: String): Optional<Offence>
 

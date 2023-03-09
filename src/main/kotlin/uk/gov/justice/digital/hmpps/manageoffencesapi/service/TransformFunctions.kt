@@ -44,7 +44,7 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     loadDate = offence.lastUpdatedDate,
     isChild = offence.parentCode != null,
     parentOffenceId = offence.parentOffenceId,
-    legislation = offence.actsAndSections,
+    legislation = offence.legislation,
     maxPeriodIsLife = offence.maxPeriodIsLife,
     maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
     childOffenceIds = childOffenceIds ?: emptyList(),
@@ -95,7 +95,7 @@ fun transform(sdrsOffence: SdrsOffence, cache: SdrsCache): Offence = Offence(
   category = sdrsOffence.category,
   subCategory = sdrsOffence.subCategory,
   changedDate = sdrsOffence.changedDate,
-  actsAndSections = sdrsOffence.offenceActsAndSections,
+  legislation = sdrsOffence.offenceActsAndSections,
   sdrsCache = cache,
   offenceType = sdrsOffence.offenceType,
 )
@@ -110,7 +110,7 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache):
     category = sdrsOffence.category,
     subCategory = sdrsOffence.subCategory,
     changedDate = sdrsOffence.changedDate,
-    actsAndSections = sdrsOffence.offenceActsAndSections,
+    legislation = sdrsOffence.offenceActsAndSections,
     offenceType = sdrsOffence.offenceType,
     sdrsCache = sdrsCache
   )
@@ -220,6 +220,9 @@ fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMappi
     loadDate = offence.lastUpdatedDate,
     isChild = offence.parentCode != null,
     parentOffenceId = offence.parentOffenceId,
+    legislation = offence.legislation,
+    maxPeriodIsLife = offence.maxPeriodIsLife,
+    maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
     childOffences = children.map { transform(it) }
   )
 

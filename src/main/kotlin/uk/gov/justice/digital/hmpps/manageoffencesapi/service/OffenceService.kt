@@ -34,6 +34,10 @@ class OffenceService(
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
     val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code)
+    return populateOffenceModel(offences)
+  }
+
+  private fun populateOffenceModel(offences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence>): List<Offence> {
     val offenceIds = offences.map { it.id }.toSet()
     val childrenByParentId = offenceRepository.findByParentOffenceIdIn(offenceIds).groupBy { it.parentOffenceId }
     val matchingOffences = offences.map {
@@ -79,7 +83,8 @@ class OffenceService(
 
   @Transactional(readOnly = true)
   fun findHoCodeByOffenceCode(code: String): String? {
-    val offence = offenceRepository.findByCodeIgnoreCase(code) ?: throw EntityNotFoundException("No offence exists for the passed in offence code")
+    val offence = offenceRepository.findByCodeIgnoreCase(code)
+      ?: throw EntityNotFoundException("No offence exists for the passed in offence code")
     return offence.homeOfficeStatsCode
   }
 
@@ -299,11 +304,22 @@ class OffenceService(
   }
 
   fun findOffenceById(offenceId: Long): Offence {
-    val offence = offenceRepository.findById(offenceId).orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
+    val offence = offenceRepository.findById(offenceId)
+      .orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
     val children = offenceRepository.findByParentOffenceId(offenceId)
     val offenceMappings = offenceScheduleMappingRepository.findByOffenceId(offenceId)
     val populatedOffence = transform(offence, children.map { it.id })
     return populatedOffence.copy(schedules = transform(offenceMappings))
+  }
+
+  fun searchOffences(searchString: String): List<Offence> {
+    return populateOffenceModel(
+      offenceRepository.findByCodeStartsWithIgnoreCaseOrCjsTitleContainsIgnoreCaseOrLegislationContainsIgnoreCase(
+        searchString,
+        searchString,
+        searchString
+      )
+    )
   }
 
   companion object {

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.entity
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import java.time.LocalDate
 import java.time.LocalDateTime
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
@@ -26,7 +27,8 @@ data class Offence(
   val category: Int? = null,
   val subCategory: Int? = null,
   val offenceType: String? = null,
-  val actsAndSections: String? = null,
+  @Column(name = "ACTS_AND_SECTIONS")
+  val legislation: String? = null,
   val parentOffenceId: Long? = null,
   @Enumerated(EnumType.STRING)
   val sdrsCache: SdrsCache,
@@ -50,8 +52,8 @@ data class Offence(
     get() = (cjsTitle ?: description)!!
   val statuteDescription: String
     get() {
-      if (actsAndSections.isNullOrBlank()) return statuteCode
-      return actsAndSections
+      if (legislation.isNullOrBlank()) return statuteCode
+      return legislation
     }
   val activeFlag: String
     get() {

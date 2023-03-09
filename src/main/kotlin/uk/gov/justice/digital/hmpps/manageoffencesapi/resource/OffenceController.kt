@@ -10,6 +10,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
@@ -34,6 +35,19 @@ class OffenceController(
   ): List<Offence> {
     log.info("Request received to fetch offences that start with offenceCode {}", offenceCode)
     return offenceService.findOffencesByCode(offenceCode)
+  }
+
+  @GetMapping(value = ["/search"])
+  @ResponseBody
+  @Operation(
+    summary = "Get all offences matching the passed offence code, does a start with match",
+    description = "This endpoint will return the offences that start with the passed offence code"
+  )
+  fun searchOffences(
+    @RequestParam(required = true) searchString: String,
+  ): List<Offence> {
+    log.info("Request received to search offences that start with searchString {}", searchString)
+    return offenceService.searchOffences(searchString)
   }
 
   @GetMapping(value = ["/id/{offenceId}"])

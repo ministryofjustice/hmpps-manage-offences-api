@@ -108,7 +108,7 @@ class OffenceServiceTest {
     whenever(offenceRepository.findByCodeStartsWithIgnoreCase("B")).thenReturn(
       listOf(
         OFFENCE_B123AA6.copy(
-          actsAndSections = "Statute description B123"
+          legislation = "Statute description B123"
         )
       )
     )
@@ -307,13 +307,13 @@ class OffenceServiceTest {
       sdrsCache = OFFENCES_A,
       code = "A123AA6",
       description = "A Desc 1",
-      actsAndSections = "Statute desc A123",
+      legislation = "Statute desc A123",
     )
     private val OFFENCE_A1234AAA = BASE_OFFENCE.copy(
       sdrsCache = OFFENCES_A,
       code = "A1234AAA",
       description = "A NEW DESC",
-      actsAndSections = "Statute desc A123",
+      legislation = "Statute desc A123",
     )
 
     val OFFENCE_A123992 = BASE_OFFENCE.copy(
@@ -324,7 +324,7 @@ class OffenceServiceTest {
       cjsTitle = "Descriptiom",
       code = "A123992",
       startDate = LocalDate.of(2021, 6, 1),
-      actsAndSections = "Statute 992"
+      legislation = "Statute 992"
     )
 
     val OFFENCE_A123991 = BASE_OFFENCE.copy(
@@ -333,7 +333,7 @@ class OffenceServiceTest {
       cjsTitle = "Descriptiom",
       code = "A123991",
       startDate = LocalDate.of(2021, 5, 6),
-      actsAndSections = "Statute 991"
+      legislation = "Statute 991"
     )
 
     val OFFENCE_A123993 = BASE_OFFENCE.copy(
@@ -342,7 +342,7 @@ class OffenceServiceTest {
       cjsTitle = "Descriptiom",
       code = "A123993",
       startDate = LocalDate.of(2022, 7, 7),
-      actsAndSections = "Statute 993",
+      legislation = "Statute 993",
       parentOffenceId = 992,
     )
 
@@ -353,7 +353,7 @@ class OffenceServiceTest {
       code = "A123995",
       startDate = LocalDate.of(2022, 5, 7),
       endDate = LocalDate.of(2022, 5, 8),
-      actsAndSections = "Statute 995",
+      legislation = "Statute 995",
       parentOffenceId = 992,
     )
 
@@ -370,7 +370,7 @@ class OffenceServiceTest {
       cjsTitle = "Descriptiom",
       code = "A123996A",
       startDate = LocalDate.of(2021, 5, 6),
-      actsAndSections = "Statute 997",
+      legislation = "Statute 997",
       parentOffenceId = 996,
     )
 
