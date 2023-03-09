@@ -220,6 +220,9 @@ fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMappi
     loadDate = offence.lastUpdatedDate,
     isChild = offence.parentCode != null,
     parentOffenceId = offence.parentOffenceId,
+    legislation = offence.legislation,
+    maxPeriodIsLife = offence.maxPeriodIsLife,
+    maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
     childOffences = children.map { transform(it) }
   )
 

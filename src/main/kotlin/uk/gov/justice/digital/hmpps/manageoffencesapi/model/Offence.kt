@@ -72,6 +72,13 @@ data class OffenceToScheduleMapping(
   val parentOffenceId: Long? = null,
   @Schema(description = "A list of child offence ID's; i.e. inchoate offences linked to this offence")
   val childOffences: List<BasicOffence>? = null,
+  @Schema(description = "The legislation associated to this offence (from actsAndSections in the SDRS response)")
+  val legislation: String? = null,
+  // The maxPeriodIsLife and maxPeriodOfIndictmentYears fields are populated via the schedule data supplied by the HMCTS NSD team
+  @Schema(description = "Set to true if max period is life")
+  val maxPeriodIsLife: Boolean? = null,
+  @Schema(description = "Set to the max period of indictment in years")
+  val maxPeriodOfIndictmentYears: Int? = null,
   @Schema(description = "The line reference for the associated schedule's legislation")
   val lineReference: String? = null,
   @Schema(description = "The legislation text for the associated schedule")
