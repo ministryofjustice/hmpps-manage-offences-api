@@ -2,15 +2,26 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 
 class AdminControllerIntTest : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var offenceRepository: OffenceRepository
+
+  @Autowired
+  lateinit var offenceReactivatedInNomisRepository: OffenceReactivatedInNomisRepository
+
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql"
@@ -57,6 +68,66 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(DELTA_SYNC_SDRS, true),
         )
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-active-and-inactive-offence.sql",
+  )
+  fun `Reactivate offence in NOMIS that is inactive`() {
+    prisonApiMockServer.stubFindByOffenceCodeStartsWith("M5119999")
+    val offence = offenceRepository.findOneByCode("M5119999").get()
+
+    webTestClient.post().uri("/admin/nomis/offences/reactivate")
+      .headers(setAuthorisation(roles = listOf("ROLE_NOMIS_OFFENCE_ACTIVATOR")))
+      .bodyValue(listOf(offence.id))
+      .exchange()
+      .expectStatus().isOk
+
+    val reactivatedOffence = offenceReactivatedInNomisRepository.findById(offence.id).get()
+    assertThat(reactivatedOffence)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*Date")
+      .isEqualTo(
+        OffenceReactivatedInNomis(
+          offenceId = offence.id,
+          reactivatedByUsername = "test-client",
+        )
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-active-and-inactive-offence.sql",
+  )
+  fun `Attempt to reactivate offence in NOMIS that isn't end dated - returns 400 Validation Exception`() {
+    prisonApiMockServer.stubFindByOffenceCodeStartsWith("M4119999")
+    val offence = offenceRepository.findOneByCode("M4119999").get()
+
+    webTestClient.post().uri("/admin/nomis/offences/reactivate")
+      .headers(setAuthorisation(roles = listOf("ROLE_NOMIS_OFFENCE_ACTIVATOR")))
+      .bodyValue(listOf(offence.id))
+      .exchange()
+      .expectStatus().isBadRequest
+  }
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-inactive-offence-and-reactivated.sql",
+  )
+  fun `Deactivate offence in NOMIS that is end dated - but is active in NOMIS`() {
+    prisonApiMockServer.stubFindByOffenceCode("M5119999")
+    val offence = offenceRepository.findOneByCode("M5119999").get()
+
+    webTestClient.post().uri("/admin/nomis/offences/deactivate")
+      .headers(setAuthorisation(roles = listOf("ROLE_NOMIS_OFFENCE_ACTIVATOR")))
+      .bodyValue(listOf(offence.id))
+      .exchange()
+      .expectStatus().isOk
+
+    assertThat(offenceReactivatedInNomisRepository.findById(offence.id).isPresent).isFalse
   }
 
   private fun getFeatureToggles(): MutableList<FeatureToggle>? =

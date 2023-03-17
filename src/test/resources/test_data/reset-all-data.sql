@@ -1,3 +1,4 @@
+DELETE from offence_reactivated_in_nomis;
 DELETE from offence_schedule_mapping;
 DELETE from offence;
 DELETE from sdrs_load_result_history;

@@ -23,7 +23,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
     ('A'..'Z').forEach { alphaChar ->
       prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
     }
-    prisonApiMockServer.stubFindByOffenceCodeStartsWith('M')
+    prisonApiMockServer.stubFindByOffenceCodeStartsWith("M")
     prisonApiMockServer.stubCreateHomeOfficeCode()
     prisonApiMockServer.stubCreateStatute()
     prisonApiMockServer.stubCreateOffence()

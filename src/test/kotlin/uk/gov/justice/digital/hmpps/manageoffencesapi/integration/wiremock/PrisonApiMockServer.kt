@@ -73,13 +73,25 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubFindByOffenceCodeStartsWith(offenceCode: Char) {
+  fun stubFindByOffenceCodeStartsWith(offenceCode: String) {
     stubFor(
       get("/api/offences/code/$offenceCode?page=0&size=1000&sort=code,ASC").willReturn(
         aResponse()
           .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
           .withBody(
             nomisOffences
+          )
+      )
+    )
+  }
+
+  fun stubFindByOffenceCode(offenceCode: String) {
+    stubFor(
+      get("/api/offences/code/$offenceCode?page=0&size=1000&sort=code,ASC").willReturn(
+        aResponse()
+          .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
+          .withBody(
+            activeNomisOffences
           )
       )
     )
@@ -205,6 +217,54 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       },
                       "severityRanking": "700",
                       "activeFlag": "N"
+                    }
+                  ],
+                  "pageable": {
+                    "sort": {
+                      "unsorted": false,
+                      "sorted": true,
+                      "empty": false
+                    },
+                    "offset": 0,
+                    "pageNumber": 0,
+                    "pageSize": 20,
+                    "paged": true,
+                    "unpaged": false
+                  },
+                  "last": true,
+                  "totalElements": 5,
+                  "totalPages": 1,
+                  "size": 20,
+                  "number": 0,
+                  "sort": {
+                    "unsorted": false,
+                    "sorted": true,
+                    "empty": false
+                  },
+                  "first": true,
+                  "numberOfElements": 5,
+                  "empty": false
+                }
+    """.trimIndent()
+
+    private val activeNomisOffences = """ {
+                  "content": [
+                    {
+                      "code": "M5119999",
+                      "description": "Manslaughter Old",
+                      "statuteCode": {
+                        "code": "M111",
+                        "description": "Statute M111",
+                        "legislatingBodyCode": "UK",
+                        "activeFlag": "Y"
+                      },
+                      "hoCode": {
+                        "code": "815/90",
+                        "description": "Ho Code 815/90",
+                        "activeFlag": "Y"
+                      },
+                      "severityRanking": "700",
+                      "activeFlag": "Y"
                     }
                   ],
                   "pageable": {

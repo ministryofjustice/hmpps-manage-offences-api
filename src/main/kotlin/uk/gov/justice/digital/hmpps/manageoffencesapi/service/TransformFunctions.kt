@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
@@ -245,4 +246,9 @@ fun transform(
   paragraphTitle = linkOffence.paragraphTitle,
   lineReference = linkOffence.lineReference,
   legislationText = linkOffence.legislationText
+)
+
+fun transform(offenceId: Long, username: String) = OffenceReactivatedInNomis(
+  offenceId = offenceId,
+  reactivatedByUsername = username,
 )
