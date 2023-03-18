@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -35,6 +36,28 @@ class AdminController(
   fun getAllToggles(): List<FeatureToggle> {
     log.info("Request received to get values of all feature toggles")
     return adminService.getAllToggles()
+  }
+
+  @PostMapping(value = ["/nomis/offences/reactivate"])
+  @PreAuthorize("hasRole('ROLE_NOMIS_OFFENCE_ACTIVATOR')")
+  @Operation(
+    summary = "Reactivate offences in NOMIS",
+    description = "Reactivate offences in NOMIS, only to be used for offences that are end dated but NOMIS need them to be reactivated",
+  )
+  fun reactivateNomisOffence(@RequestBody offenceIds: List<Long>) {
+    log.info("Request received to reactivate offences in nomis")
+    return adminService.reactivateNomisOffence(offenceIds)
+  }
+
+  @PostMapping(value = ["/nomis/offences/deactivate"])
+  @PreAuthorize("hasRole('ROLE_NOMIS_OFFENCE_ACTIVATOR')")
+  @Operation(
+    summary = "Deactivate offences in NOMIS",
+    description = "Deactivate offences in NOMIS, only to be used for offences that are end dated but are active in NOMIS",
+  )
+  fun deactivateNomisOffence(@RequestBody offenceIds: List<Long>) {
+    log.info("Request received to deactivate offences in nomis")
+    return adminService.deactivateNomisOffence(offenceIds)
   }
 
   companion object {

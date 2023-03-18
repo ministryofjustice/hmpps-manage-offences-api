@@ -11,4 +11,7 @@ data class Offence(
   val activeFlag: String,
   val listSequence: Int? = null,
   val expiryDate: LocalDate? = null,
-)
+) {
+  val isActive
+    get() = activeFlag == "Y"
+}

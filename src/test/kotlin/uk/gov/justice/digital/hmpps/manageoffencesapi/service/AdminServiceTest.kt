@@ -10,13 +10,18 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle as FeatureToggleEntity
 
 class AdminServiceTest {
   private val featureToggleRepository = mock<FeatureToggleRepository>()
+  private val offenceRepository = mock<OffenceRepository>()
+  private val offenceReactivatedInNomisRepository = mock<OffenceReactivatedInNomisRepository>()
+  private val prisonApiClient = mock<PrisonApiClient>()
 
-  private val adminService = AdminService(featureToggleRepository)
+  private val adminService = AdminService(featureToggleRepository, offenceRepository, offenceReactivatedInNomisRepository, prisonApiClient)
 
   @Test
   fun `If the feature doesnt exist then no save is performed`() {
