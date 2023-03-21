@@ -77,6 +77,7 @@ class AdminControllerIntTest : IntegrationTestBase() {
   )
   fun `Reactivate offence in NOMIS that is inactive`() {
     prisonApiMockServer.stubFindByOffenceCodeStartsWith("M5119999")
+    prisonApiMockServer.stubActivateOffence()
     val offence = offenceRepository.findOneByCode("M5119999").get()
 
     webTestClient.post().uri("/admin/nomis/offences/reactivate")
@@ -119,6 +120,7 @@ class AdminControllerIntTest : IntegrationTestBase() {
   )
   fun `Deactivate offence in NOMIS that is end dated - but is active in NOMIS`() {
     prisonApiMockServer.stubFindByOffenceCode("M5119999")
+    prisonApiMockServer.stubDeactivateOffence()
     val offence = offenceRepository.findOneByCode("M5119999").get()
 
     webTestClient.post().uri("/admin/nomis/offences/deactivate")

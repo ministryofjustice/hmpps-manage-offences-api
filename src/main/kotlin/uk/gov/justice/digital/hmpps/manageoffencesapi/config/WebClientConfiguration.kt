@@ -12,6 +12,9 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.util.MultiValueMap
+import org.springframework.web.reactive.function.client.ClientRequest
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction
+import org.springframework.web.reactive.function.client.ExchangeFunction
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
@@ -35,6 +38,24 @@ class WebClientConfiguration(
       .baseUrl(prisonApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .build()
+  }
+
+  // To be used when passing through the users token - rather than using system credentials
+  @Bean
+  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient {
+    return builder
+      .baseUrl(prisonApiUrl)
+      .filter(addAuthHeaderFilterFunction())
+      .build()
+  }
+
+  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction {
+    return ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
+      val filtered = ClientRequest.from(request)
+        .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
+        .build()
+      next.exchange(filtered)
+    }
   }
 
   @Bean

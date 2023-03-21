@@ -21,6 +21,7 @@ class AdminService(
   private val offenceRepository: OffenceRepository,
   private val offenceReactivatedInNomisRepository: OffenceReactivatedInNomisRepository,
   private val prisonApiClient: PrisonApiClient,
+  private val prisonApiUserClient: PrisonApiUserClient,
 ) {
   @Transactional
   fun toggleFeature(featureToggles: List<FeatureToggle>) {
@@ -46,7 +47,7 @@ class AdminService(
       if (nomisOffence.isActive) {
         throw ValidationException("Th offence flag is already set to active")
       }
-      prisonApiClient.changeOffenceActiveFlag(offenceId, true)
+      prisonApiUserClient.changeOffenceActiveFlag(transform(offence, true))
       offenceReactivatedInNomisRepository.save(transform(offenceId, getCurrentAuthentication().principal))
     }
   }
@@ -66,7 +67,7 @@ class AdminService(
       if (!nomisOffence.isActive) {
         throw ValidationException("Th offence $offenceId is already inactive in NOMIS")
       }
-      prisonApiClient.changeOffenceActiveFlag(offenceId, false)
+      prisonApiUserClient.changeOffenceActiveFlag(transform(offence, false))
 
       if (offenceReactivatedInNomisRepository.existsById(offenceId)) {
         offenceReactivatedInNomisRepository.deleteById(offenceId)

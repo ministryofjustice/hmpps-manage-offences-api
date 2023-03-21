@@ -229,6 +229,7 @@ class OffenceService(
       description = offence.derivedDescription,
       hoCode = homeOfficeCode,
       activeFlag = offence.activeFlag,
+      expiryDate = offence.expiryDate
     )
   }
 
@@ -245,6 +246,7 @@ class OffenceService(
       hoCode = homeOfficeCode,
       severityRanking = offence.category?.toString() ?: "99",
       activeFlag = offence.activeFlag,
+      expiryDate = offence.expiryDate,
     )
   }
 

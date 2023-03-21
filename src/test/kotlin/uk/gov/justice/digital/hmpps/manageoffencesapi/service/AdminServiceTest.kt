@@ -20,8 +20,9 @@ class AdminServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
   private val offenceReactivatedInNomisRepository = mock<OffenceReactivatedInNomisRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
+  private val prisonApiUserClient = mock<PrisonApiUserClient>()
 
-  private val adminService = AdminService(featureToggleRepository, offenceRepository, offenceReactivatedInNomisRepository, prisonApiClient)
+  private val adminService = AdminService(featureToggleRepository, offenceRepository, offenceReactivatedInNomisRepository, prisonApiClient, prisonApiUserClient)
 
   @Test
   fun `If the feature doesnt exist then no save is performed`() {
