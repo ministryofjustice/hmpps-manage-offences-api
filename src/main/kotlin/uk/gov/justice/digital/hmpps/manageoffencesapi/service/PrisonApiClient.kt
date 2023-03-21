@@ -84,9 +84,4 @@ class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: We
       .toBodilessEntity()
       .block()
   }
-
-  fun changeOffenceActiveFlag(offenceId: Long, activeFlag: Boolean) {
-    // TODO Add call to prison API (end point neds creating in prison-api)
-    return
-  }
 }

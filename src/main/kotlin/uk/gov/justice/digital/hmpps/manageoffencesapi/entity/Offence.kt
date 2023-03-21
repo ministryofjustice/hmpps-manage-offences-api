@@ -60,7 +60,11 @@ data class Offence(
       if (endDate == null || endDate.isAfter(LocalDate.now())) return "Y"
       return "N"
     }
-
+  val expiryDate: LocalDate?
+    get() {
+      if (endDate == null || endDate.isAfter(LocalDate.now())) return null
+      return LocalDate.now()
+    }
   val parentCode: String?
     get() {
       if (code.length < 8) return null

@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkedScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceActivationDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory as EntityNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart as EntitySchedulePart
@@ -252,3 +253,10 @@ fun transform(offenceId: Long, username: String) = OffenceReactivatedInNomis(
   offenceId = offenceId,
   reactivatedByUsername = username,
 )
+
+fun transform(offence: Offence, activationFlag: Boolean) =
+  OffenceActivationDto(
+    offenceCode = offence.code,
+    statuteCode = offence.statuteCode,
+    activationFlag = activationFlag,
+  )

@@ -119,6 +119,28 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         )
     )
 
+  fun stubActivateOffence(): StubMapping =
+    stubFor(
+      WireMock.put("/api/offences/update-active-flag")
+        .withRequestBody(WireMock.equalToJson(activationDto))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+        )
+    )
+
+  fun stubDeactivateOffence(): StubMapping =
+    stubFor(
+      WireMock.put("/api/offences/update-active-flag")
+        .withRequestBody(WireMock.equalToJson(deactivationDto))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+        )
+    )
+
   companion object {
     private const val WIREMOCK_PORT = 8333
     private val linkOffenceRequest = """ [ {                         
@@ -130,6 +152,18 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
             "offenceCode" : "XX99001",
             "schedule" : "SCHEDULE_13"
           } ]
+    """.trimIndent()
+    private val activationDto = """ {                         
+            "offenceCode" : "M5119999",
+            "statuteCode" : "M511",
+            "activationFlag": true
+          } 
+    """.trimIndent()
+    private val deactivationDto = """ {                         
+            "offenceCode" : "M5119999",
+            "statuteCode" : "M511",
+            "activationFlag": false
+          } 
     """.trimIndent()
     private val nomisOffences = """ {
                   "content": [
