@@ -32,7 +32,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                               "MOJStatsCode": "195/99",
                               "code": "XX99001",
                               "ChangedDate": "2014-07-16T16:30:46"
-                            }"""
+                            }""",
     )
   }
 
@@ -66,7 +66,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                               "MOJStatsCode": "195/99",
                               "code": "XX99002",
                               "ChangedDate": "2014-07-16T16:30:46"
-                            }"""
+                            }""",
     )
   }
 
@@ -116,7 +116,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                                 "MOJStatsCode": "195/99",
                                 "code": "AX99003B",
                                 "ChangedDate": "2014-07-16T16:30:46"
-                              }"""
+                              }""",
     )
   }
 
@@ -174,9 +174,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "detail": " "
                     }
                   }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -234,9 +234,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "detail": " "
                     }
                   }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -276,9 +276,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "detail": " "
                     }
                   }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -318,9 +318,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "detail": " "
                     }
                   }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -360,9 +360,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "detail": " "
                     }
                   }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -397,9 +397,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "status": "SUCCESS"
                     }
                   }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -444,9 +444,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                       "detail": " "
                     }
                   }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -489,9 +489,9 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                         "detail": " "
                       }
                     }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 }

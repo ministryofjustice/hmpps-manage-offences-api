@@ -20,7 +20,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data.sql"
+    "classpath:test_data/insert-offence-data.sql",
   )
   fun `Get offences by offence code`() {
     val result = webTestClient.get().uri("/offences/code/aB")
@@ -69,15 +69,15 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             childOffenceIds = emptyList(),
-          )
-        )
+          ),
+        ),
       )
   }
 
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data.sql"
+    "classpath:test_data/insert-offence-data.sql",
   )
   fun `Get results of latest load`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
@@ -102,7 +102,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             sdrsCache = cache,
             status = result!!.status,
             type = result.type,
-          )
+          ),
         )
     }
   }
@@ -110,7 +110,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-schedule-and-offence-data.sql"
+    "classpath:test_data/insert-schedule-and-offence-data.sql",
   )
   fun `Get offences with attached schedules`() {
     val result = webTestClient.get().uri("/offences/code/XX")
@@ -149,8 +149,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             childOffenceIds = emptyList(),
-          )
-        )
+          ),
+        ),
       )
 
     assertThat(result!!.first { it.code == "XX99001" }!!.schedules)
@@ -165,8 +165,8 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             code = "13",
             url = "https://www.legislation.gov.uk/ukpga/2020/17/schedule/13",
             partNumber = 1,
-          )
-        )
+          ),
+        ),
       )
 
     assertThat(result.first { it.code == "XX99002" }!!.schedules).isNull()
@@ -248,7 +248,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             childOffenceIds = emptyList(),
             legislation = "Contrary to section 19 of the Zoo Licensing Act 1981",
           ),
-        )
+        ),
       )
   }
 
@@ -282,7 +282,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data.sql"
+    "classpath:test_data/insert-offence-data.sql",
   )
   fun `Get offences by search string`() {
     val result = webTestClient.get().uri("/offences/search?searchString=the Zoo Licensing")
@@ -308,7 +308,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             childOffenceIds = emptyList(),
           ),
-        )
+        ),
       )
   }
 }

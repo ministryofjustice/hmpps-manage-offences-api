@@ -91,8 +91,11 @@ class SDRSService(
     val loadDate = LocalDateTime.now()
     (SdrsCache.values()).forEach { cache ->
       log.info("Starting full load for cache {} ", cache)
-      if (cache.isPrimaryCache) fullLoadPrimaryCache(cache, loadDate)
-      else fullLoadSecondaryCache(cache, loadDate)
+      if (cache.isPrimaryCache) {
+        fullLoadPrimaryCache(cache, loadDate)
+      } else {
+        fullLoadSecondaryCache(cache, loadDate)
+      }
     }
 
     offenceToScheduleMappings.forEach {
@@ -170,7 +173,7 @@ class SDRSService(
   private fun processUpdatesForOffencesThatExistInAnotherCache(
     updates: List<Offence>,
     duplicateOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence>,
-    cache: SdrsCache
+    cache: SdrsCache,
   ) {
     updates.forEach {
       val offenceToUpdate = duplicateOffences.first { d -> it.code == d.code }
@@ -178,7 +181,7 @@ class SDRSService(
         "Offence {} is being updated and the associated cache is also being changed, original cache {}, new cache {}",
         it.code,
         offenceToUpdate.sdrsCache,
-        cache
+        cache,
       )
       offenceRepository.save(transform(it, offenceToUpdate, cache))
     }
@@ -186,7 +189,7 @@ class SDRSService(
 
   private fun extractInsertsAndUpdates(
     latestOfEachOffence: List<Offence>,
-    duplicateOffences: List<EntityOffence>
+    duplicateOffences: List<EntityOffence>,
   ): Pair<List<Offence>, List<Offence>> {
     val duplicateOffenceCodes = duplicateOffences.map { it.code }
     val (potentialUpdates, inserts) = latestOfEachOffence.partition { duplicateOffenceCodes.contains(it.code) }
@@ -205,7 +208,7 @@ class SDRSService(
     sdrsResponse: SDRSResponse? = null,
     cache: SdrsCache,
     loadDate: LocalDateTime?,
-    loadType: LoadType
+    loadType: LoadType,
   ) {
     if (sdrsResponse == null) {
       log.error("An unexpected error occurred when calling SDRS for cache {}", cache)
@@ -215,7 +218,7 @@ class SDRSService(
       // e.g. no offence codes start with Q; therefore handling as a 'success' here
       log.info(
         "SDRS-9918 thrown by SDRS service due to no cache for cache {} (treated as success with no offences)",
-        cache
+        cache,
       )
       saveLoad(cache, loadDate, SUCCESS, loadType)
     } else {
@@ -247,12 +250,15 @@ class SDRSService(
   private fun fullLoadOfCachesDuringUpdate(
     affectedCaches: List<SdrsCache>,
     loadDate: LocalDateTime?,
-    deltaSyncToNomisEnabled: Boolean
+    deltaSyncToNomisEnabled: Boolean,
   ) {
     affectedCaches.forEach {
       log.info("Cache has not been previously loaded, so attempting full load of {} in update job", it)
-      if (it.isPrimaryCache) fullLoadPrimaryCache(it, loadDate)
-      else fullLoadSecondaryCache(it, loadDate)
+      if (it.isPrimaryCache) {
+        fullLoadPrimaryCache(it, loadDate)
+      } else {
+        fullLoadSecondaryCache(it, loadDate)
+      }
       if (deltaSyncToNomisEnabled) offenceService.fullySyncWithNomis(it)
     }
   }
@@ -261,7 +267,7 @@ class SDRSService(
     cache: SdrsCache,
     lastLoadDate: LocalDateTime,
     loadDate: LocalDateTime?,
-    deltaSyncToNomisEnabled: Boolean
+    deltaSyncToNomisEnabled: Boolean,
   ) {
     log.info("Starting update load for cache {} ", cache)
     try {
@@ -275,10 +281,11 @@ class SDRSService(
             .ifPresentOrElse(
               { offenceToUpdate ->
                 // This condition can only be false if the offence is in two different caches (edge case on delta load)
-                if (it.offenceStartDate.isAfter(offenceToUpdate.startDate))
+                if (it.offenceStartDate.isAfter(offenceToUpdate.startDate)) {
                   offenceRepository.save(transform(it, offenceToUpdate, cache))
+                }
               },
-              { offenceRepository.save(transform(it, cache)) }
+              { offenceRepository.save(transform(it, cache)) },
             )
           sendOffenceChangedEvent(it)
         }
@@ -288,7 +295,9 @@ class SDRSService(
       }
     } catch (e: Exception) {
       log.error(
-        "Failed for updating a single cache from SDRS for cache {} - error message = {}", cache, e.message
+        "Failed for updating a single cache from SDRS for cache {} - error message = {}",
+        cache,
+        e.message,
       )
       handleSdrsError(cache = cache, loadDate = loadDate, loadType = UPDATE)
     }
@@ -300,7 +309,7 @@ class SDRSService(
     }.onFailure { error ->
       log.error(
         "Failed to send changed-event for offence code  ${it.code}",
-        error
+        error,
       )
     }
   }
@@ -333,7 +342,10 @@ class SDRSService(
       .orElseThrow { EntityNotFoundException("No record exists for cache $cache") }
     val loadStatus = if (status == SUCCESS) {
       loadStatusExisting.copy(
-        status = status, loadType = type, loadDate = loadDate, lastSuccessfulLoadDate = loadDate
+        status = status,
+        loadType = type,
+        loadDate = loadDate,
+        lastSuccessfulLoadDate = loadDate,
       )
     } else {
       loadStatusExisting.copy(
@@ -357,20 +369,24 @@ class SDRSService(
     SDRSRequest(
       messageHeader = MessageHeader(
         messageID = MessageID(
-          uuid = UUID.randomUUID(), relatesTo = ""
+          uuid = UUID.randomUUID(),
+          relatesTo = "",
         ),
-        timeStamp = ZonedDateTime.now(), messageType = messageType, from = "CONSUMER_APPLICATION", to = "SDRS_AZURE"
+        timeStamp = ZonedDateTime.now(),
+        messageType = messageType,
+        from = "CONSUMER_APPLICATION",
+        to = "SDRS_AZURE",
       ),
       messageBody = MessageBodyRequest(
-        gatewayOperationTypeRequest
-      )
+        gatewayOperationTypeRequest,
+      ),
     )
 
   private fun createOffenceRequest(
     offenceCode: String? = null,
     changedDate: LocalDateTime? = null,
     sdrsCache: SdrsCache,
-    allOffences: String = "ALL"
+    allOffences: String = "ALL",
   ) = createSDRSRequest(
     GatewayOperationTypeRequest(
       getOffenceRequest = GetOffenceRequest(
@@ -378,48 +394,48 @@ class SDRSService(
         alphaChar = sdrsCache.alphaChar,
         allOffences = allOffences,
         changedDate = changedDate,
-      )
+      ),
     ),
-    sdrsCache.messageType
+    sdrsCache.messageType,
   )
 
   private fun createMojOffenceRequest(
     offenceCode: String? = null,
     changedDate: LocalDateTime? = null,
-    allOffences: String = "ALL"
+    allOffences: String = "ALL",
   ) = createSDRSRequest(
     GatewayOperationTypeRequest(
       getMojOffenceRequest = GetMojOffenceRequest(
         cjsCode = offenceCode,
         allOffences = allOffences,
         changedDate = changedDate,
-      )
+      ),
     ),
-    GetMojOffence
+    GetMojOffence,
   )
 
   private fun createApplicationOffenceRequest(
     offenceCode: String? = null,
     changedDate: LocalDateTime? = null,
-    allOffences: String = "ALL"
+    allOffences: String = "ALL",
   ) = createSDRSRequest(
     GatewayOperationTypeRequest(
       getApplicationRequest = GetApplicationRequest(
         cjsCode = offenceCode,
         allOffences = allOffences,
         changedDate = changedDate,
-      )
+      ),
     ),
-    GetApplications
+    GetApplications,
   )
 
   private fun createControlTableRequest(changedDateTime: LocalDateTime) = createSDRSRequest(
     GatewayOperationTypeRequest(
       getControlTableRequest = GetControlTableRequest(
-        changedDateTime = changedDateTime
-      )
+        changedDateTime = changedDateTime,
+      ),
     ),
-    GetControlTable
+    GetControlTable,
   )
 
   private fun findAllOffencesByCache(sdrsCache: SdrsCache): SDRSResponse {
@@ -438,12 +454,14 @@ class SDRSService(
   }
 
   private fun findUpdatedOffences(cache: SdrsCache, lastUpdatedDate: LocalDateTime): SDRSResponse {
-    if (cache.messageType == GetOffence) return sdrsApiClient.callSDRS(
-      createOffenceRequest(
-        sdrsCache = cache,
-        changedDate = lastUpdatedDate
+    if (cache.messageType == GetOffence) {
+      return sdrsApiClient.callSDRS(
+        createOffenceRequest(
+          sdrsCache = cache,
+          changedDate = lastUpdatedDate,
+        ),
       )
-    )
+    }
     if (cache.messageType == GetApplications) return sdrsApiClient.callSDRS(createApplicationOffenceRequest(changedDate = lastUpdatedDate))
     return sdrsApiClient.callSDRS(createMojOffenceRequest(changedDate = lastUpdatedDate))
   }
