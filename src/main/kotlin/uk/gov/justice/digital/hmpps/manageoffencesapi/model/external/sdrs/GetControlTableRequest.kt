@@ -6,5 +6,5 @@ import java.time.LocalDateTime
 
 @JsonNaming(UpperCamelCaseStrategy::class)
 data class GetControlTableRequest(
-  val changedDateTime: LocalDateTime
+  val changedDateTime: LocalDateTime,
 )

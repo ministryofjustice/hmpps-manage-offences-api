@@ -9,5 +9,5 @@ import java.util.UUID
 data class MessageID(
   val relatesTo: String,
   @JsonProperty("UUID")
-  val uuid: UUID
+  val uuid: UUID,
 )

@@ -30,7 +30,7 @@ class ResourceServerConfiguration {
           "/v3/api-docs/**",
           "/swagger-ui/**",
           "/swagger-ui.html",
-          "/h2-console/**"
+          "/h2-console/**",
         ).permitAll().anyRequest().authenticated()
       }
     chain.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())

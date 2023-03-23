@@ -8,5 +8,8 @@ import java.time.LocalDateTime
 @Repository
 interface NomisChangeHistoryRepository : JpaRepository<NomisChangeHistory, Long> {
   fun findBySentToNomisDateAfterOrderBySentToNomisDateDesc(from: LocalDateTime): List<NomisChangeHistory>
-  fun findBySentToNomisDateBetweenOrderBySentToNomisDateDesc(from: LocalDateTime, to: LocalDateTime): List<NomisChangeHistory>
+  fun findBySentToNomisDateBetweenOrderBySentToNomisDateDesc(
+    from: LocalDateTime,
+    to: LocalDateTime,
+  ): List<NomisChangeHistory>
 }

@@ -14,5 +14,5 @@ data class MessageHeader(
   @Enumerated(EnumType.STRING)
   val messageType: MessageType,
   val timeStamp: ZonedDateTime,
-  val to: String
+  val to: String,
 )

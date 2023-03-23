@@ -7,5 +7,5 @@ import java.time.LocalDateTime
 @JsonNaming(UpperCamelCaseStrategy::class)
 data class ControlTableRecord(
   val dataSet: String,
-  val lastUpdate: LocalDateTime
+  val lastUpdate: LocalDateTime,
 )

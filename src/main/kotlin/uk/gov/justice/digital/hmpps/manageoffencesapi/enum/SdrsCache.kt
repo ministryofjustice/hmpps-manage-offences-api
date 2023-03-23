@@ -4,7 +4,12 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetApplic
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetMojOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetOffence
 
-enum class SdrsCache(val sdrsDataSetName: String, val alphaChar: Char? = null, val messageType: MessageType, val isPrimaryCache: Boolean = false) {
+enum class SdrsCache(
+  val sdrsDataSetName: String,
+  val alphaChar: Char? = null,
+  val messageType: MessageType,
+  val isPrimaryCache: Boolean = false,
+) {
   OFFENCES_A(sdrsDataSetName = "offence_A", alphaChar = 'A', messageType = GetOffence, isPrimaryCache = true),
   OFFENCES_B(sdrsDataSetName = "offence_B", alphaChar = 'B', messageType = GetOffence, isPrimaryCache = true),
   OFFENCES_C(sdrsDataSetName = "offence_C", alphaChar = 'C', messageType = GetOffence, isPrimaryCache = true),
@@ -32,8 +37,11 @@ enum class SdrsCache(val sdrsDataSetName: String, val alphaChar: Char? = null, v
   OFFENCES_Y(sdrsDataSetName = "offence_Y", alphaChar = 'Y', messageType = GetOffence, isPrimaryCache = true),
   OFFENCES_Z(sdrsDataSetName = "offence_Z", alphaChar = 'Z', messageType = GetOffence, isPrimaryCache = true),
   GET_APPLICATIONS(sdrsDataSetName = "getApplications", messageType = GetApplications),
-  GET_MOJ_OFFENCE(sdrsDataSetName = "getMojOffence", messageType = GetMojOffence);
+  GET_MOJ_OFFENCE(sdrsDataSetName = "getMojOffence", messageType = GetMojOffence),
+  ;
+
   companion object {
-    fun fromSdrsDataSetName(sdrsDataSetName: String): SdrsCache = values().first { it.sdrsDataSetName == sdrsDataSetName }
+    fun fromSdrsDataSetName(sdrsDataSetName: String): SdrsCache =
+      values().first { it.sdrsDataSetName == sdrsDataSetName }
   }
 }

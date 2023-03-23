@@ -14,7 +14,7 @@ import javax.sql.DataSource
 @EnableScheduling
 @EnableSchedulerLock(
   defaultLockAtLeastFor = "PT10M",
-  defaultLockAtMostFor = "PT10M"
+  defaultLockAtMostFor = "PT10M",
 )
 class SchedulerConfiguration {
   @Bean

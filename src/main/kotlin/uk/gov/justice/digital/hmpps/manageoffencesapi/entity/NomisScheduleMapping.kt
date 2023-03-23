@@ -13,5 +13,5 @@ data class NomisScheduleMapping(
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   val id: Long = -1,
   val schedulePartId: Long,
-  val nomisScheduleName: String
+  val nomisScheduleName: String,
 )

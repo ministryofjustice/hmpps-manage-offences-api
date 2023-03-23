@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class GetOffenceResponse(
   @JsonProperty("Offence")
-  val offences: List<Offence>
+  val offences: List<Offence>,
 )

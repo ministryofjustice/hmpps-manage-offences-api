@@ -4,5 +4,5 @@ data class Statute(
   val code: String,
   val description: String,
   val legislatingBodyCode: String,
-  val activeFlag: String
+  val activeFlag: String,
 )

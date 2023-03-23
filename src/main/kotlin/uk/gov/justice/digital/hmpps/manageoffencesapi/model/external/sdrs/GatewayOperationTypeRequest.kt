@@ -8,5 +8,5 @@ data class GatewayOperationTypeRequest(
   val getControlTableRequest: GetControlTableRequest? = null,
   val getOffenceRequest: GetOffenceRequest? = null,
   val getApplicationRequest: GetApplicationRequest? = null,
-  val getMojOffenceRequest: GetMojOffenceRequest? = null
+  val getMojOffenceRequest: GetMojOffenceRequest? = null,
 )

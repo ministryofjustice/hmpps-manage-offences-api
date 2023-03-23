@@ -31,7 +31,10 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun prisonApiWebClient(builder: WebClient.Builder, authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+  fun prisonApiWebClient(
+    builder: WebClient.Builder,
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+  ): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
     return builder
@@ -65,7 +68,8 @@ class WebClientConfiguration(
   ): OAuth2AuthorizedClientManager? {
     val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build()
     val authorizedClientManager = AuthorizedClientServiceOAuth2AuthorizedClientManager(
-      clientRegistrationRepository, oAuth2AuthorizedClientService
+      clientRegistrationRepository,
+      oAuth2AuthorizedClientService,
     )
     authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)
     return authorizedClientManager

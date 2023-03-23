@@ -42,7 +42,11 @@ class ScheduleController(
   fun linkOffences(
     @RequestBody linkOffence: LinkOffence,
   ) {
-    log.info("Request received to link offence {} to schedule part {}", linkOffence.offenceId, linkOffence.schedulePartId)
+    log.info(
+      "Request received to link offence {} to schedule part {}",
+      linkOffence.offenceId,
+      linkOffence.schedulePartId,
+    )
     scheduleService.linkOffences(linkOffence)
   }
 
