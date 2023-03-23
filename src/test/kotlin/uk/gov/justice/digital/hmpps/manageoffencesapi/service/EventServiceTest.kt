@@ -38,7 +38,7 @@ class EventServiceTest {
       verify(topicSnsClient).publish(
         check {
           assertThat(it.messageAttributes["eventType"]?.stringValue).isEqualTo("manage-offences.offence.changed")
-        }
+        },
       )
     }
 

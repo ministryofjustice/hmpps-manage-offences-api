@@ -22,7 +22,13 @@ class AdminServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
 
-  private val adminService = AdminService(featureToggleRepository, offenceRepository, offenceReactivatedInNomisRepository, prisonApiClient, prisonApiUserClient)
+  private val adminService = AdminService(
+    featureToggleRepository,
+    offenceRepository,
+    offenceReactivatedInNomisRepository,
+    prisonApiClient,
+    prisonApiUserClient,
+  )
 
   @Test
   fun `If the feature doesnt exist then no save is performed`() {
@@ -36,7 +42,14 @@ class AdminServiceTest {
 
   @Test
   fun `Toggling a feature gets saved`() {
-    whenever(featureToggleRepository.findById(FULL_SYNC_NOMIS)).thenReturn(Optional.of(FeatureToggleEntity(FULL_SYNC_NOMIS, false)))
+    whenever(featureToggleRepository.findById(FULL_SYNC_NOMIS)).thenReturn(
+      Optional.of(
+        FeatureToggleEntity(
+          FULL_SYNC_NOMIS,
+          false,
+        ),
+      ),
+    )
 
     adminService.toggleFeature(listOf(FeatureToggle(FULL_SYNC_NOMIS, true)))
 

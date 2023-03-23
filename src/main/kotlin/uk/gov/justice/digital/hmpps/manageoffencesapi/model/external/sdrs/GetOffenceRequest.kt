@@ -11,5 +11,5 @@ data class GetOffenceRequest(
   val alphaChar: Char? = null,
   @JsonProperty("CJSCode")
   val cjsCode: String? = null,
-  val changedDate: LocalDateTime? = null
+  val changedDate: LocalDateTime? = null,
 )

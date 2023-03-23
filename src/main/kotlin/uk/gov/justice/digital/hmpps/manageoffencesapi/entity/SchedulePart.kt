@@ -18,5 +18,5 @@ data class SchedulePart(
   @ManyToOne
   @Fetch(FetchMode.JOIN)
   val schedule: Schedule,
-  val partNumber: Int
+  val partNumber: Int,
 )

@@ -22,10 +22,14 @@ class EventService(
   }
 
   fun publishOffenceChangedEvent(offenceCode: String) {
-    val event = OffenceUpdatedDomainEvent(additionalInformation = (OffenceAdditionalInformation(offenceCode = offenceCode)))
+    val event =
+      OffenceUpdatedDomainEvent(additionalInformation = (OffenceAdditionalInformation(offenceCode = offenceCode)))
     domainTopic.snsClient.publish(
       PublishRequest(domainTopic.arn, mapper.writeValueAsString(event))
-        .addMessageAttributesEntry("eventType", MessageAttributeValue().withDataType("String").withStringValue(event.eventType))
+        .addMessageAttributesEntry(
+          "eventType",
+          MessageAttributeValue().withDataType("String").withStringValue(event.eventType),
+        ),
     )
     log.info("Published 'offence changed event' for: $offenceCode")
   }
@@ -36,7 +40,7 @@ class EventService(
 }
 
 data class OffenceAdditionalInformation(
-  val offenceCode: String
+  val offenceCode: String,
 )
 
 abstract class OffenceDomainEvent {

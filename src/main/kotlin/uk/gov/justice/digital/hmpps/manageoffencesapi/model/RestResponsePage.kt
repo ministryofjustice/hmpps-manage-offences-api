@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.model // ktlint-disable
 
 import com.fasterxml.jackson.databind.JsonNode
 
-data class RestResponsePage<T> (
+data class RestResponsePage<T>(
   val content: List<T>,
   val number: Int,
   val size: Int,
@@ -12,5 +12,5 @@ data class RestResponsePage<T> (
   val totalPages: Int,
   val sort: JsonNode,
   val first: Boolean,
-  val numberOfElements: Int
+  val numberOfElements: Int,
 )

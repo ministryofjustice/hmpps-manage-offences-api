@@ -17,16 +17,18 @@ import java.time.LocalDate
 @RestController
 @RequestMapping("/change-history", produces = [MediaType.APPLICATION_JSON_VALUE])
 class ChangeHistoryController(
-  private val loadHistoryService: LoadHistoryService
+  private val loadHistoryService: LoadHistoryService,
 ) {
   @GetMapping(value = ["/nomis"])
   @ResponseBody
   @Operation(
-    summary = "Fetch changes pushed to NOMIS between a from and to date range (to defaults to now)"
+    summary = "Fetch changes pushed to NOMIS between a from and to date range (to defaults to now)",
   )
   fun getOffencesByOffenceCode(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam from: LocalDate,
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false) to: LocalDate?,
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @RequestParam(required = false)
+    to: LocalDate?,
   ): List<NomisChangeHistory> {
     log.info("Request received to fetch nomis load history from {} to {}", from, to)
     return loadHistoryService.getNomisChangeHistory(from, to)

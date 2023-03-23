@@ -103,7 +103,7 @@ class OffenceService(
   private fun fullySyncWithNomis(
     allOffences: List<EntityOffence>,
     nomisOffencesById: Map<Pair<String, String>, PrisonApiOffence>,
-    nomisOffences: List<PrisonApiOffence>
+    nomisOffences: List<PrisonApiOffence>,
   ) {
     val offencesByCode = allOffences.associateBy { it.code }
 
@@ -140,7 +140,7 @@ class OffenceService(
 
   private fun determineNewStatutesToCreate(
     allOffences: List<EntityOffence>,
-    nomisOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence>
+    nomisOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence>,
   ): Set<Statute> {
     val offencesByNewStatuteCode = allOffences
       .filter { nomisOffences.none { o -> o.statuteCode.code == it.statuteCode } }
@@ -150,21 +150,21 @@ class OffenceService(
       val statuteDescription = it.value
         .sortedWith(
           compareByDescending(EntityOffence::activeFlag)
-            .thenByDescending(EntityOffence::startDate)
+            .thenByDescending(EntityOffence::startDate),
         )
         .firstOrNull { offence -> offence.statuteDescription != offence.statuteCode }?.statuteDescription
       Statute(
         code = it.key,
         description = statuteDescription ?: it.key,
         legislatingBodyCode = "UK",
-        activeFlag = "Y"
+        activeFlag = "Y",
       )
     }.toSet()
   }
 
   private fun determineNewHoCodesToCreate(
     allOffences: List<EntityOffence>,
-    nomisOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence>
+    nomisOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence>,
   ): Set<HoCode> =
     allOffences
       .filter { !it.homeOfficeStatsCode.isNullOrBlank() && nomisOffences.none { o -> o.hoCode?.code == it.homeOfficeStatsCode } }
@@ -172,7 +172,7 @@ class OffenceService(
         HoCode(
           code = it.homeOfficeStatsCode!!,
           description = it.homeOfficeStatsCode!!,
-          activeFlag = "Y"
+          activeFlag = "Y",
         )
       }.toSet()
 
@@ -211,7 +211,7 @@ class OffenceService(
 
   private fun statuteExists(
     nomisOffences: List<PrisonApiOffence>,
-    offence: EntityOffence
+    offence: EntityOffence,
   ) = nomisOffences.any { o -> o.statuteCode.code == offence.statuteCode }
 
   private fun offenceDetailsSame(offence: EntityOffence, nomisOffence: PrisonApiOffence): Boolean =
@@ -222,21 +222,21 @@ class OffenceService(
   private fun copyOffenceToUpdate(
     offence: EntityOffence,
     nomisOffence: PrisonApiOffence,
-    homeOfficeCode: HoCode?
+    homeOfficeCode: HoCode?,
   ): PrisonApiOffence {
     log.info("Offence code {} to be updated in NOMIS", offence.code)
     return nomisOffence.copy(
       description = offence.derivedDescription,
       hoCode = homeOfficeCode,
       activeFlag = offence.activeFlag,
-      expiryDate = offence.expiryDate
+      expiryDate = offence.expiryDate,
     )
   }
 
   private fun copyOffenceToCreate(
     offence: EntityOffence,
     statute: Statute,
-    homeOfficeCode: HoCode?
+    homeOfficeCode: HoCode?,
   ): PrisonApiOffence {
     log.info("Offence code {} to be created in NOMIS", offence.code)
     return PrisonApiOffence(
@@ -253,7 +253,7 @@ class OffenceService(
   private fun findAssociatedHomeOfficeCodeInNomis(
     offence: EntityOffence,
     nomisOffences: List<PrisonApiOffence>,
-    newNomisHoCodes: Set<HoCode>
+    newNomisHoCodes: Set<HoCode>,
   ): HoCode? {
     if (offence.homeOfficeStatsCode == null) return null
     if (homeOfficeCodeExists(nomisOffences, offence)) {
@@ -264,13 +264,13 @@ class OffenceService(
 
   private fun homeOfficeCodeExists(
     nomisOffences: List<PrisonApiOffence>,
-    offence: EntityOffence
+    offence: EntityOffence,
   ) = nomisOffences.any { it.hoCode?.code == offence.homeOfficeStatsCode }
 
   private fun findAssociatedStatute(
     offence: EntityOffence,
     nomisOffences: List<PrisonApiOffence>,
-    newStatutes: Set<Statute>
+    newStatutes: Set<Statute>,
   ): Statute {
     if (statuteExists(nomisOffences, offence)) {
       return nomisOffences.first { it.statuteCode.code == offence.statuteCode }.statuteCode
@@ -319,8 +319,8 @@ class OffenceService(
       offenceRepository.findByCodeStartsWithIgnoreCaseOrCjsTitleContainsIgnoreCaseOrLegislationContainsIgnoreCase(
         searchString,
         searchString,
-        searchString
-      )
+        searchString,
+      ),
     )
   }
 

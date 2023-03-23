@@ -22,7 +22,7 @@ class AdminController(
   @PutMapping(value = ["/toggle-feature"])
   @PreAuthorize("hasRole('ROLE_MANAGE_OFFENCES_ADMIN')")
   @Operation(
-    summary = "Enable / disable a feature"
+    summary = "Enable / disable a feature",
   )
   fun toggleFeature(@RequestBody featureToggles: List<FeatureToggle>) {
     log.info("Request received to toggle features")
@@ -31,7 +31,7 @@ class AdminController(
 
   @GetMapping(value = ["/feature-toggles"])
   @Operation(
-    summary = "Get values of all feature toggles"
+    summary = "Get values of all feature toggles",
   )
   fun getAllToggles(): List<FeatureToggle> {
     log.info("Request received to get values of all feature toggles")

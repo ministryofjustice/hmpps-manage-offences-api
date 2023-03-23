@@ -16,8 +16,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
+          .withStatus(status),
+      ),
     )
   }
 
@@ -27,8 +27,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
 
   fun stubCreateStatute(): StubMapping =
@@ -37,8 +37,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
 
   fun stubCreateOffence(): StubMapping =
@@ -47,8 +47,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
 
   fun stubUpdateOffence(): StubMapping =
@@ -57,8 +57,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
 
   fun stubFindByOffenceCodeStartsWithReturnsNothing(offenceCode: Char) {
@@ -67,9 +67,9 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         aResponse()
           .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
           .withBody(
-            emptyNomisOffenceResponse
-          )
-      )
+            emptyNomisOffenceResponse,
+          ),
+      ),
     )
   }
 
@@ -79,9 +79,9 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         aResponse()
           .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
           .withBody(
-            nomisOffences
-          )
-      )
+            nomisOffences,
+          ),
+      ),
     )
   }
 
@@ -91,9 +91,9 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         aResponse()
           .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
           .withBody(
-            activeNomisOffences
-          )
-      )
+            activeNomisOffences,
+          ),
+      ),
     )
   }
 
@@ -104,8 +104,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
 
   fun stubUnlinkOffence(): StubMapping =
@@ -115,8 +115,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
 
   fun stubActivateOffence(): StubMapping =
@@ -126,8 +126,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
 
   fun stubDeactivateOffence(): StubMapping =
@@ -137,8 +137,8 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
 
   companion object {

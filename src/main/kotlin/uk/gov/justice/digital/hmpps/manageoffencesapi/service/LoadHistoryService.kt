@@ -16,7 +16,7 @@ class LoadHistoryService(
     to?.let {
       return nomisChangeHistoryRepository.findBySentToNomisDateBetweenOrderBySentToNomisDateDesc(
         from.atStartOfDay(),
-        it.atTime(LocalTime.MAX)
+        it.atTime(LocalTime.MAX),
       )
         .map { h -> transform(h) }
     }

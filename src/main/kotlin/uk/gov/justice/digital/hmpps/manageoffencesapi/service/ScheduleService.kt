@@ -33,9 +33,9 @@ class ScheduleService(
         schedule.scheduleParts.map { schedulePart ->
           transform(
             schedulePart,
-            scheduleEntity
+            scheduleEntity,
           )
-        }
+        },
       )
     }
   }
@@ -57,7 +57,7 @@ class ScheduleService(
     offenceScheduleMappingRepository.saveAll(
       offences.map { offence ->
         transform(schedulePart, offence, linkOffence)
-      }
+      },
     )
   }
 

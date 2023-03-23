@@ -10,5 +10,5 @@ data class GetApplicationRequest(
   val allOffences: String,
   @JsonProperty("CJSCode")
   val cjsCode: String? = null,
-  val changedDate: LocalDateTime? = null
+  val changedDate: LocalDateTime? = null,
 )

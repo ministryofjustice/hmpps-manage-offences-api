@@ -17,7 +17,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
   @Sql(
     "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/insert-offence-data.sql",
-    "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql"
+    "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql",
   )
   fun `Fully sync with NOMIS - includes creating statute and ho-code`() {
     ('A'..'Z').forEach { alphaChar ->
@@ -69,7 +69,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
   private fun verifyPostOffenceToPrisonApi(json: String) =
     prisonApiMockServer.verify(
       WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
-        .withRequestBody(WireMock.equalToJson(json, true, true))
+        .withRequestBody(WireMock.equalToJson(json, true, true)),
     )
 
   companion object {

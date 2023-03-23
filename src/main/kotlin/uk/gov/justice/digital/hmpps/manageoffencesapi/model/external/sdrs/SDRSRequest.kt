@@ -6,5 +6,5 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 @JsonNaming(UpperCamelCaseStrategy::class)
 data class SDRSRequest(
   val messageBody: MessageBodyRequest,
-  val messageHeader: MessageHeader
+  val messageHeader: MessageHeader,
 )

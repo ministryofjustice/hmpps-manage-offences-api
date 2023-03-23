@@ -5,5 +5,5 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 
 @JsonNaming(UpperCamelCaseStrategy::class)
 data class GetControlTableResponse(
-  val referenceDataSet: List<ControlTableRecord>
+  val referenceDataSet: List<ControlTableRecord>,
 )

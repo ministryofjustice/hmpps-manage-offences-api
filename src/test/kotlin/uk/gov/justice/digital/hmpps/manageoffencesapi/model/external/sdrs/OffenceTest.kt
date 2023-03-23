@@ -35,6 +35,11 @@ class OffenceTest {
   }
 
   companion object {
-    val BASE_OFFENCE = Offence(code = "AABB011", changedDate = LocalDateTime.now(), offenceRevisionId = 1, offenceStartDate = LocalDate.now())
+    val BASE_OFFENCE = Offence(
+      code = "AABB011",
+      changedDate = LocalDateTime.now(),
+      offenceRevisionId = 1,
+      offenceStartDate = LocalDate.now(),
+    )
   }
 }

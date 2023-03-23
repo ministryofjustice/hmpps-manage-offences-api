@@ -114,7 +114,7 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache):
     changedDate = sdrsOffence.changedDate,
     legislation = sdrsOffence.offenceActsAndSections,
     offenceType = sdrsOffence.offenceType,
-    sdrsCache = sdrsCache
+    sdrsCache = sdrsCache,
   )
 
 fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
@@ -123,7 +123,7 @@ fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
     status = loadResult.status,
     type = loadResult.loadType,
     loadDate = loadResult.loadDate,
-    lastSuccessfulLoadDate = loadResult.lastSuccessfulLoadDate
+    lastSuccessfulLoadDate = loadResult.lastSuccessfulLoadDate,
   )
 
 fun transform(it: FeatureToggle) = ModelFeatureToggle(feature = it.feature, enabled = it.enabled)
@@ -143,16 +143,16 @@ fun transform(schedule: ModelSchedule) =
 
 fun transform(
   it: EntitySchedulePart,
-  offencesByParts: Map<Long, List<OffenceScheduleMapping>>
+  offencesByParts: Map<Long, List<OffenceScheduleMapping>>,
 ) = ModelSchedulePart(
   id = it.id,
   partNumber = it.partNumber,
-  offences = offencesByParts[it.id]?.map { transform(it) }?.sortedBy { it.code }
+  offences = offencesByParts[it.id]?.map { transform(it) }?.sortedBy { it.code },
 )
 
 fun transform(
   schedule: EntitySchedule,
-  scheduleParts: List<ModelSchedulePart>
+  scheduleParts: List<ModelSchedulePart>,
 ) = ModelSchedule(
   id = schedule.id,
   act = schedule.act,
@@ -174,7 +174,7 @@ fun transform(offence: PrisonApiOffence, changeType: ChangeType) =
     code = offence.code,
     description = offence.description,
     changeType = changeType,
-    nomisChangeType = OFFENCE
+    nomisChangeType = OFFENCE,
   )
 
 fun transform(statute: PrisonApiStatute, changeType: ChangeType) =
@@ -182,7 +182,7 @@ fun transform(statute: PrisonApiStatute, changeType: ChangeType) =
     code = statute.code,
     description = statute.description,
     changeType = changeType,
-    nomisChangeType = STATUTE
+    nomisChangeType = STATUTE,
   )
 
 fun transform(it: EntityNomisChangeHistory): ModelNomisChangeHistory =
@@ -197,7 +197,7 @@ fun transform(it: EntityNomisChangeHistory): ModelNomisChangeHistory =
 
 fun transform(
   offence: Offence,
-  it: OffenceScheduleMapping
+  it: OffenceScheduleMapping,
 ) =
   OffenceScheduleMapping(
     offence = offence,
@@ -205,7 +205,7 @@ fun transform(
     paragraphNumber = it.paragraphNumber,
     paragraphTitle = it.paragraphTitle,
     legislationText = it.legislationText,
-    lineReference = it.lineReference
+    lineReference = it.lineReference,
   )
 
 fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMapping =
@@ -225,7 +225,7 @@ fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMappi
     legislation = offence.legislation,
     maxPeriodIsLife = offence.maxPeriodIsLife,
     maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
-    childOffences = children.map { transform(it) }
+    childOffences = children.map { transform(it) },
   )
 
 fun transform(it: Offence): BasicOffence = BasicOffence(
@@ -239,14 +239,14 @@ fun transform(it: Offence): BasicOffence = BasicOffence(
 fun transform(
   schedulePart: SchedulePart,
   offence: Offence,
-  linkOffence: LinkOffence
+  linkOffence: LinkOffence,
 ) = OffenceScheduleMapping(
   schedulePart = schedulePart,
   offence = offence,
   paragraphNumber = linkOffence.paragraphNumber,
   paragraphTitle = linkOffence.paragraphTitle,
   lineReference = linkOffence.lineReference,
-  legislationText = linkOffence.legislationText
+  legislationText = linkOffence.legislationText,
 )
 
 fun transform(offenceId: Long, username: String) = OffenceReactivatedInNomis(

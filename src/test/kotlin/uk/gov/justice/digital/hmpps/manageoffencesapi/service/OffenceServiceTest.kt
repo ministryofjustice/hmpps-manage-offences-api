@@ -48,7 +48,7 @@ class OffenceServiceTest {
       sdrsLoadResultRepository,
       nomisChangeHistoryRepository,
       prisonApiClient,
-      adminService
+      adminService,
     )
 
   private inline fun <reified T : Any> argumentCaptor(): ArgumentCaptor<T> = ArgumentCaptor.forClass(T::class.java)
@@ -68,9 +68,9 @@ class OffenceServiceTest {
       createPrisonApiOffencesResponse(
         1,
         listOf(
-          NOMIS_OFFENCE_A1234AAA
-        )
-      )
+          NOMIS_OFFENCE_A1234AAA,
+        ),
+      ),
     )
 
     offenceService.fullSyncWithNomis()
@@ -99,7 +99,7 @@ class OffenceServiceTest {
 
     verify(
       prisonApiClient,
-      times(1)
+      times(1),
     ).createStatutes(listOf(NOMIS_STATUTE_B123.copy(description = NOMIS_STATUTE_B123.code)))
   }
 
@@ -108,16 +108,16 @@ class OffenceServiceTest {
     whenever(offenceRepository.findByCodeStartsWithIgnoreCase("B")).thenReturn(
       listOf(
         OFFENCE_B123AA6.copy(
-          legislation = "Statute description B123"
-        )
-      )
+          legislation = "Statute description B123",
+        ),
+      ),
     )
 
     offenceService.fullSyncWithNomis()
 
     verify(
       prisonApiClient,
-      times(1)
+      times(1),
     ).createStatutes(listOf(NOMIS_STATUTE_B123.copy(description = "Statute description B123")))
 
     val nomisChangeHistoryCaptor = argumentCaptor<List<NomisChangeHistory>>()
@@ -133,8 +133,8 @@ class OffenceServiceTest {
             description = "Statute description B123",
             changeType = INSERT,
             nomisChangeType = STATUTE,
-            sentToNomisDate = LocalDateTime.now()
-          )
+            sentToNomisDate = LocalDateTime.now(),
+          ),
         ),
       )
     assertThat(nomisChangeHistoryCaptor.allValues[1])
@@ -148,8 +148,8 @@ class OffenceServiceTest {
             description = OFFENCE_B123AA6.description!!,
             changeType = INSERT,
             nomisChangeType = OFFENCE,
-            sentToNomisDate = LocalDateTime.now()
-          )
+            sentToNomisDate = LocalDateTime.now(),
+          ),
         ),
       )
   }
@@ -160,15 +160,15 @@ class OffenceServiceTest {
       createPrisonApiOffencesResponse(
         1,
         listOf(
-          NOMIS_OFFENCE_A1234AAA
-        )
-      )
+          NOMIS_OFFENCE_A1234AAA,
+        ),
+      ),
     )
     whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
       listOf(
         OFFENCE_A123AA6,
-        OFFENCE_A1234AAA
-      )
+        OFFENCE_A1234AAA,
+      ),
     )
 
     offenceService.fullSyncWithNomis()
@@ -192,8 +192,8 @@ class OffenceServiceTest {
             description = NOMIS_OFFENCE_A123AA6.description,
             changeType = INSERT,
             nomisChangeType = OFFENCE,
-            sentToNomisDate = LocalDateTime.now()
-          )
+            sentToNomisDate = LocalDateTime.now(),
+          ),
         ),
       )
     assertThat(nomisChangeHistoryCaptor.allValues[1])
@@ -207,8 +207,8 @@ class OffenceServiceTest {
             description = NOMIS_OFFENCE_A1234AAA_UPDATED.description,
             changeType = UPDATE,
             nomisChangeType = OFFENCE,
-            sentToNomisDate = LocalDateTime.now()
-          )
+            sentToNomisDate = LocalDateTime.now(),
+          ),
         ),
       )
   }
@@ -219,14 +219,14 @@ class OffenceServiceTest {
       createPrisonApiOffencesResponse(
         1,
         listOf(
-          NOMIS_OFFENCE_A1234AAA
-        )
-      )
+          NOMIS_OFFENCE_A1234AAA,
+        ),
+      ),
     )
     whenever(offenceRepository.findBySdrsCache(OFFENCES_A)).thenReturn(
       listOf(
-        OFFENCE_A1234AAA.copy(description = NOMIS_OFFENCE_A1234AAA.description)
-      )
+        OFFENCE_A1234AAA.copy(description = NOMIS_OFFENCE_A1234AAA.description),
+      ),
     )
 
     offenceService.fullSyncWithNomis()
@@ -255,7 +255,7 @@ class OffenceServiceTest {
         OFFENCE_A123993,
         OFFENCE_A123995,
         OFFENCE_A167996,
-      )
+      ),
     )
 
     offenceService.fullSyncWithNomis()
@@ -272,13 +272,13 @@ class OffenceServiceTest {
       OFFENCE_A123996A,
     )
     whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
-      matchingOffences
+      matchingOffences,
     )
     whenever(offenceRepository.findByParentOffenceIdIn(matchingOffences.map { it.id }.toSet())).thenReturn(
       listOf(
         OFFENCE_A123993,
         OFFENCE_A123995,
-      )
+      ),
     )
 
     val offences = offenceService.findOffencesByCode("A")
@@ -290,14 +290,26 @@ class OffenceServiceTest {
         listOf(
           MODEL_OFFENCE_A123991,
           MODEL_OFFENCE_A123992,
-          MODEL_OFFENCE_A123996A
-        )
+          MODEL_OFFENCE_A123996A,
+        ),
       )
   }
 
   companion object {
-    private val BASE_OFFENCE = Offence(code = "AABB011", changedDate = LocalDateTime.now(), revisionId = 1, startDate = LocalDate.now(), sdrsCache = OFFENCES_A)
-    private val BASE_MODEL_OFFENCE = ModelOffence(code = "AABB", id = 1, changedDate = LocalDateTime.now(), revisionId = 1, startDate = LocalDate.now())
+    private val BASE_OFFENCE = Offence(
+      code = "AABB011",
+      changedDate = LocalDateTime.now(),
+      revisionId = 1,
+      startDate = LocalDate.now(),
+      sdrsCache = OFFENCES_A,
+    )
+    private val BASE_MODEL_OFFENCE = ModelOffence(
+      code = "AABB",
+      id = 1,
+      changedDate = LocalDateTime.now(),
+      revisionId = 1,
+      startDate = LocalDate.now(),
+    )
     private val OFFENCE_B123AA6 = BASE_OFFENCE.copy(
       sdrsCache = OFFENCES_B,
       code = "B123AA6",
@@ -324,7 +336,7 @@ class OffenceServiceTest {
       cjsTitle = "Descriptiom",
       code = "A123992",
       startDate = LocalDate.of(2021, 6, 1),
-      legislation = "Statute 992"
+      legislation = "Statute 992",
     )
 
     val OFFENCE_A123991 = BASE_OFFENCE.copy(
@@ -333,7 +345,7 @@ class OffenceServiceTest {
       cjsTitle = "Descriptiom",
       code = "A123991",
       startDate = LocalDate.of(2021, 5, 6),
-      legislation = "Statute 991"
+      legislation = "Statute 991",
     )
 
     val OFFENCE_A123993 = BASE_OFFENCE.copy(
@@ -384,7 +396,7 @@ class OffenceServiceTest {
       code = "A1234AAA",
       description = "A Desc 1",
       statuteCode = NOMIS_STATUTE_A123,
-      activeFlag = "Y"
+      activeFlag = "Y",
     )
 
     private val NOMIS_OFFENCE_A123AA6 = PrisonApiOffence(
@@ -392,32 +404,32 @@ class OffenceServiceTest {
       description = "A Desc 1",
       statuteCode = NOMIS_STATUTE_A123,
       severityRanking = "99",
-      activeFlag = "Y"
+      activeFlag = "Y",
     )
     private val NOMIS_OFFENCE_A1234AAA_UPDATED = PrisonApiOffence(
       code = "A1234AAA",
       description = "A NEW DESC",
       statuteCode = NOMIS_STATUTE_A123,
-      activeFlag = "Y"
+      activeFlag = "Y",
     )
     private val NOMIS_OFFENCE_A1234AAB = PrisonApiOffence(
       code = "A1234AAB",
       description = "A Desc 2",
       statuteCode = NOMIS_STATUTE_A123,
-      activeFlag = "Y"
+      activeFlag = "Y",
     )
     val PAGE_1_OF_2 = createPrisonApiOffencesResponse(
       2,
       listOf(
-        NOMIS_OFFENCE_A1234AAA
-      )
+        NOMIS_OFFENCE_A1234AAA,
+      ),
     )
 
     val PAGE_2_OF_2 = createPrisonApiOffencesResponse(
       2,
       listOf(
-        NOMIS_OFFENCE_A1234AAB
-      )
+        NOMIS_OFFENCE_A1234AAB,
+      ),
     )
 
     val MODEL_OFFENCE_A123992 = BASE_MODEL_OFFENCE.copy(

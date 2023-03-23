@@ -50,7 +50,7 @@ class SDRSServiceTest {
     offenceScheduleMappingRepository,
     offenceService,
     adminService,
-    eventService
+    eventService,
   )
 
   @BeforeEach
@@ -61,16 +61,16 @@ class SDRSServiceTest {
           SdrsLoadResult(
             cache = cache,
             status = SUCCESS,
-            lastSuccessfulLoadDate = NOW
-          )
-        )
+            lastSuccessfulLoadDate = NOW,
+          ),
+        ),
       )
     }
     val loadResults = SdrsCache.values().map { cache ->
       SdrsLoadResult(
         cache = cache,
         status = SUCCESS,
-        lastSuccessfulLoadDate = NOW
+        lastSuccessfulLoadDate = NOW,
       )
     }
 
@@ -91,10 +91,10 @@ class SDRSServiceTest {
   @Test
   fun `Ensure delta sync with nomis is called for only the alphaChar affected (there are records to update for A) `() {
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetControlTable })).thenReturn(
-      CONTROL_TABLE_RESPONSE
+      CONTROL_TABLE_RESPONSE,
     )
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetOffence })).thenReturn(
-      GET_OFFENCE_RESPONSE_NO_OFFENCES
+      GET_OFFENCE_RESPONSE_NO_OFFENCES,
     )
 
     sdrsService.deltaSynchroniseWithSdrs()
@@ -115,10 +115,10 @@ class SDRSServiceTest {
   @Test
   fun `Ensure children are updated with parent offence id (there are records to update for A) `() {
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetControlTable })).thenReturn(
-      CONTROL_TABLE_RESPONSE
+      CONTROL_TABLE_RESPONSE,
     )
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetOffence })).thenReturn(
-      GET_OFFENCE_RESPONSE_NO_OFFENCES
+      GET_OFFENCE_RESPONSE_NO_OFFENCES,
     )
     whenever(offenceRepository.findChildOffencesWithNoParent(SdrsCache.OFFENCES_A)).thenReturn(listOf(OFFENCE_B123AA6A))
     whenever(offenceRepository.findOneByCode(OFFENCE_B123AA6A.parentCode!!)).thenReturn(Optional.of(OFFENCE_B123AA6))
@@ -131,10 +131,10 @@ class SDRSServiceTest {
   @Test
   fun `Ensure event is published when an offence is updated`() {
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetControlTable })).thenReturn(
-      CONTROL_TABLE_RESPONSE
+      CONTROL_TABLE_RESPONSE,
     )
     whenever(sdrsApiClient.callSDRS(argThat { messageHeader.messageType == GetOffence })).thenReturn(
-      GET_OFFENCE_RESPONSE
+      GET_OFFENCE_RESPONSE,
     )
 
     sdrsService.deltaSynchroniseWithSdrs()
@@ -150,22 +150,22 @@ class SDRSServiceTest {
       messageBody = MessageBodyResponse(
         gatewayOperationType = GatewayOperationTypeResponse(
           getControlTableResponse = GetControlTableResponse(
-            referenceDataSet = listOf(ControlTableRecord("offence_A", lastUpdate = NOW))
-          )
+            referenceDataSet = listOf(ControlTableRecord("offence_A", lastUpdate = NOW)),
+          ),
         ),
       ),
-      messageStatus = MessageStatusResponse(status = "SUCCESS")
+      messageStatus = MessageStatusResponse(status = "SUCCESS"),
     )
 
     private val GET_OFFENCE_RESPONSE_NO_OFFENCES = SDRSResponse(
       messageBody = MessageBodyResponse(
         gatewayOperationType = GatewayOperationTypeResponse(
           getOffenceResponse = GetOffenceResponse(
-            offences = emptyList()
-          )
+            offences = emptyList(),
+          ),
         ),
       ),
-      messageStatus = MessageStatusResponse(status = "SUCCESS")
+      messageStatus = MessageStatusResponse(status = "SUCCESS"),
     )
 
     val SDRS_OFFENCE = uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence(
@@ -178,11 +178,11 @@ class SDRSServiceTest {
       messageBody = MessageBodyResponse(
         gatewayOperationType = GatewayOperationTypeResponse(
           getOffenceResponse = GetOffenceResponse(
-            offences = listOf(SDRS_OFFENCE)
-          )
+            offences = listOf(SDRS_OFFENCE),
+          ),
         ),
       ),
-      messageStatus = MessageStatusResponse(status = "SUCCESS")
+      messageStatus = MessageStatusResponse(status = "SUCCESS"),
     )
 
     private val BASE_OFFENCE = Offence(
@@ -190,7 +190,7 @@ class SDRSServiceTest {
       changedDate = LocalDateTime.now(),
       revisionId = 1,
       startDate = LocalDate.now(),
-      sdrsCache = SdrsCache.OFFENCES_A
+      sdrsCache = SdrsCache.OFFENCES_A,
     )
 
     private val OFFENCE_B123AA6 = BASE_OFFENCE.copy(
