@@ -81,7 +81,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             subCategory = 99,
             changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
           ),
-        )
+        ),
       )
 
     assertThat(statusRecords.size).isEqualTo(28)
@@ -136,7 +136,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.now(),
             sdrsCache = OFFENCES_A,
           ),
-        )
+        ),
       )
 
     statusRecords
@@ -291,7 +291,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
             parentOffenceId = parentTwo.id,
           ),
-        )
+        ),
       )
   }
 }

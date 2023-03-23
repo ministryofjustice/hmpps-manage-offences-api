@@ -15,7 +15,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data-with-children.sql"
+    "classpath:test_data/insert-offence-data-with-children.sql",
   )
   fun `Link an offence that has children to a schedule, then unlink the offence and check all children are unlinked`() {
     val allSchedules = getAllSchedules()
@@ -41,7 +41,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
           schedulePartId = firstSchedulePartId,
           offenceId = offenceParent.id,
         ),
-      )
+      ),
     )
     val scheduleAfterUnlinkingOffences = getScheduleDetails(schedule13Id)
     assertThat(scheduleAfterUnlinkingOffences?.scheduleParts?.first { it.partNumber == 1 }?.offences).isNull()
@@ -98,7 +98,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       scheduleParts = listOf(
         SchedulePart(id = 1, partNumber = 1),
         SchedulePart(id = 2, partNumber = 2),
-      )
+      ),
     )
   }
 }
