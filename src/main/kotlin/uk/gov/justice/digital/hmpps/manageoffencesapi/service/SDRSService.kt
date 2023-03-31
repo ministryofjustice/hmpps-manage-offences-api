@@ -51,7 +51,6 @@ class SDRSService(
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
-  private val offenceService: OffenceService,
   private val adminService: AdminService,
   private val eventService: EventService,
 ) {
