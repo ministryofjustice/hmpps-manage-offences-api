@@ -8,4 +8,5 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 @Repository
 interface SdrsLoadResultRepository : JpaRepository<SdrsLoadResult, SdrsCache> {
   fun findAllByOrderByCacheAsc(): List<SdrsLoadResult>
+  fun findByNomisSyncRequiredIsTrue(): List<SdrsLoadResult>
 }

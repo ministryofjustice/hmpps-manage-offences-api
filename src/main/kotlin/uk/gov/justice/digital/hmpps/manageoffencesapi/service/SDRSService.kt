@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
@@ -231,17 +230,16 @@ class SDRSService(
   private fun loadOffenceUpdates(sdrsLoadResults: List<SdrsLoadResult>) {
     val lastLoadDateByCache = sdrsLoadResults.groupBy({ it.lastSuccessfulLoadDate }, { it.cache })
     val loadDate = LocalDateTime.now()
-    val deltaSyncToNomisEnabled = adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)
     lastLoadDateByCache.forEach { (lastSuccessfulLoadDate, affectedCaches) ->
       if (lastSuccessfulLoadDate == null) {
         // This code should never be called - it will only run if the initial full load failed on any of the caches
-        fullLoadOfCachesDuringUpdate(affectedCaches, loadDate, deltaSyncToNomisEnabled)
+        fullLoadOfCachesDuringUpdate(affectedCaches, loadDate)
       } else {
         val updatedCaches = getUpdatedCachesSinceLastLoadDate(lastSuccessfulLoadDate)
         val cachesToUpdate = affectedCaches intersect updatedCaches
         log.info("Caches to update are {}", cachesToUpdate)
         cachesToUpdate.forEach { cache ->
-          updateSingleCache(cache, lastSuccessfulLoadDate, loadDate, deltaSyncToNomisEnabled)
+          updateSingleCache(cache, lastSuccessfulLoadDate, loadDate)
         }
       }
     }
@@ -250,7 +248,6 @@ class SDRSService(
   private fun fullLoadOfCachesDuringUpdate(
     affectedCaches: List<SdrsCache>,
     loadDate: LocalDateTime?,
-    deltaSyncToNomisEnabled: Boolean,
   ) {
     affectedCaches.forEach {
       log.info("Cache has not been previously loaded, so attempting full load of {} in update job", it)
@@ -259,7 +256,6 @@ class SDRSService(
       } else {
         fullLoadSecondaryCache(it, loadDate)
       }
-      if (deltaSyncToNomisEnabled) offenceService.fullySyncWithNomis(it)
     }
   }
 
@@ -267,7 +263,6 @@ class SDRSService(
     cache: SdrsCache,
     lastLoadDate: LocalDateTime,
     loadDate: LocalDateTime?,
-    deltaSyncToNomisEnabled: Boolean,
   ) {
     log.info("Starting update load for cache {} ", cache)
     try {
@@ -291,7 +286,6 @@ class SDRSService(
         }
         saveLoad(cache, loadDate, SUCCESS, UPDATE)
         setParentOffences(cache)
-        if (deltaSyncToNomisEnabled) offenceService.fullySyncWithNomis(cache)
       }
     } catch (e: Exception) {
       log.error(
@@ -340,29 +334,26 @@ class SDRSService(
   private fun saveLoad(cache: SdrsCache, loadDate: LocalDateTime?, status: LoadStatus, type: LoadType) {
     val loadStatusExisting = sdrsLoadResultRepository.findById(cache)
       .orElseThrow { EntityNotFoundException("No record exists for cache $cache") }
-    val loadStatus = if (status == SUCCESS) {
-      loadStatusExisting.copy(
-        status = status,
-        loadType = type,
-        loadDate = loadDate,
-        lastSuccessfulLoadDate = loadDate,
-      )
-    } else {
-      loadStatusExisting.copy(
-        status = status,
-        loadType = type,
-        loadDate = loadDate,
-      )
-    }
-    sdrsLoadResultRepository.save(loadStatus)
 
-    val loadStatusHistory = SdrsLoadResultHistory(
-      cache = cache,
-      status = status,
-      loadType = type,
-      loadDate = loadDate,
+    sdrsLoadResultRepository.save(
+      loadStatusExisting.copy(
+        status = status,
+        loadType = type,
+        loadDate = loadDate,
+        lastSuccessfulLoadDate = if (status == SUCCESS) loadDate else null,
+        nomisSyncRequired = status == SUCCESS,
+      ),
     )
-    sdrsLoadResultHistoryRepository.save(loadStatusHistory)
+
+    sdrsLoadResultHistoryRepository.save(
+      SdrsLoadResultHistory(
+        cache = cache,
+        status = status,
+        loadType = type,
+        loadDate = loadDate,
+        nomisSyncRequired = status == SUCCESS,
+      ),
+    )
   }
 
   private fun createSDRSRequest(gatewayOperationTypeRequest: GatewayOperationTypeRequest, messageType: MessageType) =

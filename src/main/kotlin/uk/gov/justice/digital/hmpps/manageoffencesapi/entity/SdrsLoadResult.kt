@@ -22,4 +22,5 @@ data class SdrsLoadResult(
   val loadType: LoadType? = null,
   val loadDate: LocalDateTime? = null,
   val lastSuccessfulLoadDate: LocalDateTime? = null,
+  val nomisSyncRequired: Boolean = false,
 )

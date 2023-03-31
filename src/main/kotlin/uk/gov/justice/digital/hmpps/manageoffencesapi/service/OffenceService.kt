@@ -6,8 +6,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
@@ -17,6 +20,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.S
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import javax.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
@@ -27,6 +31,7 @@ class OffenceService(
   private val offenceRepository: OffenceRepository,
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
+  private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
   private val nomisChangeHistoryRepository: NomisChangeHistoryRepository,
   private val prisonApiClient: PrisonApiClient,
   private val adminService: AdminService,
@@ -71,6 +76,35 @@ class OffenceService(
       log.info("Starting full sync with NOMIS for offence group {} ", alphaChar)
       fullySyncWithNomisWhereOffenceStartsWith(alphaChar)
     }
+  }
+
+  @Scheduled(cron = "0 5-55/10 * * * *")
+  @SchedulerLock(name = "deltaSyncWithNomisLock")
+  @Transactional
+  fun deltaSyncWithNomis() {
+    if (!adminService.isFeatureEnabled(DELTA_SYNC_NOMIS) || adminService.isFeatureEnabled(FULL_SYNC_NOMIS)) {
+      log.info("Delta sync with NOMIS not running - delta sync disabled or full sync is enabled ")
+      return
+    }
+    val cachesToSyncWithNomis = sdrsLoadResultRepository.findByNomisSyncRequiredIsTrue()
+
+    cachesToSyncWithNomis.forEach {
+      fullySyncWithNomis(it.cache)
+      sdrsLoadResultRepository.save(it.copy(nomisSyncRequired = false))
+      createLoadHistoryRecord(it)
+    }
+  }
+
+  private fun createLoadHistoryRecord(it: SdrsLoadResult) {
+    sdrsLoadResultHistoryRepository.save(
+      SdrsLoadResultHistory(
+        cache = it.cache,
+        status = it.status,
+        loadType = it.loadType,
+        loadDate = it.loadDate,
+        nomisSyncRequired = false,
+      ),
+    )
   }
 
   //  This syncs all offences that start with the passed character with NOMIS - independent of caches

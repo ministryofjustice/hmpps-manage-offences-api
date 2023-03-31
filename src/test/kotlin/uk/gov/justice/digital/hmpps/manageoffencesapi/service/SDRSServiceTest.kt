@@ -98,8 +98,6 @@ class SDRSServiceTest {
     )
 
     sdrsService.deltaSynchroniseWithSdrs()
-
-    verify(offenceService, times(1)).fullySyncWithNomis(SdrsCache.OFFENCES_A)
   }
 
   @Test
@@ -139,7 +137,6 @@ class SDRSServiceTest {
 
     sdrsService.deltaSynchroniseWithSdrs()
 
-    verify(offenceService, times(1)).fullySyncWithNomis(SdrsCache.OFFENCES_A)
     verify(eventService).publishOffenceChangedEvent(SDRS_OFFENCE.code)
   }
 
