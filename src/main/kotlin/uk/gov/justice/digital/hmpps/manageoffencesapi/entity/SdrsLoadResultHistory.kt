@@ -25,4 +25,5 @@ data class SdrsLoadResultHistory(
   @Enumerated(EnumType.STRING)
   val loadType: LoadType? = null,
   val loadDate: LocalDateTime? = null,
+  val nomisSyncRequired: Boolean? = false,
 )

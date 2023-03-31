@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -38,7 +37,6 @@ class SDRSServiceTest {
   private val sdrsLoadResultHistoryRepository = mock<SdrsLoadResultHistoryRepository>()
   private val offenceScheduleMappingRepository = mock<OffenceScheduleMappingRepository>()
   private val adminService = mock<AdminService>()
-  private val offenceService = mock<OffenceService>()
   private val sdrsApiClient = mock<SDRSApiClient>()
   private val eventService = mock<EventService>()
 
@@ -48,7 +46,6 @@ class SDRSServiceTest {
     sdrsLoadResultRepository,
     sdrsLoadResultHistoryRepository,
     offenceScheduleMappingRepository,
-    offenceService,
     adminService,
     eventService,
   )
@@ -98,18 +95,6 @@ class SDRSServiceTest {
     )
 
     sdrsService.deltaSynchroniseWithSdrs()
-
-    verify(offenceService, times(1)).fullySyncWithNomis(SdrsCache.OFFENCES_A)
-  }
-
-  @Test
-  fun `Ensure delta sync with nomis doesnt occur if associated feature toggle is disabled`() {
-    whenever(sdrsApiClient.callSDRS(any())).thenReturn(CONTROL_TABLE_RESPONSE)
-    whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(false)
-
-    sdrsService.fullSynchroniseWithSdrs()
-
-    verifyNoInteractions(offenceService)
   }
 
   @Test
@@ -139,7 +124,6 @@ class SDRSServiceTest {
 
     sdrsService.deltaSynchroniseWithSdrs()
 
-    verify(offenceService, times(1)).fullySyncWithNomis(SdrsCache.OFFENCES_A)
     verify(eventService).publishOffenceChangedEvent(SDRS_OFFENCE.code)
   }
 

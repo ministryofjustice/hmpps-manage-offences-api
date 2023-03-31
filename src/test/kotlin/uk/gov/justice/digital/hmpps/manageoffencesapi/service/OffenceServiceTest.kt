@@ -15,9 +15,14 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFENCE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATUTE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_A
@@ -27,6 +32,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.S
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -37,6 +43,7 @@ class OffenceServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
   private val offenceScheduleMappingRepository = mock<OffenceScheduleMappingRepository>()
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
+  private val sdrsLoadResultHistoryRepository = mock<SdrsLoadResultHistoryRepository>()
   private val nomisChangeHistoryRepository = mock<NomisChangeHistoryRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val adminService = mock<AdminService>()
@@ -46,6 +53,7 @@ class OffenceServiceTest {
       offenceRepository,
       offenceScheduleMappingRepository,
       sdrsLoadResultRepository,
+      sdrsLoadResultHistoryRepository,
       nomisChangeHistoryRepository,
       prisonApiClient,
       adminService,
@@ -295,6 +303,67 @@ class OffenceServiceTest {
       )
   }
 
+  @Test
+  fun `Delta sync with nomis doesnt run if feature is disabled`() {
+    whenever(adminService.isFeatureEnabled(FULL_SYNC_NOMIS)).thenReturn(true)
+    whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(false)
+
+    offenceService.deltaSyncWithNomis()
+
+    verifyNoInteractions(sdrsLoadResultRepository)
+    verifyNoInteractions(sdrsLoadResultHistoryRepository)
+  }
+
+  @Test
+  fun `Delta sync with nomis successful run makes call to prison-api`() {
+    whenever(adminService.isFeatureEnabled(FULL_SYNC_NOMIS)).thenReturn(false)
+    whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(true)
+    whenever(sdrsLoadResultRepository.findByNomisSyncRequiredIsTrue()).thenReturn(
+      listOf(
+        SdrsLoadResult(
+          OFFENCES_A,
+          status = LoadStatus.SUCCESS,
+          loadType = LoadType.UPDATE,
+        ),
+      ),
+    )
+    whenever(offenceRepository.findBySdrsCache(OFFENCES_A)).thenReturn(
+      listOf(
+        OFFENCE_A123AA6,
+        OFFENCE_A1234AAB,
+      ),
+    )
+    whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
+      createPrisonApiOffencesResponse(
+        0,
+        listOf(
+          NOMIS_OFFENCE_A123AA6,
+          NOMIS_OFFENCE_A1234AAB,
+        ),
+      ),
+    )
+
+    offenceService.deltaSyncWithNomis()
+
+    verify(prisonApiClient).updateOffences(listOf(NOMIS_OFFENCE_A1234AAB.copy(description = OFFENCE_A1234AAB.derivedDescription)))
+    verify(sdrsLoadResultHistoryRepository).save(
+      SdrsLoadResultHistory(
+        cache = OFFENCES_A,
+        status = LoadStatus.SUCCESS,
+        loadType = LoadType.UPDATE,
+        nomisSyncRequired = false,
+      ),
+    )
+    verify(sdrsLoadResultHistoryRepository).save(
+      SdrsLoadResultHistory(
+        cache = OFFENCES_A,
+        status = LoadStatus.SUCCESS,
+        loadType = LoadType.UPDATE,
+        nomisSyncRequired = false,
+      ),
+    )
+  }
+
   companion object {
     private val BASE_OFFENCE = Offence(
       code = "AABB011",
@@ -324,6 +393,12 @@ class OffenceServiceTest {
     private val OFFENCE_A1234AAA = BASE_OFFENCE.copy(
       sdrsCache = OFFENCES_A,
       code = "A1234AAA",
+      description = "A NEW DESC",
+      legislation = "Statute desc A123",
+    )
+    private val OFFENCE_A1234AAB = BASE_OFFENCE.copy(
+      sdrsCache = OFFENCES_A,
+      code = "A1234AAB",
       description = "A NEW DESC",
       legislation = "Statute desc A123",
     )
