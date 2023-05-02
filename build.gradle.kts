@@ -8,6 +8,12 @@ configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
 
+dependencyManagement {
+  imports {
+    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.0")
+  }
+}
+
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -36,6 +42,9 @@ dependencies {
 
   // SQS
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.2.0")
+
+  // AWS
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
 
   // Test dependencies
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
