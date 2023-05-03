@@ -15,8 +15,9 @@ generic-service:
     AWS_REGION: "eu-west-2"
 
   namespace_secrets:
-    AWS_ACCESS_KEY_ID: "access_key_id"
-    AWS_SECRET_ACCESS_KEY: "secret_access_key"
+    manage-offences-ap-s3-bucket:
+      AWS_ACCESS_KEY_ID: "access_key_id"
+      AWS_SECRET_ACCESS_KEY: "secret_access_key"
 
   # Switches off the allowlist in the DEV env only.
   allowlist: null
