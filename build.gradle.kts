@@ -45,7 +45,7 @@ dependencies {
 
   // AWS
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
-  implementation("com.amazonaws:aws-java-sdk-sts:1.12.460")
+  implementation("software.amazon.awssdk:sts:2.20.57")
 
   // Test dependencies
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
