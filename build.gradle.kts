@@ -46,6 +46,10 @@ dependencies {
   // AWS
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
   implementation("software.amazon.awssdk:sts:2.20.57")
+  implementation("software.amazon.awssdk:netty-nio-client:2.20.57")
+
+  // Miscellaneous
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.0")
 
   // Test dependencies
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
