@@ -12,7 +12,6 @@ generic-service:
     HMPPS_AUTH_URL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
     API_BASE_URL_SDRS: https://crime-reference-data-api.staging.service.justice.gov.uk
     API_BASE_URL_PRISON_API: https://api-dev.prison.service.justice.gov.uk
-    AWS_REGION: "eu-west-2"
 
   namespace_secrets:
     manage-offences-ap-s3-bucket:

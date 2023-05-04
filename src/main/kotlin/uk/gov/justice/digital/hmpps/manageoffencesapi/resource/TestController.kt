@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.HoCodeService
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.HomeOfficeCode
@@ -51,7 +52,7 @@ class TestController(
     return hoCodeService.testS3GetBucketLocation(bucket)
   }
 
-  @GetMapping(value = ["/s3-select-content/{bucket}/{key}"])
+  @GetMapping(value = ["/s3-select-content/{bucket}"])
   @Operation(
     summary = "Test AP S3 integration - select values from s3 object defined by key (selects on parquet files)",
   )
@@ -59,11 +60,9 @@ class TestController(
     @Parameter(required = true, example = "bucket1", description = "The bucket name")
     @PathVariable("bucket")
     bucket: String,
-    @Parameter(required = true, example = "s3-object-key", description = "The key to the S3 file being queried")
-    @PathVariable("key")
-    key: String,
+    @RequestParam() key: String,
   ): List<HomeOfficeCode> {
-    log.info("Request received to test s3 select on an objec")
+    log.info("Request received to test s3 select on an object")
     return hoCodeService.testSelectS3ObjectContent(bucket, key)
   }
 
