@@ -29,7 +29,6 @@ class HoCodeService(
     }
 
     log.info("Start a full of Home Office Code data from Analytical Platform (S3)")
-    homeOfficeCodeRepository.deleteAll() // TODO full new load every time? or incremental? deo codes ever get deleted?
     val hoCodeFileKeys = awsS3Service.getKeysInPath(AnalyticalPlatformTableName.HO_CODES.s3Path)
     hoCodeFileKeys.forEach { fileKey ->
       val hoCodesToLoad = awsS3Service.loadParquetFileContents(fileKey, AnalyticalPlatformTableName.HO_CODES.clazz).map { it as HomeOfficeCode }
@@ -49,6 +48,7 @@ class HoCodeService(
       val mappingsToLoad =
         awsS3Service.loadParquetFileContents(fileKey, AnalyticalPlatformTableName.HO_CODES_TO_OFFENCE_MAPPING.clazz).map { it as HomeOfficeCodeToOffenceMapping }
       // TODO decide what to do with this mapping data. overwrite sdrs mappings? create mapping table? delete and full load or increment?
+      log.info("file $fileKey has ${mappingsToLoad.size} mappings to load")
     }
 
     log.info("Finished a full load of Home Office Code data from Analytical Platform (S3)")
