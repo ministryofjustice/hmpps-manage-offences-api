@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDRS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SYNC_HOME_OFFICE_CODES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
@@ -38,6 +39,7 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(DELTA_SYNC_NOMIS, true),
           FeatureToggle(FULL_SYNC_SDRS, false),
           FeatureToggle(DELTA_SYNC_SDRS, true),
+          FeatureToggle(SYNC_HOME_OFFICE_CODES, true),
         ),
       )
   }
@@ -65,6 +67,7 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(DELTA_SYNC_NOMIS, true),
           FeatureToggle(FULL_SYNC_SDRS, false),
           FeatureToggle(DELTA_SYNC_SDRS, true),
+          FeatureToggle(SYNC_HOME_OFFICE_CODES, true),
         ),
       )
   }

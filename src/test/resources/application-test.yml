@@ -60,3 +60,8 @@ system:
   client:
     id: manage-offences-api-admin
     secret: client_secret
+
+aws:
+  region: "eu-west-1"
+  accessKeyId: "access_key"
+  secretAccessKey: "secret"

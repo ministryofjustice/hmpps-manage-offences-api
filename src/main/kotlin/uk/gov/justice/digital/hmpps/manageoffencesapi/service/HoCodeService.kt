@@ -1,147 +1,75 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.slf4j.Logger
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import software.amazon.awssdk.core.async.SdkPublisher
-import software.amazon.awssdk.services.s3.S3AsyncClient
-import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.CompressionType
-import software.amazon.awssdk.services.s3.model.ExpressionType
-import software.amazon.awssdk.services.s3.model.GetBucketLocationRequest
-import software.amazon.awssdk.services.s3.model.InputSerialization
-import software.amazon.awssdk.services.s3.model.JSONOutput
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
-import software.amazon.awssdk.services.s3.model.OutputSerialization
-import software.amazon.awssdk.services.s3.model.ParquetInput
-import software.amazon.awssdk.services.s3.model.RecordsEvent
-import software.amazon.awssdk.services.s3.model.SelectObjectContentEventStream
-import software.amazon.awssdk.services.s3.model.SelectObjectContentRequest
-import software.amazon.awssdk.services.s3.model.SelectObjectContentResponse
-import software.amazon.awssdk.services.s3.model.SelectObjectContentResponseHandler
-import java.util.concurrent.CompletableFuture
+import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.AnalyticalPlatformTableName
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HomeOfficeCodeRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode as HomeOfficeCodeEntity
 
 @Service
 class HoCodeService(
-  private val s3Client: S3Client,
-  private val s3AsyncClient: S3AsyncClient,
+  private val awsS3Service: AwsS3Service,
+  private val homeOfficeCodeRepository: HomeOfficeCodeRepository,
+  private val adminService: AdminService,
 ) {
-  fun testS3ListBuckets(): String {
-    log.info("testS3ListBuckets start")
-    val listOfbuckets = s3Client.listBuckets()
-    log.info("listOfbuckets: $listOfbuckets")
-    return listOfbuckets.toString()
-  }
+  private val log = LoggerFactory.getLogger(this::class.java)
 
-  fun testS3ListObjects(bucket: String): String {
-    log.info("testS3ListObjects for $bucket start")
-
-    val listObjectsInBucket = s3Client.listObjectsV2(
-      ListObjectsV2Request
-        .builder()
-        .bucket(bucket)
-        .build(),
-    )
-
-    log.info("List of objects in bucket $listObjectsInBucket")
-    log.info("testS3ListObjects finish")
-    return listObjectsInBucket.toString()
-  }
-
-  fun testS3GetBucketLocation(bucket: String): String {
-    log.info("testS3ListObjectsInBucket start for bucket $bucket")
-
-    val bucketLocation = s3Client.getBucketLocation(
-      GetBucketLocationRequest.builder()
-        .bucket(bucket)
-        .build(),
-    )
-
-    log.info("Bucket location $bucketLocation")
-    log.info("testS3GetBucketLocation finish")
-    return bucketLocation.toString()
-  }
-
-  fun testSelectS3ObjectContent(bucket: String, key: String): List<HomeOfficeCode> {
-    log.info("testSelectS3ObjectContent start for bucket: $bucket and key: $key")
-    val handler = Handler()
-    log.info("Making query to S3")
-    selectQueryWithHandler(handler, bucket, key).join()
-    log.info("Query finished")
-    val events = handler.receivedEvents
-    log.info("Size of events:  ${events.size}")
-    val recordsEvents = events
-      .filter { it.sdkEventType() === SelectObjectContentEventStream.EventType.RECORDS }
-      .map { it as RecordsEvent }
-    val mapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    val rowsAsStrings = recordsEvents.map {
-      it.payload().asUtf8String().split("\r?\n|\r".toRegex()).toTypedArray().toList()
-    }.flatten().filter { it.isNotBlank() }
-
-    val homeOfficeCodes = rowsAsStrings.map { mapper.readValue(it, HomeOfficeCode::class.java) }
-
-    log.info("All rows received from S3 select on parquet file:")
-    homeOfficeCodes.forEach { log.info(it.toString()) }
-    log.info("Number of records from parquet file: ${homeOfficeCodes.size}")
-    return homeOfficeCodes
-  }
-
-  private fun selectQueryWithHandler(
-    handler: SelectObjectContentResponseHandler,
-    bucket: String,
-    key: String,
-  ): CompletableFuture<Void> {
-    val inputSerialization = InputSerialization.builder()
-      .parquet(ParquetInput.builder().build())
-      .compressionType(CompressionType.NONE)
-      .build()
-    val outputSerialization = OutputSerialization.builder()
-      .json(JSONOutput.builder().build())
-      .build()
-    val select = SelectObjectContentRequest.builder()
-      .bucket(bucket)
-      .key(key)
-      .expression("select * from S3Object s")
-      .expressionType(ExpressionType.SQL)
-      .inputSerialization(inputSerialization)
-      .outputSerialization(outputSerialization)
-      .build()
-
-    return s3AsyncClient.selectObjectContent(select, handler)
-  }
-
-  private class Handler : SelectObjectContentResponseHandler {
-    private var response: SelectObjectContentResponse? = null
-    val receivedEvents: MutableList<SelectObjectContentEventStream> = ArrayList()
-    private var exception: Throwable? = null
-    override fun responseReceived(response: SelectObjectContentResponse) {
-      this.response = response
+  @Scheduled(cron = "0 */15 * * * *") // TODO setting to 15 minutes for test purposes. change schedule after testing
+  @Transactional
+  @SchedulerLock(name = "fullLoadOfHomeOfficeCodes")
+  fun fullLoadOfHomeOfficeCodes() {
+    if (!adminService.isFeatureEnabled(Feature.SYNC_HOME_OFFICE_CODES)) {
+      log.info("Sync Home Office Codes not running - disabled")
+      return
     }
 
-    override fun onEventStream(publisher: SdkPublisher<SelectObjectContentEventStream>) {
-      publisher.subscribe { e: SelectObjectContentEventStream ->
-        receivedEvents.add(e)
+    log.info("Start a full of Home Office Code data from Analytical Platform (S3)")
+    val hoCodeFileKeys = awsS3Service.getKeysInPath(AnalyticalPlatformTableName.HO_CODES.s3Path)
+    hoCodeFileKeys.forEach { fileKey ->
+      val hoCodesToLoad = awsS3Service.loadParquetFileContents(fileKey, AnalyticalPlatformTableName.HO_CODES.clazz).map { it as HomeOfficeCode }
+      val hoCodesToSave = hoCodesToLoad.map {
+        HomeOfficeCodeEntity(
+          id = it.code,
+          category = it.category,
+          subCategory = it.subCategory,
+          description = it.description,
+        )
       }
+      homeOfficeCodeRepository.saveAll(hoCodesToSave)
     }
 
-    override fun exceptionOccurred(throwable: Throwable) {
-      exception = throwable
+    val mappingFileKeys = awsS3Service.getKeysInPath(AnalyticalPlatformTableName.HO_CODES_TO_OFFENCE_MAPPING.s3Path)
+    mappingFileKeys.forEach { fileKey ->
+      val mappingsToLoad =
+        awsS3Service.loadParquetFileContents(fileKey, AnalyticalPlatformTableName.HO_CODES_TO_OFFENCE_MAPPING.clazz).map { it as HomeOfficeCodeToOffenceMapping }
+      // TODO decide what to do with this mapping data. overwrite sdrs mappings? create mapping table? delete and full load or increment?
+      log.info("file $fileKey has ${mappingsToLoad.size} mappings to load")
     }
 
-    override fun complete() {}
-  }
-
-  companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
+    log.info("Finished a full load of Home Office Code data from Analytical Platform (S3)")
   }
 }
 
 data class HomeOfficeCode(
   @JsonProperty("ho_offence_code")
-  val hoCode: String = "",
+  val code: String = "",
   @JsonProperty("ho_offence_desc")
-  val hoDescription: String = "",
+  val description: String = "",
+) {
+  val category: Int
+    get() = code.substring(0, 3).toInt()
+  val subCategory: Int
+    get() = code.substring(3).toInt()
+}
+
+data class HomeOfficeCodeToOffenceMapping(
+  @JsonProperty("ho_offence_code")
+  val hoCode: String = "",
+  @JsonProperty("cjs_offence_code")
+  val offenceCode: String = "",
 )
