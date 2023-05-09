@@ -23,11 +23,7 @@ jobs:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
       - run:
-          command: |
-            export AWS_ACCESS_KEY_ID=access_key
-            export AWS_SECRET_ACCESS_KEY=secret
-            export AWS_REGION=eu-west-2
-            ./gradlew check
+          command: ./gradlew check
       - save_cache:
           paths:
             - ~/.gradle

@@ -18,6 +18,7 @@ export DB_USER=manage-offences
 export DB_PASS=manage-offences
 export SYSTEM_CLIENT_ID=XXX_ENTER_SYSTEM_CLIENT_ID
 export SYSTEM_CLIENT_SECRET="XXX_ENTER_SYSTEM_CLIENT_SECRET"
+export AWS_REGION=eu-west-1
 
 # Provide URLs to other local container-based dependent services
 # Match with ports defined in docker-compose.yml
