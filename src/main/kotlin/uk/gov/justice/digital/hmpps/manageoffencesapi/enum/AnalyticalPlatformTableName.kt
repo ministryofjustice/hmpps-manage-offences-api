@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.enum
 
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode
+import uk.gov.justice.digital.hmpps.manageoffencesapi.service.HomeOfficeCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.HomeOfficeCodeToOffenceMapping
 
 enum class AnalyticalPlatformTableName(val s3Path: String, val clazz: Class<out Any>) {
