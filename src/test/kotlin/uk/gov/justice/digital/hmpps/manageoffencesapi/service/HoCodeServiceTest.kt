@@ -5,14 +5,16 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HoCodesLoadHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HomeOfficeCodeRepository
 
 class HoCodeServiceTest {
 
   private val awsS3Service = mock<AwsS3Service>()
   private val homeOfficeCodeRepository = mock<HomeOfficeCodeRepository>()
+  private val hoCodesLoadHistoryRepository = mock<HoCodesLoadHistoryRepository>()
   private val adminService = mock<AdminService>()
-  private val hoCodeService = HoCodeService(awsS3Service, homeOfficeCodeRepository, adminService)
+  private val hoCodeService = HoCodeService(awsS3Service, homeOfficeCodeRepository, hoCodesLoadHistoryRepository, adminService)
 
   @Test
   fun `Do not run load if feature toggle is disabled`() {
