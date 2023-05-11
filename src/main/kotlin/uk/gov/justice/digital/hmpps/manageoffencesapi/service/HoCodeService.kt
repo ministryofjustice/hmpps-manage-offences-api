@@ -81,12 +81,16 @@ class HoCodeService(
     val pathByTimestamp = subdirectories
       .associateBy {
         LocalDateTime.parse(
-          it.prefix().substring(s3BasePath.length + "extraction_timestamp=".length, it.prefix().lastIndex),
+          it.prefix().substring(s3BasePath.length + FOLDER_NAME_PREFIX.length, it.prefix().lastIndex),
         )
       }
     val maxExtractionTimestamp = pathByTimestamp.keys.max()
     log.info("latest extraction timestamp is: $maxExtractionTimestamp")
     return pathByTimestamp[maxExtractionTimestamp]!!.prefix()
+  }
+
+  companion object {
+    const val FOLDER_NAME_PREFIX = "extraction_timestamp="
   }
 }
 
