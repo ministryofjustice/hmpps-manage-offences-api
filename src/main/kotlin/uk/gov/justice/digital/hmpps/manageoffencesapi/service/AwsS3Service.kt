@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.async.SdkPublisher
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.CommonPrefix
 import software.amazon.awssdk.services.s3.model.CompressionType.NONE
 import software.amazon.awssdk.services.s3.model.ExpressionType.SQL
 import software.amazon.awssdk.services.s3.model.InputSerialization
@@ -53,16 +54,17 @@ class AwsS3Service(
     return data.toString()
   }
 
-  fun getKeysInPath(path: String): List<String> {
+  fun getKeysInPath(path: String): Set<String> {
     return s3Client.listObjectsV2(
       ListObjectsV2Request.builder()
         .bucket(BUCKET)
         .prefix(path)
         .delimiter("/")
-        // .startAfter(XXX DATE) TODO potentially use the date to get the latest data.. awaiting to see how AP implement increments on their side
+        .startAfter(path)
         .build(),
     ).contents()
       .map { it.key() }
+      .toSet()
   }
 
   private fun queryS3(
@@ -84,6 +86,16 @@ class AwsS3Service(
       .outputSerialization(outputSerialization)
       .build()
     return s3AsyncClient.selectObjectContent(select, handler)
+  }
+
+  fun getSubDirectories(path: String): List<CommonPrefix> {
+    return s3Client.listObjectsV2(
+      ListObjectsV2Request.builder()
+        .bucket(BUCKET)
+        .prefix(path)
+        .delimiter("/")
+        .build(),
+    ).commonPrefixes()
   }
 
   private class SelectObjectHandler : SelectObjectContentResponseHandler {
