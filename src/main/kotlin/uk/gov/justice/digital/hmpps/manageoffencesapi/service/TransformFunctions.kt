@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.LegacySdrsHoCodeMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
@@ -94,8 +95,6 @@ fun transform(sdrsOffence: SdrsOffence, cache: SdrsCache): Offence = Offence(
   revisionId = sdrsOffence.offenceRevisionId,
   startDate = sdrsOffence.offenceStartDate,
   endDate = sdrsOffence.offenceEndDate,
-  category = sdrsOffence.category,
-  subCategory = sdrsOffence.subCategory,
   changedDate = sdrsOffence.changedDate,
   legislation = sdrsOffence.offenceActsAndSections,
   sdrsCache = cache,
@@ -259,4 +258,11 @@ fun transform(offence: Offence, activationFlag: Boolean) =
     offenceCode = offence.code,
     statuteCode = offence.statuteCode,
     activationFlag = activationFlag,
+  )
+
+fun transform(offence: SdrsOffence): LegacySdrsHoCodeMapping =
+  LegacySdrsHoCodeMapping(
+    offenceCode = offence.code,
+    category = offence.category,
+    subCategory = offence.subCategory,
   )
