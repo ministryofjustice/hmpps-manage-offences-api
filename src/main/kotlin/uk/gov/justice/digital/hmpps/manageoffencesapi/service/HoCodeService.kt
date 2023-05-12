@@ -73,7 +73,7 @@ class HoCodeService(
     val alreadyLoadedFiles = hoCodesLoadHistoryRepository.findByLoadedFileIn(mappingFileKeys)
     log.info("${alreadyLoadedFiles.size} mapping files have previously been loaded")
     val filesToProcess = mappingFileKeys.minus(alreadyLoadedFiles.map { it.loadedFile }.toSet())
-    log.info("${filesToProcess.size} ho-code files to process")
+    log.info("${filesToProcess.size} mapping files to process")
 
     filesToProcess.forEach { fileKey ->
       log.info("Processing $fileKey")
