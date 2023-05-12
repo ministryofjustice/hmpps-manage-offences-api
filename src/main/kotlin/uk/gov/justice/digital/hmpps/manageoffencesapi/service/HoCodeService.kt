@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.AnalyticalPlatformTab
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HoCodesLoadHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HomeOfficeCodeRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode as HomeOfficeCodeEntity
 
@@ -20,6 +21,7 @@ class HoCodeService(
   private val awsS3Service: AwsS3Service,
   private val homeOfficeCodeRepository: HomeOfficeCodeRepository,
   private val hoCodesLoadHistoryRepository: HoCodesLoadHistoryRepository,
+  private val offenceRepository: OffenceRepository,
   private val adminService: AdminService,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
@@ -34,11 +36,12 @@ class HoCodeService(
     }
 
     log.info("Start a full load of Home Office Code data from Analytical Platform (S3)")
-    performLoad()
+    loadHoCodes()
+    loadMappingData()
     log.info("Finished full load of Home Office Code data from Analytical Platform (S3)")
   }
 
-  private fun performLoad() {
+  private fun loadHoCodes() {
     val pathToReadFrom = getLatestLoadDirectory(HO_CODES.s3BasePath)
     val hoCodeFileKeys = awsS3Service.getKeysInPath(pathToReadFrom)
     val alreadyLoadedFiles = hoCodesLoadHistoryRepository.findByLoadedFileIn(hoCodeFileKeys)
@@ -62,18 +65,33 @@ class HoCodeService(
       homeOfficeCodeRepository.saveAll(hoCodesToSave)
       hoCodesLoadHistoryRepository.save(HoCodesLoadHistory(loadedFile = fileKey))
     }
+  }
 
-    val mappingFileKeys = awsS3Service.getKeysInPath(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)
-    log.info("${mappingFileKeys.size} mapping files to process")
-    mappingFileKeys.forEach { fileKey ->
+  private fun loadMappingData() {
+    val pathToReadFrom = getLatestLoadDirectory(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)
+    val mappingFileKeys = awsS3Service.getKeysInPath(pathToReadFrom)
+    val alreadyLoadedFiles = hoCodesLoadHistoryRepository.findByLoadedFileIn(mappingFileKeys)
+    log.info("${alreadyLoadedFiles.size} mapping files have previously been loaded")
+    val filesToProcess = mappingFileKeys.minus(alreadyLoadedFiles.map { it.loadedFile }.toSet())
+    log.info("${filesToProcess.size} ho-code files to process")
+
+    filesToProcess.forEach { fileKey ->
+      log.info("Processing $fileKey")
       val mappingsToLoad =
         awsS3Service.loadParquetFileContents(fileKey, HO_CODES_TO_OFFENCE_MAPPING.mappingClass)
           .map { it as HomeOfficeCodeToOffenceMapping }
-      // TODO decide what to do with this mapping data. overwrite sdrs mappings? create mapping table? delete and full load or increment?
-      log.info("file $fileKey has ${mappingsToLoad.size} mappings to load")
+      val mappingsByCode = mappingsToLoad.associateBy { it.offenceCode }
+      val offencesToUpdate = offenceRepository.findByCodeIn(mappingsToLoad.map { it.offenceCode }.toSet())
+      offenceRepository.saveAll(
+        offencesToUpdate.map {
+          it.copy(
+            category = mappingsByCode[it.code]!!.category,
+            subCategory = mappingsByCode[it.code]!!.subCategory,
+          )
+        },
+      )
+      hoCodesLoadHistoryRepository.save(HoCodesLoadHistory(loadedFile = fileKey))
     }
-
-    log.info("Finished a full load of Home Office Code data from Analytical Platform (S3)")
   }
 
   private fun getLatestLoadDirectory(s3BasePath: String): String {
@@ -111,4 +129,9 @@ data class HomeOfficeCodeToOffenceMapping(
   val hoCode: String = "",
   @JsonProperty("cjs_offence_code")
   val offenceCode: String = "",
-)
+) {
+  val category: Int
+    get() = hoCode.substring(0, 3).toInt()
+  val subCategory: Int
+    get() = hoCode.substring(3).toInt()
+}

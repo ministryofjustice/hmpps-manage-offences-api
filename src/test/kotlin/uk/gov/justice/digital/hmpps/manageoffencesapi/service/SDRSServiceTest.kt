@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetOff
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageBodyResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageStatusResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.LegacySdrsHoCodeMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
@@ -36,6 +37,7 @@ class SDRSServiceTest {
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
   private val sdrsLoadResultHistoryRepository = mock<SdrsLoadResultHistoryRepository>()
   private val offenceScheduleMappingRepository = mock<OffenceScheduleMappingRepository>()
+  private val legacySdrsHoCodeMappingRepository = mock<LegacySdrsHoCodeMappingRepository>()
   private val adminService = mock<AdminService>()
   private val sdrsApiClient = mock<SDRSApiClient>()
   private val eventService = mock<EventService>()
@@ -46,6 +48,7 @@ class SDRSServiceTest {
     sdrsLoadResultRepository,
     sdrsLoadResultHistoryRepository,
     offenceScheduleMappingRepository,
+    legacySdrsHoCodeMappingRepository,
     adminService,
     eventService,
   )

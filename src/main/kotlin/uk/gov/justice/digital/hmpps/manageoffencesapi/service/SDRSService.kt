@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Messag
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.LegacySdrsHoCodeMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
@@ -51,6 +52,7 @@ class SDRSService(
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
+  private val legacySdrsHoCodeMappingRepository: LegacySdrsHoCodeMappingRepository,
   private val adminService: AdminService,
   private val eventService: EventService,
 ) {
@@ -139,6 +141,7 @@ class SDRSService(
       } else {
         val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, cache)
         offenceRepository.saveAll(latestOfEachOffence.map { transform(it, cache) })
+        saveHoCodesToLegacyTable(latestOfEachOffence)
         saveLoad(cache, loadDate, SUCCESS, FULL_LOAD)
         setParentOffences(cache)
       }
@@ -147,6 +150,10 @@ class SDRSService(
       handleSdrsError(cache = cache, loadDate = loadDate, loadType = FULL_LOAD)
     }
   }
+
+  // All ho code to offence mappings are saved to a legacy table - the correct mappings come from the analytical platform S3 load
+  private fun saveHoCodesToLegacyTable(offences: List<Offence>) =
+    legacySdrsHoCodeMappingRepository.saveAll(offences.map { transform(it) })
 
   private fun fullLoadSecondaryCache(cache: SdrsCache, loadDate: LocalDateTime?) {
     try {
@@ -159,6 +166,7 @@ class SDRSService(
         val (inserts, updates) = extractInsertsAndUpdates(latestOfEachOffence, duplicateOffences)
         offenceRepository.saveAll(inserts.map { transform(it, cache) })
         processUpdatesForOffencesThatExistInAnotherCache(updates, duplicateOffences, cache)
+        saveHoCodesToLegacyTable(inserts.plus(updates))
         saveLoad(cache, loadDate, SUCCESS, FULL_LOAD)
         setParentOffences(cache)
       }
@@ -283,6 +291,7 @@ class SDRSService(
             )
           sendOffenceChangedEvent(it)
         }
+        saveHoCodesToLegacyTable(latestOfEachOffence)
         saveLoad(cache, loadDate, SUCCESS, UPDATE)
         setParentOffences(cache)
       }

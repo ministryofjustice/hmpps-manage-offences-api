@@ -114,7 +114,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                                 "OffenceEndDate": "2013-03-02",
                                 "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                                 "MOJStatsCode": "195/99",
-                                "code": "AX99003B",
+                                "code": "AX99002B",
                                 "ChangedDate": "2014-07-16T16:30:46"
                               }""",
     )

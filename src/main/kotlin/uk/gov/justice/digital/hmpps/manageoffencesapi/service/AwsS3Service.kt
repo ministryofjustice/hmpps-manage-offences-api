@@ -35,7 +35,7 @@ class AwsS3Service(
     val mapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     return rowsAsStrings.map { mapper.readValue(it, clazz) }
   }
-  fun getParquetFileData(fileKey: String): String {
+  private fun getParquetFileData(fileKey: String): String {
     val data = StringBuilder()
     try {
       val handler = SelectObjectHandler()
