@@ -10,6 +10,13 @@ generic-service:
     API_BASE_URL_SDRS: https://crime-reference-data-api.service.justice.gov.uk
     API_BASE_URL_PRISON_API: https://api-preprod.prison.service.justice.gov.uk
 
+  namespace_secrets:
+    manage-offences-ap-s3-bucket:
+      AWS_ACCESS_KEY_ID: "access_key_id"
+      AWS_SECRET_ACCESS_KEY: "secret_access_key"
+
+  serviceAccountName: cloud-platform-a3d565ec2c40a2c0
+
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
