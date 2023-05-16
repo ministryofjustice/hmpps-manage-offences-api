@@ -16,6 +16,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql",
     "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql",
   )
   fun `Fully sync with NOMIS - includes creating statute and ho-code`() {
@@ -112,8 +113,13 @@ class OffenceServiceIntTest : IntegrationTestBase() {
             "legislatingBodyCode" : "UK",
             "activeFlag" : "Y"
             },
-          "hoCode" : "091/81",
-          "severityRanking" : "700",
+          "hoCode" : {
+            "code" : "091/81",
+            "description" : "091/81",
+            "activeFlag" : "Y",
+            "expiryDate" : null
+          },
+          "severityRanking" : "500",
           "activeFlag" : "Y",
           "listSequence" : null,
           "expiryDate" : null
