@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import com.amazonaws.services.sns.model.MessageAttributeValue
-import com.amazonaws.services.sns.model.PublishRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.services.sns.model.MessageAttributeValue
+import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import java.time.Instant
 import java.time.ZoneId
@@ -25,11 +25,11 @@ class EventService(
     val event =
       OffenceUpdatedDomainEvent(additionalInformation = (OffenceAdditionalInformation(offenceCode = offenceCode)))
     domainTopic.snsClient.publish(
-      PublishRequest(domainTopic.arn, mapper.writeValueAsString(event))
-        .addMessageAttributesEntry(
-          "eventType",
-          MessageAttributeValue().withDataType("String").withStringValue(event.eventType),
-        ),
+      PublishRequest.builder()
+        .topicArn(domainTopic.arn)
+        .message(mapper.writeValueAsString(event))
+        .messageAttributes(mapOf("eventType" to MessageAttributeValue.builder().dataType("String").stringValue(event.eventType).build()))
+        .build(),
     )
     log.info("Published 'offence changed event' for: $offenceCode")
   }

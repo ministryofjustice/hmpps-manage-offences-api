@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.context.SecurityContextHolder
@@ -12,8 +14,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRe
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import java.time.LocalDate
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 
 @Service
 class AdminService(

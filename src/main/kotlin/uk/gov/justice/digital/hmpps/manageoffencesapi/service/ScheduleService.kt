@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import jakarta.persistence.EntityExistsException
+import jakarta.persistence.EntityNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -11,8 +13,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReposito
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
-import javax.persistence.EntityExistsException
-import javax.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule as ModelSchedule
 
 @Service
