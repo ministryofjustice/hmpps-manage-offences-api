@@ -348,7 +348,7 @@ class SDRSService(
         status = status,
         loadType = type,
         loadDate = loadDate,
-        lastSuccessfulLoadDate = if (status == SUCCESS) loadDate else null,
+        lastSuccessfulLoadDate = if (status == SUCCESS) loadDate else loadStatusExisting.lastSuccessfulLoadDate,
         nomisSyncRequired = status == SUCCESS,
       ),
     )
