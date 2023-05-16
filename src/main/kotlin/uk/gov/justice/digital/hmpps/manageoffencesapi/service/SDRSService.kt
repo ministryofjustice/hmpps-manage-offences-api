@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import jakarta.persistence.EntityNotFoundException
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -42,7 +43,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultR
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.UUID
-import javax.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
 
 @Service
