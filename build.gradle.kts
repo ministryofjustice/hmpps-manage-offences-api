@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.8.4"
-  kotlin("plugin.spring") version "1.8.10"
-  kotlin("plugin.jpa") version "1.8.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.1.4"
+  kotlin("plugin.spring") version "1.8.21"
+  kotlin("plugin.jpa") version "1.8.21"
 }
 
 configurations {
@@ -19,7 +19,15 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.5.1")
+  runtimeOnly("org.postgresql:postgresql:42.5.4")
+
+  // AppInsights
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.23.0")
+
+  // JWT
+  implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+  runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+  runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-security")
@@ -30,32 +38,31 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.14")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.6.14")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.14")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
-  implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.3.2")
 
   // Schedule locking
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.1.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.1.0")
 
   // SQS
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.2.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0")
 
   // AWS
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
-  implementation("software.amazon.awssdk:sts:2.20.57")
-  implementation("software.amazon.awssdk:netty-nio-client:2.20.57")
+  implementation("software.amazon.awssdk:sts:2.20.65")
+  implementation("software.amazon.awssdk:netty-nio-client:2.20.65")
+  implementation("software.amazon.awssdk:sns:2.20.65")
+  implementation("software.amazon.awssdk:s3:2.20.65")
 
   // Miscellaneous
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.0")
 
   // Test dependencies
-  testImplementation("io.jsonwebtoken:jjwt:0.9.1")
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.3")
   testImplementation("com.h2database:h2")
-  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
+  testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.23.1")
 }
 
 java {
