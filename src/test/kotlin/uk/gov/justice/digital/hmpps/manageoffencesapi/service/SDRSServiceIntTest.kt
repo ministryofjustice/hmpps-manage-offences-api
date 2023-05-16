@@ -224,6 +224,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
     val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
 
     assertThat(statusRecords.first { it.cache == OFFENCES_A }.status).isEqualTo(FAIL)
+    assertThat(statusRecords.first { it.cache == OFFENCES_A }.lastSuccessfulLoadDate?.toLocalDate()).isEqualTo(LocalDate.of(2022, 4, 19))
     assertThat(statusRecords.first { it.cache == OFFENCES_A }.loadType).isEqualTo(UPDATE)
     assertThat(statusHistoryRecords.first { it.cache == OFFENCES_A }.status).isEqualTo(FAIL)
     assertThat(statusHistoryRecords.first { it.cache == OFFENCES_A }.loadType).isEqualTo(UPDATE)
