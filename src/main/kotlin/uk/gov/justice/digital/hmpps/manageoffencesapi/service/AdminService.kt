@@ -48,7 +48,7 @@ class AdminService(
         throw ValidationException("Th offence flag is already set to active")
       }
       prisonApiUserClient.changeOffenceActiveFlag(transform(offence, true))
-      offenceReactivatedInNomisRepository.save(transform(offenceId, getCurrentAuthentication().principal))
+      offenceReactivatedInNomisRepository.save(transform(offence, getCurrentAuthentication().principal))
     }
   }
 

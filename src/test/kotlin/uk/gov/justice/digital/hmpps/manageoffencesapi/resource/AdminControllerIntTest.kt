@@ -95,6 +95,7 @@ class AdminControllerIntTest : IntegrationTestBase() {
       .isEqualTo(
         OffenceReactivatedInNomis(
           offenceId = offence.id,
+          offenceCode = offence.code,
           reactivatedByUsername = "test-client",
         ),
       )

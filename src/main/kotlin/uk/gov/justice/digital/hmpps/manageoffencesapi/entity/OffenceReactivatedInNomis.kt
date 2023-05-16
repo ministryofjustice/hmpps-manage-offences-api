@@ -10,6 +10,7 @@ import javax.persistence.Table
 data class OffenceReactivatedInNomis(
   @Id
   val offenceId: Long = -1,
-  val reactivatedByUsername: String = "",
+  val offenceCode: String,
+  val reactivatedByUsername: String,
   val reactivatedDate: LocalDateTime = LocalDateTime.now(),
 )
