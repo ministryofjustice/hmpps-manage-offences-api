@@ -159,8 +159,8 @@ class OffenceService(
       newNomisOffences.add(copyOffenceToCreate(offence, statute, homeOfficeCode))
     }
 
-    // Reactivated offences are offences that have been explicitly made active in NOMIS (using manage offences)
-    // So they will remain active in NOMIS (although they have been end dated). There will be a small number
+    // Reactivated offences are offences that have been explicitly made active in NOMIS (using the manage-offences UI)
+    // So they will remain active in NOMIS (although they have been end dated). This list will be small
     val reactivatedOffences = reactivatedInNomisRepository.findByOffenceCodeIn(
       existingOffenceKeys
         .map { it.first },
