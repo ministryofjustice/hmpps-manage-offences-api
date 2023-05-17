@@ -248,8 +248,9 @@ fun transform(
   legislationText = linkOffence.legislationText,
 )
 
-fun transform(offenceId: Long, username: String) = OffenceReactivatedInNomis(
-  offenceId = offenceId,
+fun transform(offence: Offence, username: String) = OffenceReactivatedInNomis(
+  offenceId = offence.id,
+  offenceCode = offence.code,
   reactivatedByUsername = username,
 )
 

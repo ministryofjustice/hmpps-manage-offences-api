@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
@@ -33,6 +34,7 @@ class OffenceService(
   private val sdrsLoadResultRepository: SdrsLoadResultRepository,
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
   private val nomisChangeHistoryRepository: NomisChangeHistoryRepository,
+  private val reactivatedInNomisRepository: OffenceReactivatedInNomisRepository,
   private val prisonApiClient: PrisonApiClient,
   private val adminService: AdminService,
 ) {
@@ -157,12 +159,19 @@ class OffenceService(
       newNomisOffences.add(copyOffenceToCreate(offence, statute, homeOfficeCode))
     }
 
+    // Reactivated offences are offences that have been explicitly made active in NOMIS (using the manage-offences UI)
+    // So they will remain active in NOMIS (although they have been end dated). This list will be small
+    val reactivatedOffences = reactivatedInNomisRepository.findByOffenceCodeIn(
+      existingOffenceKeys
+        .map { it.first },
+    )
+      .map { it.offenceCode }.toSet()
     existingOffenceKeys.forEach {
       val offence = offencesByCode[it.first]!!
       val nomisOffence = nomisOffencesById[it]!!
       if (!offenceDetailsSame(offence, nomisOffence)) {
         val homeOfficeCode = findAssociatedHomeOfficeCodeInNomis(offence, nomisOffences, newNomisHoCodes)
-        updatedNomisOffences.add(copyOffenceToUpdate(offence, nomisOffence, homeOfficeCode))
+        updatedNomisOffences.add(copyOffenceToUpdate(offence, nomisOffence, homeOfficeCode, reactivatedOffences))
       }
     }
 
@@ -254,15 +263,16 @@ class OffenceService(
       nomisOffence.activeFlag == offence.activeFlag
 
   private fun copyOffenceToUpdate(
-    offence: EntityOffence,
-    nomisOffence: PrisonApiOffence,
+    offence: uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence,
+    nomisOffence: uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence,
     homeOfficeCode: HoCode?,
+    reactivatedOffences: Set<String>,
   ): PrisonApiOffence {
     log.info("Offence code {} to be updated in NOMIS", offence.code)
     return nomisOffence.copy(
       description = offence.derivedDescription,
       hoCode = homeOfficeCode,
-      activeFlag = offence.activeFlag,
+      activeFlag = if (reactivatedOffences.contains(offence.code)) nomisOffence.activeFlag else offence.activeFlag,
       expiryDate = offence.expiryDate,
     )
   }

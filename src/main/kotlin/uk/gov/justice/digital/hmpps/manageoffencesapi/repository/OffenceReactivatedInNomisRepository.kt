@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
 
 @Repository
-interface OffenceReactivatedInNomisRepository : JpaRepository<OffenceReactivatedInNomis, Long>
+interface OffenceReactivatedInNomisRepository : JpaRepository<OffenceReactivatedInNomis, Long> {
+  fun findByOffenceCodeIn(offenceCodes: List<String>): List<OffenceReactivatedInNomis>
+}

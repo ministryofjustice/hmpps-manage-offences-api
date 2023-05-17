@@ -15,6 +15,7 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
@@ -30,6 +31,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_B
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
@@ -45,6 +47,7 @@ class OffenceServiceTest {
   private val sdrsLoadResultRepository = mock<SdrsLoadResultRepository>()
   private val sdrsLoadResultHistoryRepository = mock<SdrsLoadResultHistoryRepository>()
   private val nomisChangeHistoryRepository = mock<NomisChangeHistoryRepository>()
+  private val reactivatedInNomisRepository = mock<OffenceReactivatedInNomisRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val adminService = mock<AdminService>()
 
@@ -55,6 +58,7 @@ class OffenceServiceTest {
       sdrsLoadResultRepository,
       sdrsLoadResultHistoryRepository,
       nomisChangeHistoryRepository,
+      reactivatedInNomisRepository,
       prisonApiClient,
       adminService,
     )
@@ -175,7 +179,19 @@ class OffenceServiceTest {
     whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
       listOf(
         OFFENCE_A123AA6,
-        OFFENCE_A1234AAA,
+        OFFENCE_A1234AAA.copy(endDate = LocalDate.of(2022, 1, 1)),
+      ),
+    )
+
+    whenever(
+      reactivatedInNomisRepository.findByOffenceCodeIn(
+        listOf(
+          OFFENCE_A1234AAA.code,
+        ),
+      ),
+    ).thenReturn(
+      listOf(
+        OffenceReactivatedInNomis(offenceId = 1, offenceCode = OFFENCE_A1234AAA.code, reactivatedByUsername = "test-user"),
       ),
     )
 
@@ -486,6 +502,7 @@ class OffenceServiceTest {
       description = "A NEW DESC",
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y",
+      expiryDate = LocalDate.now(),
     )
     private val NOMIS_OFFENCE_A1234AAB = PrisonApiOffence(
       code = "A1234AAB",

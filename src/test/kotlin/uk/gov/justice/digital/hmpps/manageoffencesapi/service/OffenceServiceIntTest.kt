@@ -35,6 +35,28 @@ class OffenceServiceIntTest : IntegrationTestBase() {
   }
 
   @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql",
+    "classpath:test_data/insert-offence-data-that-is-reactivated-nomis.sql",
+  )
+  fun `Sync with NOMIS when an offence has been reactivated in NOMIS`() {
+    ('A'..'Z').forEach { alphaChar ->
+      prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+    }
+
+    prisonApiMockServer.stubFindByOffenceCode("M")
+    prisonApiMockServer.stubCreateHomeOfficeCode()
+    prisonApiMockServer.stubCreateStatute()
+    prisonApiMockServer.stubCreateOffence()
+    prisonApiMockServer.stubUpdateOffence()
+
+    offenceService.fullSyncWithNomis()
+
+    verifyPutOffenceToPrisonApi(SYNC_REACTIVATED_OFFENCE)
+  }
+
+  @Test
   @Sql("classpath:test_data/reset-all-data.sql")
   fun `Get ho-code for offence that doesnt exist throws 404`() {
     Assertions.assertThatThrownBy {
@@ -66,6 +88,12 @@ class OffenceServiceIntTest : IntegrationTestBase() {
     assertThat(res).isEqualTo("001/13")
   }
 
+  private fun verifyPutOffenceToPrisonApi(json: String) =
+    prisonApiMockServer.verify(
+      WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+        .withRequestBody(WireMock.equalToJson(json, true, true)),
+    )
+
   private fun verifyPostOffenceToPrisonApi(json: String) =
     prisonApiMockServer.verify(
       WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
@@ -73,6 +101,32 @@ class OffenceServiceIntTest : IntegrationTestBase() {
     )
 
   companion object {
+
+    private val SYNC_REACTIVATED_OFFENCE = """
+      [
+       {
+          "code" : "M1119999",
+          "description" : "Actual bodily harm UPDATED",
+          "statuteCode" : {
+            "code" : "M111",
+            "description" : "Statute M111",
+            "legislatingBodyCode" : "UK",
+            "activeFlag" : "Y"
+            },
+          "hoCode" : {
+            "code" : "091/81",
+            "description" : "091/81",
+            "activeFlag" : "Y",
+            "expiryDate" : null
+          },
+          "severityRanking" : "500",
+          "activeFlag" : "Y",
+          "listSequence" : null,
+          "expiryDate" : null
+        }
+    ] 
+    """.trimIndent()
+
     private val FULL_SYNC_CREATE_OFFENCES = """
       [
        {

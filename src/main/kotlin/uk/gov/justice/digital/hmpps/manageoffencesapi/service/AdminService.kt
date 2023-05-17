@@ -45,10 +45,10 @@ class AdminService(
         .content.first { it.code == offence.code }
 
       if (nomisOffence.isActive) {
-        throw ValidationException("Th offence flag is already set to active")
+        throw ValidationException("The offence flag is already set to active")
       }
       prisonApiUserClient.changeOffenceActiveFlag(transform(offence, true))
-      offenceReactivatedInNomisRepository.save(transform(offenceId, getCurrentAuthentication().principal))
+      offenceReactivatedInNomisRepository.save(transform(offence, getCurrentAuthentication().principal))
     }
   }
 
@@ -65,7 +65,7 @@ class AdminService(
         .content.first { it.code == offence.code }
 
       if (!nomisOffence.isActive) {
-        throw ValidationException("Th offence $offenceId is already inactive in NOMIS")
+        throw ValidationException("The offence $offenceId is already inactive in NOMIS")
       }
       prisonApiUserClient.changeOffenceActiveFlag(transform(offence, false))
 
