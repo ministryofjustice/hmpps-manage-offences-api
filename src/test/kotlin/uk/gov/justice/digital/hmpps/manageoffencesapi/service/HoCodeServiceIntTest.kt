@@ -67,6 +67,15 @@ class HoCodeServiceIntTest : IntegrationTestBase() {
       )
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/test.sql",
+  )
+  fun `bulk save`() {
+    hoCodeService.bulkSave()
+  }
+
   private fun getSubDirectoriesRequest(apTable: AnalyticalPlatformTableName): ListObjectsV2Request? =
     ListObjectsV2Request.builder()
       .bucket(BUCKET)

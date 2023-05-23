@@ -141,6 +141,8 @@ class SDRSService(
       } else {
         val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, cache)
         offenceRepository.saveAll(latestOfEachOffence.map { transform(it, cache) })
+        //
+        // TODO add offences that have been  end dated in the future to offences_for_future_deactivation_nomis
         saveHoCodesToLegacyTable(latestOfEachOffence)
         saveLoad(cache, loadDate, SUCCESS, FULL_LOAD)
         setParentOffences(cache)

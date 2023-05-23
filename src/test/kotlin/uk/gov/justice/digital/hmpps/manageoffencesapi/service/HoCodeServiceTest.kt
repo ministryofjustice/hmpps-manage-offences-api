@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HoCodesLoadHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HomeOfficeCodeRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.PreviousOffenceToHoCodeMappingRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -25,9 +26,10 @@ class HoCodeServiceTest {
   private val homeOfficeCodeRepository = mock<HomeOfficeCodeRepository>()
   private val hoCodesLoadHistoryRepository = mock<HoCodesLoadHistoryRepository>()
   private val offenceRepository = mock<OffenceRepository>()
+  private val previousOffenceToHoCodeMappingRepository = mock<PreviousOffenceToHoCodeMappingRepository>()
   private val adminService = mock<AdminService>()
   private val hoCodeService =
-    HoCodeService(awsS3Service, homeOfficeCodeRepository, hoCodesLoadHistoryRepository, offenceRepository, adminService)
+    HoCodeService(awsS3Service, homeOfficeCodeRepository, hoCodesLoadHistoryRepository, offenceRepository, adminService, previousOffenceToHoCodeMappingRepository)
 
   @Test
   fun `Do not run load if feature toggle is disabled`() {

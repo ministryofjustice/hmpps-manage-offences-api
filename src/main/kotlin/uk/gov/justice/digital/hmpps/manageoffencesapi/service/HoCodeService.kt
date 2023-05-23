@@ -7,12 +7,14 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HoCodesLoadHistory
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.PreviousOffenceToHoCodeMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.AnalyticalPlatformTableName.HO_CODES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.AnalyticalPlatformTableName.HO_CODES_TO_OFFENCE_MAPPING
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HoCodesLoadHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HomeOfficeCodeRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.PreviousOffenceToHoCodeMappingRepository
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode as HomeOfficeCodeEntity
 
@@ -23,9 +25,11 @@ class HoCodeService(
   private val hoCodesLoadHistoryRepository: HoCodesLoadHistoryRepository,
   private val offenceRepository: OffenceRepository,
   private val adminService: AdminService,
+  private val previousMappingRepository: PreviousOffenceToHoCodeMappingRepository,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
+  // This does a full load every tim - at the moment the AP side creates a new release directory with all the data in it every cycle
   @Scheduled(cron = "0 */15 * * * *") // TODO setting to 15 minutes for test purposes. change schedule after testing
   @Transactional
   @SchedulerLock(name = "fullLoadOfHomeOfficeCodes")
@@ -67,7 +71,33 @@ class HoCodeService(
     }
   }
 
+  fun bulkSave() {
+    val offences = offenceRepository.findAll()
+    println("number of offences" + offences.size)
+    val previousMappings = offences.map {
+      PreviousOffenceToHoCodeMapping(
+        offenceId = it.id,
+        category = it.category!!,
+        subCategory = it.subCategory!!,
+      )
+    }
+    // TODO  Should we switch batch inserts on?? ~20K records here https://www.baeldung.com/spring-data-jpa-batch-inserts
+    previousMappingRepository.saveAll(previousMappings)
+  }
+
+  // There is an assumption that ho-code-to-offence mappings are never deleted, therefore we don't cater for such a scenario
+  // We do cater for updates though (e.g. changing a ho-code associated with an offence)
   private fun loadMappingData() {
+    val offences = offenceRepository.findByCategoryIsNotNullAndSubCategoryIsNotNull()
+    val previousMappings = offences.map {
+      PreviousOffenceToHoCodeMapping(
+        offenceId = it.id,
+        category = it.category!!,
+        subCategory = it.subCategory!!,
+      )
+    }
+    // TODO  Should we switch batch inserts on?? ~20K records here https://www.baeldung.com/spring-data-jpa-batch-inserts
+    previousMappingRepository.saveAll(previousMappings)
     val pathToReadFrom = getLatestLoadDirectory(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)
     val mappingFileKeys = awsS3Service.getKeysInPath(pathToReadFrom)
     val alreadyLoadedFiles = hoCodesLoadHistoryRepository.findByLoadedFileIn(mappingFileKeys)
