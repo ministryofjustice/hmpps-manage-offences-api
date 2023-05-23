@@ -50,6 +50,7 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0")
 
   // AWS
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
   implementation("software.amazon.awssdk:sts:2.20.65")
   implementation("software.amazon.awssdk:netty-nio-client:2.20.65")
   implementation("software.amazon.awssdk:sns:2.20.65")
