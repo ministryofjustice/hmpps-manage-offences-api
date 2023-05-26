@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.Hmpps
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.SDRSApiMockServer
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["aws.region=valueA", "propB=valueB"])
 @ActiveProfiles("test")
 abstract class IntegrationTestBase {
 
@@ -46,7 +46,6 @@ abstract class IntegrationTestBase {
     @BeforeAll
     @JvmStatic
     fun startMocks() {
-      System.setProperty("aws.region", "us-west-2")
       hmppsAuthMockServer.start()
       hmppsAuthMockServer.stubGrantToken()
       prisonApiMockServer.start()
