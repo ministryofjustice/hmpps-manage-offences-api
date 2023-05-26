@@ -31,9 +31,6 @@ spring:
     init:
       continue-on-error: true
 
-  profiles:
-    active: test
-
 server:
   shutdown: immediate
 

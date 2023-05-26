@@ -95,3 +95,7 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+
+aws:
+  region: "eu-west-1"
+
