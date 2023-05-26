@@ -40,9 +40,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        order_updates: true
         jdbc:
-          batch_size: 2
+          batch_size: 100
     show-sql: false
     generate-ddl: false
     hibernate:

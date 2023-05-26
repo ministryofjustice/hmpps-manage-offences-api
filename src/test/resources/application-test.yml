@@ -27,8 +27,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
         jdbc:
-          batch_size: 5
-        generate_statistics: true
+          batch_size: 100
 
   sql:
     init:

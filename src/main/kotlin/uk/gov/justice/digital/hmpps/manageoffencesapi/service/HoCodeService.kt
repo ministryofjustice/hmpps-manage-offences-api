@@ -7,13 +7,16 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HoCodesLoadHistory
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.PreviousOffenceToHoCodeMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.AnalyticalPlatformTableName.HO_CODES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.AnalyticalPlatformTableName.HO_CODES_TO_OFFENCE_MAPPING
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType.HO_CODE_UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HoCodesLoadHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HomeOfficeCodeRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.PreviousOffenceToHoCodeMappingRepository
 import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode as HomeOfficeCodeEntity
@@ -26,6 +29,7 @@ class HoCodeService(
   private val offenceRepository: OffenceRepository,
   private val adminService: AdminService,
   private val previousMappingRepository: PreviousOffenceToHoCodeMappingRepository,
+  private val offenceToSyncWithNomisRepository: OffenceToSyncWithNomisRepository,
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -96,6 +100,7 @@ class HoCodeService(
         subCategory = it.subCategory!!,
       )
     }
+    val previousMappingsByOffenceId = previousMappings.associateBy { it.offenceId }
     // TODO  Should we switch batch inserts on?? ~20K records here https://www.baeldung.com/spring-data-jpa-batch-inserts
     previousMappingRepository.saveAll(previousMappings)
     val pathToReadFrom = getLatestLoadDirectory(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)
@@ -111,15 +116,25 @@ class HoCodeService(
         awsS3Service.loadParquetFileContents(fileKey, HO_CODES_TO_OFFENCE_MAPPING.mappingClass)
           .map { it as HomeOfficeCodeToOffenceMapping }
       val mappingsByCode = mappingsToLoad.associateBy { it.offenceCode }
-      val offencesToUpdate = offenceRepository.findByCodeIn(mappingsToLoad.map { it.offenceCode }.toSet())
-      offenceRepository.saveAll(
-        offencesToUpdate.map {
+      val offencesToUpdate = offenceRepository.findByCodeIn(
+        mappingsToLoad
+          .map { it.offenceCode }.toSet(),
+      )
+        .map {
           it.copy(
             category = mappingsByCode[it.code]!!.category,
             subCategory = mappingsByCode[it.code]!!.subCategory,
           )
-        },
-      )
+        }
+
+      offenceRepository.saveAll(offencesToUpdate)
+      offencesToUpdate.filter { it.homeOfficeStatsCode != previousMappingsByOffenceId[it.id]?.homeOfficeCode }
+        .map {
+          OffenceToSyncWithNomis(
+            offenceId = it.id,
+            nomisSyncType = HO_CODE_UPDATE,
+          )
+        }
       hoCodesLoadHistoryRepository.save(HoCodesLoadHistory(loadedFile = fileKey))
     }
   }
