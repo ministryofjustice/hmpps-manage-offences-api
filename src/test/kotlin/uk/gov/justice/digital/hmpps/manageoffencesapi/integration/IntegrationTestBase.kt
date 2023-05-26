@@ -46,6 +46,7 @@ abstract class IntegrationTestBase {
     @BeforeAll
     @JvmStatic
     fun startMocks() {
+      System.setProperty("aws.region", "us-west-2")
       hmppsAuthMockServer.start()
       hmppsAuthMockServer.stubGrantToken()
       prisonApiMockServer.start()

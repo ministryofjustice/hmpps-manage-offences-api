@@ -13,7 +13,7 @@ import java.time.Duration
 
 @Configuration
 class AwsConfiguration(
-  @Value("\${aws.region:eu-west-1}") private val awsRegion: String,
+  @Value("\${aws.region}") private val awsRegion: String,
 ) {
   @Bean
   fun s3AsyncClient(
