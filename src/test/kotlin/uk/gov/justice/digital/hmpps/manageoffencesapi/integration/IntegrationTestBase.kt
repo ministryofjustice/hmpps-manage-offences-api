@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.Hmpps
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.SDRSApiMockServer
 
-@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["aws.region=valueA", "propB=valueB"])
+@SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["aws.region=valueA", "spring.cloud.aws.cloudwatch.region=valueB" ])
 @ActiveProfiles("test")
 abstract class IntegrationTestBase {
 
