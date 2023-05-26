@@ -17,6 +17,7 @@ spring:
     group:
       test:
         - "stdout"
+    active: test
 
   security:
     oauth2:
