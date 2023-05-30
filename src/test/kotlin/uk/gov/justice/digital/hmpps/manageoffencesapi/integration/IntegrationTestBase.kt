@@ -46,6 +46,8 @@ abstract class IntegrationTestBase {
     @BeforeAll
     @JvmStatic
     fun startMocks() {
+      // Setting this env var here as doesnt get set correctly from the spring application context from application-test.yml - needs more investigation
+      System.setProperty("AWS_REGION", "test-region")
       hmppsAuthMockServer.start()
       hmppsAuthMockServer.stubGrantToken()
       prisonApiMockServer.start()
