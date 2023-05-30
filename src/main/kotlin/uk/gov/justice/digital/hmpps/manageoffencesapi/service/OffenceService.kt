@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHist
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
@@ -35,6 +37,7 @@ class OffenceService(
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
   private val nomisChangeHistoryRepository: NomisChangeHistoryRepository,
   private val reactivatedInNomisRepository: OffenceReactivatedInNomisRepository,
+  private val offenceToSyncWithNomisRepository: OffenceToSyncWithNomisRepository,
   private val prisonApiClient: PrisonApiClient,
   private val adminService: AdminService,
 ) {
@@ -95,6 +98,27 @@ class OffenceService(
       sdrsLoadResultRepository.save(it.copy(nomisSyncRequired = false))
       createLoadHistoryRecord(it)
     }
+    syncOtherOffencesWithNomis()
+  }
+
+  private fun syncOtherOffencesWithNomis() {
+    val (hoCodeUpdatedOffences, futureEndDatedOffences) = offenceToSyncWithNomisRepository.findAll().partition { it.nomisSyncType == NomisSyncType.HO_CODE_UPDATE }
+    val offencesNeedDeactivating = offenceRepository.findByCodeIn(futureEndDatedOffences.map { it.offenceCode }.toSet()).filter { it.activeFlag == "N" }
+    val offenceswithHoCodeUpdates = offenceRepository.findByCodeIn(hoCodeUpdatedOffences.map { it.offenceCode }.toSet())
+    val allOffencesToSync = offencesNeedDeactivating.plus(offenceswithHoCodeUpdates)
+
+    val offencesStartWithList = allOffencesToSync.map { it.code.substring(0, 3) }.toSet()
+    val nomisOffences: MutableList<PrisonApiOffence> = mutableListOf()
+    val nomisOffencesById: MutableMap<Pair<String, String>, PrisonApiOffence> = mutableMapOf()
+    offencesStartWithList.forEach {
+      val (offencesById, offences) = getAllNomisOffencesThatStartWith(it)
+      nomisOffencesById.putAll(offencesById)
+      nomisOffences.addAll(offences)
+    }
+
+    fullySyncWithNomis(allOffencesToSync, nomisOffencesById, nomisOffences)
+    offenceToSyncWithNomisRepository.flush()
+    offenceToSyncWithNomisRepository.deleteAllByIdInBatch(allOffencesToSync.map { it.code })
   }
 
   private fun createLoadHistoryRecord(it: SdrsLoadResult) {

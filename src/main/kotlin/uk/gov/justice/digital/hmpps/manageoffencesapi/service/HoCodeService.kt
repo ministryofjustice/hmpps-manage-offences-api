@@ -80,7 +80,7 @@ class HoCodeService(
     println("number of offences" + offences.size)
     val previousMappings = offences.map {
       PreviousOffenceToHoCodeMapping(
-        offenceId = it.id,
+        offenceCode = it.code,
         category = it.category!!,
         subCategory = it.subCategory!!,
       )
@@ -91,17 +91,17 @@ class HoCodeService(
 
   // There is an assumption that ho-code-to-offence mappings are never deleted, therefore we don't cater for such a scenario
   // We do cater for updates though (e.g. changing a ho-code associated with an offence)
+  // Have switched 'batch inserts' on to aid performance on this functionality. ~20k records to process every time
   private fun loadMappingData() {
     val offences = offenceRepository.findByCategoryIsNotNullAndSubCategoryIsNotNull()
     val previousMappings = offences.map {
       PreviousOffenceToHoCodeMapping(
-        offenceId = it.id,
+        offenceCode = it.code,
         category = it.category!!,
         subCategory = it.subCategory!!,
       )
     }
-    val previousMappingsByOffenceId = previousMappings.associateBy { it.offenceId }
-    // TODO  Should we switch batch inserts on?? ~20K records here https://www.baeldung.com/spring-data-jpa-batch-inserts
+    val previousMappingsByOffenceCode = previousMappings.associateBy { it.offenceCode }
     previousMappingRepository.saveAll(previousMappings)
     val pathToReadFrom = getLatestLoadDirectory(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)
     val mappingFileKeys = awsS3Service.getKeysInPath(pathToReadFrom)
@@ -128,13 +128,14 @@ class HoCodeService(
         }
 
       offenceRepository.saveAll(offencesToUpdate)
-      offencesToUpdate.filter { it.homeOfficeStatsCode != previousMappingsByOffenceId[it.id]?.homeOfficeCode }
+      val offencesToSyncWithNomis = offencesToUpdate.filter { it.homeOfficeStatsCode != previousMappingsByOffenceCode[it.code]?.homeOfficeCode }
         .map {
           OffenceToSyncWithNomis(
-            offenceId = it.id,
+            offenceCode = it.code,
             nomisSyncType = HO_CODE_UPDATE,
           )
         }
+      offenceToSyncWithNomisRepository.saveAll(offencesToSyncWithNomis)
       hoCodesLoadHistoryRepository.save(HoCodesLoadHistory(loadedFile = fileKey))
     }
   }

@@ -8,7 +8,7 @@ import jakarta.persistence.Table
 @Table
 data class PreviousOffenceToHoCodeMapping(
   @Id
-  val offenceId: Long = -1,
+  val offenceCode: String,
   val category: Int,
   val subCategory: Int,
 ) {

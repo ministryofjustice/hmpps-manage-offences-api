@@ -1,21 +1,28 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import software.amazon.awssdk.services.s3.model.CommonPrefix
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.PreviousOffenceToHoCodeMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.AnalyticalPlatformTableName.HO_CODES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.AnalyticalPlatformTableName.HO_CODES_TO_OFFENCE_MAPPING
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HoCodesLoadHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.HomeOfficeCodeRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.PreviousOffenceToHoCodeMappingRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,66 +33,168 @@ class HoCodeServiceTest {
   private val homeOfficeCodeRepository = mock<HomeOfficeCodeRepository>()
   private val hoCodesLoadHistoryRepository = mock<HoCodesLoadHistoryRepository>()
   private val offenceRepository = mock<OffenceRepository>()
-  private val previousOffenceToHoCodeMappingRepository = mock<PreviousOffenceToHoCodeMappingRepository>()
+  private val previousMappingRepository = mock<PreviousOffenceToHoCodeMappingRepository>()
+  private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
   private val adminService = mock<AdminService>()
   private val hoCodeService =
-    HoCodeService(awsS3Service, homeOfficeCodeRepository, hoCodesLoadHistoryRepository, offenceRepository, adminService, previousOffenceToHoCodeMappingRepository)
+    HoCodeService(
+      awsS3Service,
+      homeOfficeCodeRepository,
+      hoCodesLoadHistoryRepository,
+      offenceRepository,
+      adminService,
+      previousMappingRepository,
+      offenceToSyncWithNomisRepository,
+    )
 
-  @Test
-  fun `Do not run load if feature toggle is disabled`() {
-    whenever(adminService.isFeatureEnabled(Feature.SYNC_HOME_OFFICE_CODES)).thenReturn(false)
-    hoCodeService.fullLoadOfHomeOfficeCodes()
-    verifyNoInteractions(awsS3Service)
+  @Nested
+  inner class FullLoadTests {
+    @Test
+    fun `Do not run load if feature toggle is disabled`() {
+      whenever(adminService.isFeatureEnabled(Feature.SYNC_HOME_OFFICE_CODES)).thenReturn(false)
+      hoCodeService.fullLoadOfHomeOfficeCodes()
+      verifyNoInteractions(awsS3Service)
+    }
+
+    @Test
+    fun `Test that a full load runs successfully - loads ho-codes and mappings`() {
+      whenever(adminService.isFeatureEnabled(Feature.SYNC_HOME_OFFICE_CODES)).thenReturn(true)
+      whenever(awsS3Service.getSubDirectories(HO_CODES.s3BasePath)).thenReturn(SUB_DIRECTORIES_HO_CODE)
+      whenever(awsS3Service.getSubDirectories(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)).thenReturn(
+        SUB_DIRECTORIES_MAPPINGS,
+      )
+
+      whenever(awsS3Service.getKeysInPath(LATEST_FOLDER_PATH_HO_CODE)).thenReturn(setOf(HO_FILE_1_KEY))
+      whenever(awsS3Service.getKeysInPath(LATEST_FOLDER_PATH_MAPPINGS)).thenReturn(setOf(MAPPING_FILE_1_KEY))
+
+      whenever(hoCodesLoadHistoryRepository.findByLoadedFileIn(any())).thenReturn(emptySet())
+
+      whenever(awsS3Service.loadParquetFileContents(HO_FILE_1_KEY, HO_CODES.mappingClass)).thenReturn(
+        listOf(
+          HOME_OFFICE_CODE_1,
+        ),
+      )
+      whenever(
+        awsS3Service.loadParquetFileContents(
+          MAPPING_FILE_1_KEY,
+          HO_CODES_TO_OFFENCE_MAPPING.mappingClass,
+        ),
+      ).thenReturn(listOf(MAPPING_1))
+
+      whenever(offenceRepository.findByCodeIn(setOf(MAPPING_1.offenceCode))).thenReturn(listOf(OFFENCE_1))
+
+      hoCodeService.fullLoadOfHomeOfficeCodes()
+
+      verify(homeOfficeCodeRepository).saveAll(
+        listOf(
+          uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode(
+            id = HOME_OFFICE_CODE_1.code,
+            category = HOME_OFFICE_CODE_1.category,
+            subCategory = HOME_OFFICE_CODE_1.subCategory,
+            description = HOME_OFFICE_CODE_1.description,
+          ),
+        ),
+      )
+      verify(offenceRepository).saveAll(
+        listOf(
+          OFFENCE_1.copy(category = 12, subCategory = 34),
+        ),
+      )
+      verify(hoCodesLoadHistoryRepository).save(
+        argThat { hoCodesLoadHistory -> hoCodesLoadHistory.loadedFile == HO_FILE_1_KEY },
+      )
+      verify(hoCodesLoadHistoryRepository).save(
+        argThat { hoCodesLoadHistory -> hoCodesLoadHistory.loadedFile == MAPPING_FILE_1_KEY },
+      )
+    }
   }
 
-  @Test
-  fun `Test that a full load runs successfully - loads ho-codes and mappings`() {
-    whenever(adminService.isFeatureEnabled(Feature.SYNC_HOME_OFFICE_CODES)).thenReturn(true)
-    whenever(awsS3Service.getSubDirectories(HO_CODES.s3BasePath)).thenReturn(SUB_DIRECTORIES_HO_CODE)
-    whenever(awsS3Service.getSubDirectories(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)).thenReturn(SUB_DIRECTORIES_MAPPINGS)
+  @Nested
+  inner class NomisSyncTests {
+    @Test
+    fun `Test that a any changes are marked to be pushed to Nomis`() {
+      whenever(adminService.isFeatureEnabled(Feature.SYNC_HOME_OFFICE_CODES)).thenReturn(true)
+      whenever(awsS3Service.getSubDirectories(HO_CODES.s3BasePath)).thenReturn(SUB_DIRECTORIES_HO_CODE)
+      whenever(awsS3Service.getSubDirectories(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)).thenReturn(
+        SUB_DIRECTORIES_MAPPINGS,
+      )
 
-    whenever(awsS3Service.getKeysInPath(LATEST_FOLDER_PATH_HO_CODE)).thenReturn(setOf(HO_FILE_1_KEY))
-    whenever(awsS3Service.getKeysInPath(LATEST_FOLDER_PATH_MAPPINGS)).thenReturn(setOf(MAPPING_FILE_1_KEY))
+      whenever(awsS3Service.getKeysInPath(LATEST_FOLDER_PATH_HO_CODE)).thenReturn(setOf(HO_FILE_1_KEY))
+      whenever(awsS3Service.getKeysInPath(LATEST_FOLDER_PATH_MAPPINGS)).thenReturn(setOf(MAPPING_FILE_1_KEY))
 
-    whenever(hoCodesLoadHistoryRepository.findByLoadedFileIn(any())).thenReturn(emptySet())
+      whenever(offenceRepository.findByCategoryIsNotNullAndSubCategoryIsNotNull()).thenReturn(
+        listOf(OFFENCE_2, OFFENCE_3),
+      )
 
-    whenever(awsS3Service.loadParquetFileContents(HO_FILE_1_KEY, HO_CODES.mappingClass)).thenReturn(
-      listOf(
-        HOME_OFFICE_CODE_1,
-      ),
-    )
-    whenever(
-      awsS3Service.loadParquetFileContents(
-        MAPPING_FILE_1_KEY,
-        HO_CODES_TO_OFFENCE_MAPPING.mappingClass,
-      ),
-    ).thenReturn(listOf(MAPPING_1))
+      whenever(hoCodesLoadHistoryRepository.findByLoadedFileIn(any())).thenReturn(emptySet())
 
-    whenever(offenceRepository.findByCodeIn(setOf(MAPPING_1.offenceCode))).thenReturn(listOf(OFFENCE_1))
-
-    hoCodeService.fullLoadOfHomeOfficeCodes()
-
-    verify(homeOfficeCodeRepository).saveAll(
-      listOf(
-        uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode(
-          id = HOME_OFFICE_CODE_1.code,
-          category = HOME_OFFICE_CODE_1.category,
-          subCategory = HOME_OFFICE_CODE_1.subCategory,
-          description = HOME_OFFICE_CODE_1.description,
+      whenever(awsS3Service.loadParquetFileContents(HO_FILE_1_KEY, HO_CODES.mappingClass)).thenReturn(
+        listOf(
+          HOME_OFFICE_CODE_1,
         ),
-      ),
-    )
-    verify(offenceRepository).saveAll(
-      listOf(
-        OFFENCE_1.copy(category = 12, subCategory = 34),
-      ),
-    )
-    verify(hoCodesLoadHistoryRepository).save(
-      argThat { hoCodesLoadHistory -> hoCodesLoadHistory.loadedFile == HO_FILE_1_KEY },
-    )
-    verify(hoCodesLoadHistoryRepository).save(
-      argThat { hoCodesLoadHistory -> hoCodesLoadHistory.loadedFile == MAPPING_FILE_1_KEY },
-    )
+      )
+      whenever(
+        awsS3Service.loadParquetFileContents(
+          MAPPING_FILE_1_KEY,
+          HO_CODES_TO_OFFENCE_MAPPING.mappingClass,
+        ),
+      ).thenReturn(listOf(MAPPING_2, MAPPING_3, MAPPING_4))
+
+      whenever(
+        offenceRepository.findByCodeIn(
+          setOf(
+            MAPPING_2.offenceCode,
+            MAPPING_3.offenceCode,
+            MAPPING_4.offenceCode,
+          ),
+        ),
+      ).thenReturn(listOf(OFFENCE_2, OFFENCE_3, OFFENCE_4))
+
+      hoCodeService.fullLoadOfHomeOfficeCodes()
+
+      verify(offenceRepository).saveAll(
+        listOf(
+          OFFENCE_2.copy(category = 567, subCategory = 89),
+          OFFENCE_3,
+          OFFENCE_4.copy(category = 999, subCategory = 99),
+        ),
+      )
+
+      verify(previousMappingRepository).saveAll(
+        listOf(
+          PreviousOffenceToHoCodeMapping(
+            offenceCode = OFFENCE_2.code,
+            category = OFFENCE_2.category!!,
+            subCategory = OFFENCE_2.subCategory!!,
+          ),
+          PreviousOffenceToHoCodeMapping(
+            offenceCode = OFFENCE_3.code,
+            category = OFFENCE_3.category!!,
+            subCategory = OFFENCE_3.subCategory!!,
+          ),
+        ),
+      )
+
+      val offencesToSyncCaptor = argumentCaptor<List<OffenceToSyncWithNomis>>()
+      verify(offenceToSyncWithNomisRepository).saveAll(offencesToSyncCaptor.capture())
+
+      Assertions.assertThat(offencesToSyncCaptor.allValues[0])
+        .usingRecursiveComparison()
+        .ignoringCollectionOrder()
+        .ignoringFields("id", "createdDate")
+        .isEqualTo(
+          listOf(
+            OffenceToSyncWithNomis(
+              offenceCode = OFFENCE_2.code,
+              nomisSyncType = NomisSyncType.HO_CODE_UPDATE,
+            ),
+            OffenceToSyncWithNomis(
+              offenceCode = OFFENCE_4.code,
+              nomisSyncType = NomisSyncType.HO_CODE_UPDATE,
+            ),
+          ),
+        )
+    }
   }
 
   companion object {
@@ -109,6 +218,9 @@ class HoCodeServiceTest {
 
     val HOME_OFFICE_CODE_1 = HomeOfficeCode(code = "01234", description = "ho description 1")
     val MAPPING_1 = HomeOfficeCodeToOffenceMapping(hoCode = "01234", offenceCode = "OFF1")
+    val MAPPING_2 = HomeOfficeCodeToOffenceMapping(hoCode = "56789", offenceCode = "OFF2")
+    val MAPPING_3 = HomeOfficeCodeToOffenceMapping(hoCode = "05678", offenceCode = "OFF3")
+    val MAPPING_4 = HomeOfficeCodeToOffenceMapping(hoCode = "99999", offenceCode = "OFF4")
 
     private val BASE_OFFENCE = Offence(
       code = "AABB011",
@@ -118,5 +230,8 @@ class HoCodeServiceTest {
       sdrsCache = SdrsCache.OFFENCES_A,
     )
     val OFFENCE_1 = BASE_OFFENCE.copy(code = "OFF1")
+    val OFFENCE_2 = BASE_OFFENCE.copy(code = "OFF2", category = 12, subCategory = 34)
+    val OFFENCE_3 = BASE_OFFENCE.copy(code = "OFF3", category = 56, subCategory = 78)
+    val OFFENCE_4 = BASE_OFFENCE.copy(code = "OFF4")
   }
 }
