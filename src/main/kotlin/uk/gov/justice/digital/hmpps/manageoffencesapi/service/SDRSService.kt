@@ -145,10 +145,7 @@ class SDRSService(
       } else {
         val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, cache)
         offenceRepository.saveAll(latestOfEachOffence.map { transform(it, cache) })
-        //
-        // TODO test
         scheduleNomisSyncFutureEndDatedOffences(latestOfEachOffence)
-        // TODO test
         offenceToSyncWithNomisRepository
         saveHoCodesToLegacyTable(latestOfEachOffence)
         saveLoad(cache, loadDate, SUCCESS, FULL_LOAD)
@@ -186,9 +183,7 @@ class SDRSService(
         offenceRepository.saveAll(inserts.map { transform(it, cache) })
         processUpdatesForOffencesThatExistInAnotherCache(updates, duplicateOffences, cache)
         saveHoCodesToLegacyTable(inserts.plus(updates))
-        // TODO test
         scheduleNomisSyncFutureEndDatedOffences(inserts.plus(updates))
-        // TODO test
         saveLoad(cache, loadDate, SUCCESS, FULL_LOAD)
         setParentOffences(cache)
       }
@@ -314,9 +309,7 @@ class SDRSService(
           sendOffenceChangedEvent(it)
         }
         saveHoCodesToLegacyTable(latestOfEachOffence)
-        // TODO test
         scheduleNomisSyncFutureEndDatedOffences(latestOfEachOffence)
-        // TODO test
         saveLoad(cache, loadDate, SUCCESS, UPDATE)
         setParentOffences(cache)
       }
