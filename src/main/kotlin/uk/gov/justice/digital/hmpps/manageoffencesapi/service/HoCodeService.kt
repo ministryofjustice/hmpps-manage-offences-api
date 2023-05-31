@@ -75,20 +75,6 @@ class HoCodeService(
     }
   }
 
-  fun bulkSave() {
-    val offences = offenceRepository.findAll()
-    println("number of offences" + offences.size)
-    val previousMappings = offences.map {
-      PreviousOffenceToHoCodeMapping(
-        offenceCode = it.code,
-        category = it.category!!,
-        subCategory = it.subCategory!!,
-      )
-    }
-    // TODO  Should we switch batch inserts on?? ~20K records here https://www.baeldung.com/spring-data-jpa-batch-inserts
-    previousMappingRepository.saveAll(previousMappings)
-  }
-
   // There is an assumption that ho-code-to-offence mappings are never deleted, therefore we don't cater for such a scenario
   // We do cater for updates though (e.g. changing a ho-code associated with an offence)
   // Have switched 'batch inserts' on to aid performance on this functionality. ~20k records to process every time

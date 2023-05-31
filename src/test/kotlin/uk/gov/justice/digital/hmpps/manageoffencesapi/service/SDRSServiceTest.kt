@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRe
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.LegacySdrsHoCodeMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
@@ -38,6 +39,7 @@ class SDRSServiceTest {
   private val sdrsLoadResultHistoryRepository = mock<SdrsLoadResultHistoryRepository>()
   private val offenceScheduleMappingRepository = mock<OffenceScheduleMappingRepository>()
   private val legacySdrsHoCodeMappingRepository = mock<LegacySdrsHoCodeMappingRepository>()
+  private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
   private val adminService = mock<AdminService>()
   private val sdrsApiClient = mock<SDRSApiClient>()
   private val eventService = mock<EventService>()
@@ -49,6 +51,7 @@ class SDRSServiceTest {
     sdrsLoadResultHistoryRepository,
     offenceScheduleMappingRepository,
     legacySdrsHoCodeMappingRepository,
+    offenceToSyncWithNomisRepository,
     adminService,
     eventService,
   )
