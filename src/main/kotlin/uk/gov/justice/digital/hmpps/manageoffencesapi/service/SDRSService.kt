@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetApplic
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetControlTable
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetMojOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.MessageType.GetOffence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsErrorCodes.SDRS_99918
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GatewayOperationTypeRequest
@@ -38,6 +40,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRe
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.LegacySdrsHoCodeMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDateTime
@@ -53,6 +56,7 @@ class SDRSService(
   private val sdrsLoadResultHistoryRepository: SdrsLoadResultHistoryRepository,
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val legacySdrsHoCodeMappingRepository: LegacySdrsHoCodeMappingRepository,
+  private val offenceToSyncWithNomisRepository: OffenceToSyncWithNomisRepository,
   private val adminService: AdminService,
   private val eventService: EventService,
 ) {
@@ -141,6 +145,8 @@ class SDRSService(
       } else {
         val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, cache)
         offenceRepository.saveAll(latestOfEachOffence.map { transform(it, cache) })
+        scheduleNomisSyncFutureEndDatedOffences(latestOfEachOffence)
+        offenceToSyncWithNomisRepository
         saveHoCodesToLegacyTable(latestOfEachOffence)
         saveLoad(cache, loadDate, SUCCESS, FULL_LOAD)
         setParentOffences(cache)
@@ -149,6 +155,16 @@ class SDRSService(
       log.error("Failed to do a full load from SDRS for cache {} - error message = {}", cache, e.message)
       handleSdrsError(cache = cache, loadDate = loadDate, loadType = FULL_LOAD)
     }
+  }
+
+  private fun scheduleNomisSyncFutureEndDatedOffences(offences: List<Offence>) {
+    val futureEndDatedToSyncNomis = offences.filter { it.isEndDateInFuture }.map {
+      OffenceToSyncWithNomis(
+        offenceCode = it.code,
+        nomisSyncType = NomisSyncType.FUTURE_END_DATED,
+      )
+    }
+    offenceToSyncWithNomisRepository.saveAll(futureEndDatedToSyncNomis)
   }
 
   // All ho code to offence mappings are saved to a legacy table - the correct mappings come from the analytical platform S3 load
@@ -167,6 +183,7 @@ class SDRSService(
         offenceRepository.saveAll(inserts.map { transform(it, cache) })
         processUpdatesForOffencesThatExistInAnotherCache(updates, duplicateOffences, cache)
         saveHoCodesToLegacyTable(inserts.plus(updates))
+        scheduleNomisSyncFutureEndDatedOffences(inserts.plus(updates))
         saveLoad(cache, loadDate, SUCCESS, FULL_LOAD)
         setParentOffences(cache)
       }
@@ -292,6 +309,7 @@ class SDRSService(
           sendOffenceChangedEvent(it)
         }
         saveHoCodesToLegacyTable(latestOfEachOffence)
+        scheduleNomisSyncFutureEndDatedOffences(latestOfEachOffence)
         saveLoad(cache, loadDate, SUCCESS, UPDATE)
         setParentOffences(cache)
       }

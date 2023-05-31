@@ -31,4 +31,6 @@ interface OffenceRepository : JpaRepository<Offence, Long> {
   fun findByCodeIn(codes: Set<String>): List<Offence>
 
   fun findByCodeIgnoreCase(code: String): Offence?
+
+  fun findByCategoryIsNotNullAndSubCategoryIsNotNull(): List<Offence>
 }
