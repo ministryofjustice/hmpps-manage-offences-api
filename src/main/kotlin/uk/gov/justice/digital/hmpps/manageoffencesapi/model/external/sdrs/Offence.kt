@@ -22,7 +22,7 @@ data class Offence(
   val offenceType: String? = null,
 ) {
   val isEndDateInFuture: Boolean
-    get() = offenceEndDate != null && offenceEndDate.isAfter(LocalDate.now())
+    get() = offenceEndDate?.isAfter(LocalDate.now()) ?: false
   val category: Int?
     get() = mojStatsCode?.substringBefore('/')?.toIntOrNull()
   val subCategory: Int?
