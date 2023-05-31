@@ -20,6 +20,7 @@ CREATE TABLE previous_offence_to_ho_code_mapping
     PRIMARY KEY (offence_code)
 );
 
+-- This will result in any future end dated offences since we went live to be synced with NOMIS automatically
 INSERT INTO offence_to_sync_with_nomis
 (offence_code, nomis_sync_type, created_date)
 (select code, 'FUTURE_END_DATED', NOW()
