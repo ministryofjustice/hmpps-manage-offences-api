@@ -33,7 +33,7 @@ class HoCodeService(
 ) {
   private val log = LoggerFactory.getLogger(this::class.java)
 
-  // This does a full load every tim - at the moment the AP side creates a new release directory with all the data in it every cycle
+  // This does a full load every time - at the moment the AP side creates a new release directory with all the data in it every cycle
   @Scheduled(cron = "0 */15 * * * *") // TODO setting to 15 minutes for test purposes. change schedule after testing
   @Transactional
   @SchedulerLock(name = "fullLoadOfHomeOfficeCodes")
