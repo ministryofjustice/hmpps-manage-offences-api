@@ -483,5 +483,41 @@ class SDRSServiceIntTest : IntegrationTestBase() {
           ),
         )
     }
+
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/insert-future-end-dated-offence-to-sync-with-nomis.sql",
+    )
+    fun `Perform delta load with offences that end in the future - but the offence has already been marked to be future end dated`() {
+      sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+      sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+      sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
+      sdrsApiMockServer.stubGetChangedOffencesForAFutureEndDated()
+      sdrsApiMockServer.stubControlTableRequest()
+      ('A'..'Z').forEach { alphaChar ->
+        prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      }
+      prisonApiMockServer.stubCreateStatute()
+      prisonApiMockServer.stubCreateOffence()
+
+      sdrsService.deltaSynchroniseWithSdrs()
+
+      val offencesToSyncWithNomis = offenceToSyncWithNomisRepository.findAll()
+
+      assertThat(offencesToSyncWithNomis)
+        .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+          "id",
+          "createdDate",
+        )
+        .isEqualTo(
+          listOf(
+            OffenceToSyncWithNomis(
+              offenceCode = "XX99001",
+              nomisSyncType = NomisSyncType.FUTURE_END_DATED,
+            ),
+          ),
+        )
+    }
   }
 }

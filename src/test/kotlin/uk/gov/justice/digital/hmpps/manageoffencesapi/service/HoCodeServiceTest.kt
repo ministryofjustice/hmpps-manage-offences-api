@@ -150,6 +150,7 @@ class HoCodeServiceTest {
           ),
         ),
       ).thenReturn(listOf(OFFENCE_2, OFFENCE_3, OFFENCE_4))
+      whenever(offenceToSyncWithNomisRepository.existsByOffenceCodeAndNomisSyncType(OFFENCE_4.code, NomisSyncType.HO_CODE_UPDATE)).thenReturn(true)
 
       hoCodeService.fullLoadOfHomeOfficeCodes()
 
@@ -187,10 +188,6 @@ class HoCodeServiceTest {
           listOf(
             OffenceToSyncWithNomis(
               offenceCode = OFFENCE_2.code,
-              nomisSyncType = NomisSyncType.HO_CODE_UPDATE,
-            ),
-            OffenceToSyncWithNomis(
-              offenceCode = OFFENCE_4.code,
               nomisSyncType = NomisSyncType.HO_CODE_UPDATE,
             ),
           ),
