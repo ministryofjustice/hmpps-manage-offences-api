@@ -57,7 +57,7 @@ class HoCodeServiceTest {
     }
 
     @Test
-    fun `Test that a full load runs successfully - loads ho-codes and mappings`() {
+    fun `Test that a full load runs successfully - loads latest ho-codes and mappings`() {
       whenever(adminService.isFeatureEnabled(Feature.SYNC_HOME_OFFICE_CODES)).thenReturn(true)
       whenever(awsS3Service.getSubDirectories(HO_CODES.s3BasePath)).thenReturn(SUB_DIRECTORIES_HO_CODE)
       whenever(awsS3Service.getSubDirectories(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)).thenReturn(
@@ -72,6 +72,7 @@ class HoCodeServiceTest {
       whenever(awsS3Service.loadParquetFileContents(HO_FILE_1_KEY, HO_CODES.mappingClass)).thenReturn(
         listOf(
           HOME_OFFICE_CODE_1,
+          HOME_OFFICE_CODE_1_OLD,
         ),
       )
       whenever(
@@ -79,7 +80,7 @@ class HoCodeServiceTest {
           MAPPING_FILE_1_KEY,
           HO_CODES_TO_OFFENCE_MAPPING.mappingClass,
         ),
-      ).thenReturn(listOf(MAPPING_1))
+      ).thenReturn(listOf(MAPPING_1, MAPPING_1_OLD))
 
       whenever(offenceRepository.findByCodeIn(setOf(MAPPING_1.offenceCode))).thenReturn(listOf(OFFENCE_1))
 
@@ -112,7 +113,7 @@ class HoCodeServiceTest {
   @Nested
   inner class NomisSyncTests {
     @Test
-    fun `Test that a any changes are marked to be pushed to Nomis`() {
+    fun `Test that any changes are marked to be pushed to Nomis`() {
       whenever(adminService.isFeatureEnabled(Feature.SYNC_HOME_OFFICE_CODES)).thenReturn(true)
       whenever(awsS3Service.getSubDirectories(HO_CODES.s3BasePath)).thenReturn(SUB_DIRECTORIES_HO_CODE)
       whenever(awsS3Service.getSubDirectories(HO_CODES_TO_OFFENCE_MAPPING.s3BasePath)).thenReturn(
@@ -216,11 +217,13 @@ class HoCodeServiceTest {
     val HO_FILE_1_KEY = LATEST_FOLDER_PATH_HO_CODE + "ho-code-file1"
     val MAPPING_FILE_1_KEY = LATEST_FOLDER_PATH_MAPPINGS + "mapping-file1"
 
-    val HOME_OFFICE_CODE_1 = HomeOfficeCode(code = "01234", description = "ho description 1")
-    val MAPPING_1 = HomeOfficeCodeToOffenceMapping(hoCode = "01234", offenceCode = "OFF1")
-    val MAPPING_2 = HomeOfficeCodeToOffenceMapping(hoCode = "56789", offenceCode = "OFF2")
-    val MAPPING_3 = HomeOfficeCodeToOffenceMapping(hoCode = "05678", offenceCode = "OFF3")
-    val MAPPING_4 = HomeOfficeCodeToOffenceMapping(hoCode = "99999", offenceCode = "OFF4")
+    val HOME_OFFICE_CODE_1 = HomeOfficeCode(code = "01234", description = "ho description 1", latestRecord = true)
+    val HOME_OFFICE_CODE_1_OLD = HomeOfficeCode(code = "01234", description = "ho description 1 old record", latestRecord = false)
+    val MAPPING_1 = HomeOfficeCodeToOffenceMapping(hoCode = "01234", offenceCode = "OFF1", latestRecord = true)
+    val MAPPING_2 = HomeOfficeCodeToOffenceMapping(hoCode = "56789", offenceCode = "OFF2", latestRecord = true)
+    val MAPPING_3 = HomeOfficeCodeToOffenceMapping(hoCode = "05678", offenceCode = "OFF3", latestRecord = true)
+    val MAPPING_4 = HomeOfficeCodeToOffenceMapping(hoCode = "99999", offenceCode = "OFF4", latestRecord = true)
+    val MAPPING_1_OLD = HomeOfficeCodeToOffenceMapping(hoCode = "99999", offenceCode = "OFF1", latestRecord = false)
 
     private val BASE_OFFENCE = Offence(
       code = "AABB011",

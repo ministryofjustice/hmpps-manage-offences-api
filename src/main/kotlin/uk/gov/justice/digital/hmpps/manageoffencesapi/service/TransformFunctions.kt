@@ -249,7 +249,6 @@ fun transform(
 )
 
 fun transform(offence: Offence, username: String) = OffenceReactivatedInNomis(
-  offenceId = offence.id,
   offenceCode = offence.code,
   reactivatedByUsername = username,
 )

@@ -193,7 +193,7 @@ class OffenceServiceTest {
       )
 
       whenever(
-        reactivatedInNomisRepository.findByOffenceCodeIn(
+        reactivatedInNomisRepository.findAllById(
           listOf(
             OFFENCE_A1234AAA.code,
           ),
@@ -201,7 +201,6 @@ class OffenceServiceTest {
       ).thenReturn(
         listOf(
           OffenceReactivatedInNomis(
-            offenceId = 1,
             offenceCode = OFFENCE_A1234AAA.code,
             reactivatedByUsername = "test-user",
           ),

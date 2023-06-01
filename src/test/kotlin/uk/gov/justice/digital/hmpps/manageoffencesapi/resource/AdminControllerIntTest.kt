@@ -88,13 +88,12 @@ class AdminControllerIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    val reactivatedOffence = offenceReactivatedInNomisRepository.findById(offence.id).get()
+    val reactivatedOffence = offenceReactivatedInNomisRepository.findById(offence.code).get()
     assertThat(reactivatedOffence)
       .usingRecursiveComparison()
       .ignoringFieldsMatchingRegexes(".*Date")
       .isEqualTo(
         OffenceReactivatedInNomis(
-          offenceId = offence.id,
           offenceCode = offence.code,
           reactivatedByUsername = "test-client",
         ),
@@ -133,7 +132,7 @@ class AdminControllerIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    assertThat(offenceReactivatedInNomisRepository.findById(offence.id).isPresent).isFalse
+    assertThat(offenceReactivatedInNomisRepository.findById(offence.code).isPresent).isFalse
   }
 
   private fun getFeatureToggles(): MutableList<FeatureToggle>? =

@@ -60,8 +60,9 @@ class SDRSService(
   private val adminService: AdminService,
   private val eventService: EventService,
 ) {
-  @Scheduled(cron = "0 0 */1 * * *")
-  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
+  @Scheduled(cron = "0 */1 * * * *")
+  // @Scheduled(cron = "0 0 */1 * * *")
+  // @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
   @Transactional
   fun fullSynchroniseWithSdrs() {
     if (!adminService.isFeatureEnabled(FULL_SYNC_SDRS)) {
@@ -89,8 +90,11 @@ class SDRSService(
 
   private fun loadAllOffences() {
     // These offenceToScheduleParts mappings will be re-inserted after all offences have been re-loaded (from SDRS)
+    log.info("val offenceToScheduleMappings = offenceScheduleMappingRepository.findAll()")
     val offenceToScheduleMappings = offenceScheduleMappingRepository.findAll()
+    log.info("resetLoadResultAndDeleteOffences()")
     resetLoadResultAndDeleteOffences()
+    log.info("finish")
 
     val loadDate = LocalDateTime.now()
     (SdrsCache.values()).forEach { cache ->
@@ -158,12 +162,15 @@ class SDRSService(
   }
 
   private fun scheduleNomisSyncFutureEndDatedOffences(offences: List<Offence>) {
-    val futureEndDatedToSyncNomis = offences.filter { it.isEndDateInFuture }.map {
-      OffenceToSyncWithNomis(
-        offenceCode = it.code,
-        nomisSyncType = NomisSyncType.FUTURE_END_DATED,
-      )
-    }
+    val futureEndDatedToSyncNomis = offences
+      .filter { it.isEndDateInFuture }
+      .filter { !offenceToSyncWithNomisRepository.existsByOffenceCodeAndNomisSyncType(it.code, NomisSyncType.FUTURE_END_DATED) }
+      .map {
+        OffenceToSyncWithNomis(
+          offenceCode = it.code,
+          nomisSyncType = NomisSyncType.FUTURE_END_DATED,
+        )
+      }
     offenceToSyncWithNomisRepository.saveAll(futureEndDatedToSyncNomis)
   }
 
