@@ -61,7 +61,9 @@ class HoCodeService(
     filesToProcess.forEach { fileKey ->
       log.info("Processing $fileKey")
       val hoCodesToLoad =
-        awsS3Service.loadParquetFileContents(fileKey, HO_CODES.mappingClass).map { it as HomeOfficeCode }
+        awsS3Service.loadParquetFileContents(fileKey, HO_CODES.mappingClass)
+          .map { it as HomeOfficeCode }
+          .filter { it.latestRecord }
       val hoCodesToSave = hoCodesToLoad.map {
         HomeOfficeCodeEntity(
           id = it.code,
@@ -101,6 +103,7 @@ class HoCodeService(
       val mappingsToLoad =
         awsS3Service.loadParquetFileContents(fileKey, HO_CODES_TO_OFFENCE_MAPPING.mappingClass)
           .map { it as HomeOfficeCodeToOffenceMapping }
+          .filter { it.latestRecord }
       val mappingsByCode = mappingsToLoad.associateBy { it.offenceCode }
       val offencesToUpdate = offenceRepository.findByCodeIn(
         mappingsToLoad
@@ -114,7 +117,9 @@ class HoCodeService(
         }
 
       offenceRepository.saveAll(offencesToUpdate)
-      val offencesToSyncWithNomis = offencesToUpdate.filter { it.homeOfficeStatsCode != previousMappingsByOffenceCode[it.code]?.homeOfficeCode }
+      val offencesToSyncWithNomis = offencesToUpdate
+        .filter { it.homeOfficeStatsCode != previousMappingsByOffenceCode[it.code]?.homeOfficeCode }
+        .filter { !offenceToSyncWithNomisRepository.existsByOffenceCodeAndNomisSyncType(it.code, HO_CODE_UPDATE) }
         .map {
           OffenceToSyncWithNomis(
             offenceCode = it.code,
@@ -149,6 +154,8 @@ data class HomeOfficeCode(
   val code: String = "",
   @JsonProperty("ho_offence_desc")
   val description: String = "",
+  @JsonProperty("mojap_latest_record")
+  val latestRecord: Boolean = false,
 ) {
   val category: Int
     get() = code.substring(0, 3).toInt()
@@ -161,6 +168,8 @@ data class HomeOfficeCodeToOffenceMapping(
   val hoCode: String = "",
   @JsonProperty("cjs_offence_code")
   val offenceCode: String = "",
+  @JsonProperty("mojap_latest_record")
+  val latestRecord: Boolean = false,
 ) {
   val category: Int
     get() = hoCode.substring(0, 3).toInt()

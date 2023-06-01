@@ -186,7 +186,7 @@ class OffenceService(
 
     // Reactivated offences are offences that have been explicitly made active in NOMIS (using the manage-offences UI)
     // So they will remain active in NOMIS (although they have been end dated). This list will be small
-    val reactivatedOffences = reactivatedInNomisRepository.findByOffenceCodeIn(
+    val reactivatedOffences = reactivatedInNomisRepository.findAllById(
       existingOffenceKeys
         .map { it.first },
     )

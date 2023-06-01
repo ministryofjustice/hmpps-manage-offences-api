@@ -69,8 +69,8 @@ class AdminService(
       }
       prisonApiUserClient.changeOffenceActiveFlag(transform(offence, false))
 
-      if (offenceReactivatedInNomisRepository.existsById(offenceId)) {
-        offenceReactivatedInNomisRepository.deleteById(offenceId)
+      if (offenceReactivatedInNomisRepository.existsById(offence.code)) {
+        offenceReactivatedInNomisRepository.deleteById(offence.code)
       }
     }
   }
