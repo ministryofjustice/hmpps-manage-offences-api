@@ -103,6 +103,7 @@ class OffenceService(
 
   // This is used to synchronise offences to NOMIS that are outside the main SDRS route; i.e. ho-code updates and future end dated offences
   private fun syncOtherOffencesWithNomis() {
+    log.info("Starting sync for other offence types with nomis (not from SDRS cache)")
     val (hoCodeUpdatedOffences, futureEndDatedOffences) = offenceToSyncWithNomisRepository.findAll().partition { it.nomisSyncType == NomisSyncType.HO_CODE_UPDATE }
     val offencesNeedDeactivating = offenceRepository.findByCodeIn(futureEndDatedOffences.map { it.offenceCode }.toSet()).filter { it.activeFlag == "N" }
     val offenceswithHoCodeUpdates = offenceRepository.findByCodeIn(hoCodeUpdatedOffences.map { it.offenceCode }.toSet())
@@ -119,7 +120,12 @@ class OffenceService(
 
     fullySyncWithNomis(allOffencesToSync, nomisOffencesById, nomisOffences)
     offenceToSyncWithNomisRepository.flush()
-    offenceToSyncWithNomisRepository.deleteAllByIdInBatch(allOffencesToSync.map { it.code })
+    offenceToSyncWithNomisRepository.deleteAllByIdInBatch(
+      futureEndDatedOffences
+        .filter { f -> offencesNeedDeactivating.any { it.code == f.offenceCode } }
+        .plus(hoCodeUpdatedOffences)
+        .map { it.id },
+    )
   }
 
   private fun createLoadHistoryRecord(it: SdrsLoadResult) {

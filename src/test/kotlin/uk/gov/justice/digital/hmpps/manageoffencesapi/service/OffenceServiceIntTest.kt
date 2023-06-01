@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
@@ -13,79 +14,110 @@ class OffenceServiceIntTest : IntegrationTestBase() {
   @Autowired
   lateinit var offenceService: OffenceService
 
-  @Test
-  @Sql(
-    "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data.sql",
-    "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql",
-  )
-  fun `Fully sync with NOMIS - includes creating statute and ho-code`() {
-    ('A'..'Z').forEach { alphaChar ->
-      prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
-    }
-    prisonApiMockServer.stubFindByOffenceCodeStartsWith("M")
-    prisonApiMockServer.stubCreateHomeOfficeCode()
-    prisonApiMockServer.stubCreateStatute()
-    prisonApiMockServer.stubCreateOffence()
-    prisonApiMockServer.stubUpdateOffence()
+  @Nested
+  inner class FullSyncTests {
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/insert-offence-data.sql",
+      "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql",
+    )
+    fun `Fully sync with NOMIS - includes creating statute and ho-code`() {
+      ('A'..'Z').forEach { alphaChar ->
+        prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      }
+      prisonApiMockServer.stubFindByOffenceCodeStartsWith("M")
+      prisonApiMockServer.stubCreateHomeOfficeCode()
+      prisonApiMockServer.stubCreateStatute()
+      prisonApiMockServer.stubCreateOffence()
+      prisonApiMockServer.stubUpdateOffence()
 
-    offenceService.fullSyncWithNomis()
+      offenceService.fullSyncWithNomis()
 
-    verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES)
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data.sql",
-    "classpath:test_data/insert-offence-data-that-is-reactivated-nomis.sql",
-  )
-  fun `Sync with NOMIS when an offence has been reactivated in NOMIS`() {
-    ('A'..'Z').forEach { alphaChar ->
-      prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES)
     }
 
-    prisonApiMockServer.stubFindByOffenceCode("M")
-    prisonApiMockServer.stubCreateHomeOfficeCode()
-    prisonApiMockServer.stubCreateStatute()
-    prisonApiMockServer.stubCreateOffence()
-    prisonApiMockServer.stubUpdateOffence()
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/insert-offence-data.sql",
+      "classpath:test_data/insert-offence-data-that-is-reactivated-nomis.sql",
+    )
+    fun `Sync with NOMIS when an offence has been reactivated in NOMIS`() {
+      ('A'..'Z').forEach { alphaChar ->
+        prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      }
 
-    offenceService.fullSyncWithNomis()
+      prisonApiMockServer.stubFindByOffenceCode("M")
+      prisonApiMockServer.stubCreateHomeOfficeCode()
+      prisonApiMockServer.stubCreateStatute()
+      prisonApiMockServer.stubCreateOffence()
+      prisonApiMockServer.stubUpdateOffence()
 
-    verifyPutOffenceToPrisonApi(SYNC_REACTIVATED_OFFENCE)
-  }
+      offenceService.fullSyncWithNomis()
 
-  @Test
-  @Sql("classpath:test_data/reset-all-data.sql")
-  fun `Get ho-code for offence that doesnt exist throws 404`() {
-    Assertions.assertThatThrownBy {
-      offenceService.findHoCodeByOffenceCode("NOT_EXIST")
+      verifyPutOffenceToPrisonApi(M1119999_OFFENCE)
     }
-      .isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessage("No offence exists for the passed in offence code")
-  }
 
-  @Test
-  @Sql(
-    "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data.sql",
-  )
-  fun `Get ho-code for offence that has empty ho_code`() {
-    val res = offenceService.findHoCodeByOffenceCode("AF06999")
+    @Nested
+    inner class DeltaSyncTests {
+      @Test
+      @Sql(
+        "classpath:test_data/reset-all-data.sql",
+        "classpath:test_data/enable-delta-sync-nomis.sql",
+        "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql",
+        "classpath:test_data/insert-ho-update-to-sync-with-nomis.sql",
+      )
+      fun `When there are offences to push from non-sdrs sources (ho code update) they get pushed`() {
+        ('A'..'Z').forEach { alphaChar ->
+          prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+        }
+        prisonApiMockServer.stubFindByOffenceCodeStartsWith("M11")
+        prisonApiMockServer.stubCreateHomeOfficeCode()
+        prisonApiMockServer.stubCreateStatute()
+        prisonApiMockServer.stubCreateOffence()
+        prisonApiMockServer.stubUpdateOffence()
 
-    assertThat(res).isNull()
-  }
+        offenceService.deltaSyncWithNomis()
 
-  @Test
-  @Sql(
-    "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data-with-ho-code.sql",
-  )
-  fun `Get ho-code for an offence code`() {
-    val res = offenceService.findHoCodeByOffenceCode("ho06999")
+        verifyPutOffenceToPrisonApi(M1119999_OFFENCE)
+      }
+    }
 
-    assertThat(res).isEqualTo("001/13")
+    @Nested
+    inner class OtherTests {
+      @Test
+      @Sql("classpath:test_data/reset-all-data.sql")
+      fun `Get ho-code for offence that doesnt exist throws 404`() {
+        Assertions.assertThatThrownBy {
+          offenceService.findHoCodeByOffenceCode("NOT_EXIST")
+        }
+          .isInstanceOf(EntityNotFoundException::class.java)
+          .hasMessage("No offence exists for the passed in offence code")
+      }
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/insert-offence-data.sql",
+    )
+    fun `Get ho-code for offence that has empty ho_code`() {
+      val res = offenceService.findHoCodeByOffenceCode("AF06999")
+
+      assertThat(res).isNull()
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/insert-offence-data-with-ho-code.sql",
+    )
+    fun `Get ho-code for an offence code`() {
+      val res = offenceService.findHoCodeByOffenceCode("ho06999")
+
+      assertThat(res).isEqualTo("001/13")
+    }
   }
 
   private fun verifyPutOffenceToPrisonApi(json: String) =
@@ -102,7 +134,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
 
   companion object {
 
-    private val SYNC_REACTIVATED_OFFENCE = """
+    private val M1119999_OFFENCE = """
       [
        {
           "code" : "M1119999",
