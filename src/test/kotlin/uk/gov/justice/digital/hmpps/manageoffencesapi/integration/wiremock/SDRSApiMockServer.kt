@@ -167,6 +167,25 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
+  fun stubGetChangedOffencesForAWithDifferentHoCodes() {
+    stubChangedOffences(
+      'A',
+      """
+        {
+          "OffenceRevisionId": 99990,
+          "OffenceStartDate": "2009-11-03",
+          "OffenceEndDate": "",
+          "Description": "Brought before the court UPDATED",
+          "CjsTitle": "Brought before the court UPDATED",
+          "code": "HO06999",
+          "OffenceActsAndSections": "NEW ACT UPDATED",
+          "MOJStatsCode": "991/99",
+          "ChangedDate": "2023-05-16T16:30:46"
+        }
+        """,
+    )
+  }
+
   fun stubGetChangedOffencesForAFutureEndDated() {
     stubChangedOffences(
       'A',

@@ -519,5 +519,52 @@ class SDRSServiceIntTest : IntegrationTestBase() {
           ),
         )
     }
+
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/set-success-all-load-results.sql",
+      "classpath:test_data/insert-offence-data-with-ho-code.sql",
+    )
+    fun `Perform delta load where the ho-code is different to the one stored - ho code should not get updated, everything else should`() {
+      sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+      sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+      sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
+      sdrsApiMockServer.stubGetChangedOffencesForAWithDifferentHoCodes()
+      sdrsApiMockServer.stubControlTableRequest()
+      ('A'..'Z').forEach { alphaChar ->
+        prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      }
+      prisonApiMockServer.stubCreateStatute()
+      prisonApiMockServer.stubCreateOffence()
+
+      sdrsService.deltaSynchroniseWithSdrs()
+
+      val offences = offenceRepository.findAll()
+      assertThat(offences)
+        .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+          "id",
+          "createdDate",
+          "lastUpdatedDate",
+          "changedDate",
+        )
+        .isEqualTo(
+          listOf(
+            Offence(
+              code = "HO06999",
+              description = "Brought before the court UPDATED",
+              cjsTitle = "Brought before the court UPDATED",
+              revisionId = 99990,
+              startDate = LocalDate.of(2009, 11, 3),
+              legislation = "NEW ACT UPDATED",
+              category = 1,
+              subCategory = 13,
+              changedDate = LocalDateTime.now(),
+              maxPeriodIsLife = null,
+              sdrsCache = OFFENCES_A,
+            ),
+          ),
+        )
+    }
   }
 }

@@ -108,8 +108,6 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache):
     revisionId = sdrsOffence.offenceRevisionId,
     startDate = sdrsOffence.offenceStartDate,
     endDate = sdrsOffence.offenceEndDate,
-    category = sdrsOffence.category,
-    subCategory = sdrsOffence.subCategory,
     changedDate = sdrsOffence.changedDate,
     legislation = sdrsOffence.offenceActsAndSections,
     offenceType = sdrsOffence.offenceType,
