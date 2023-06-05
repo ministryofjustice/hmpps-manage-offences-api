@@ -34,7 +34,7 @@ class HoCodeService(
   private val log = LoggerFactory.getLogger(this::class.java)
 
   // This does a full load every time - at the moment the AP side creates a new release directory with all the data in it every cycle
-  @Scheduled(cron = "0 */15 * * * *") // TODO setting to 15 minutes for test purposes. change schedule after testing
+  @Scheduled(cron = "0 0 */12 * * *")
   @Transactional
   @SchedulerLock(name = "fullLoadOfHomeOfficeCodes")
   fun fullLoadOfHomeOfficeCodes() {
@@ -126,6 +126,7 @@ class HoCodeService(
             nomisSyncType = HO_CODE_UPDATE,
           )
         }
+      log.info("There are ${offencesToSyncWithNomis.size} offences with HO Code changes that need updating in NOMIS")
       offenceToSyncWithNomisRepository.saveAll(offencesToSyncWithNomis)
       hoCodesLoadHistoryRepository.save(HoCodesLoadHistory(loadedFile = fileKey))
     }
