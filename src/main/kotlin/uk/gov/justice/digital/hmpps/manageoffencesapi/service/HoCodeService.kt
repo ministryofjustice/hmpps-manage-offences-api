@@ -34,7 +34,8 @@ class HoCodeService(
   private val log = LoggerFactory.getLogger(this::class.java)
 
   // This does a full load whenever there is a new directory in the S3 bucket - at the moment the AP side creates a new release directory with all the data every cycle
-  @Scheduled(cron = "0 0 */12 * * *")
+  // @Scheduled(cron = "0 0 */12 * * *")
+  @Scheduled(cron = "0 */10 * * * *") // TODO temporary change to enable faster testing of IRSA config changes
   @Transactional
   @SchedulerLock(name = "fullLoadOfHomeOfficeCodes")
   fun fullLoadOfHomeOfficeCodes() {
