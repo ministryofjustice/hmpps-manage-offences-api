@@ -11,6 +11,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.1")
+    mavenBom("software.amazon.awssdk:bom:2.20.91")
   }
 }
 
@@ -46,13 +47,14 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.4.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.4.0")
 
-  // SQS
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0")
+  // SQS TODO Temporarily commented out for diagnostic purposes
+  // implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0")
 
   // AWS
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
-  implementation("software.amazon.awssdk:sts:2.20.90")
-  implementation("software.amazon.awssdk:netty-nio-client:2.20.90")
+  implementation("software.amazon.awssdk:auth")
+  implementation("software.amazon.awssdk:sts")
+  implementation("software.amazon.awssdk:netty-nio-client")
 
   // Miscellaneous
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
