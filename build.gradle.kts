@@ -52,7 +52,6 @@ dependencies {
 
   // AWS
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
-  implementation("software.amazon.awssdk:auth")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
