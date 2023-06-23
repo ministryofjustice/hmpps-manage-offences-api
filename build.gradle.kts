@@ -51,8 +51,8 @@ dependencies {
 
   // AWS
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
-  implementation("software.amazon.awssdk:sts:2.20.83")
-  implementation("software.amazon.awssdk:netty-nio-client:2.20.83")
+  implementation("software.amazon.awssdk:sts:2.20.90")
+  implementation("software.amazon.awssdk:netty-nio-client:2.20.90")
 
   // Miscellaneous
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
