@@ -47,8 +47,8 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.4.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.4.0")
 
-  // SQS TODO Temporarily commented out for diagnostic purposes
-  // implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0")
+  // SQS
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0")
 
   // AWS
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
