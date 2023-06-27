@@ -50,6 +50,8 @@ class HoCodeService(
     log.info("Finished full load of Home Office Code data from Analytical Platform (S3)")
   }
 
+  fun addTwoNumbers(a: Int, b: Int) = a + b
+
   private fun loadHoCodes() {
     val pathToReadFrom = getLatestLoadDirectory(HO_CODES.s3BasePath)
     val hoCodeFileKeys = awsS3Service.getKeysInPath(pathToReadFrom)

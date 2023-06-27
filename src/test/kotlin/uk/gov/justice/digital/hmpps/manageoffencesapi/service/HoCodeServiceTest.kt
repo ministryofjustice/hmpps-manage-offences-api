@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -46,6 +47,12 @@ class HoCodeServiceTest {
       previousMappingRepository,
       offenceToSyncWithNomisRepository,
     )
+
+  @Test
+  fun `Add two numbers test`() {
+    val result = hoCodeService.addTwoNumbers(3, 5)
+    assertThat(result).isEqualTo(8)
+  }
 
   @Nested
   inner class FullLoadTests {
