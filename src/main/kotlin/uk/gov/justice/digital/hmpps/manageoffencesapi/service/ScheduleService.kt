@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
@@ -21,6 +23,8 @@ class ScheduleService(
   private val schedulePartRepository: SchedulePartRepository,
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val offenceRepository: OffenceRepository,
+  private val prisonApiUserClient: PrisonApiUserClient,
+  private val nomisScheduleMappingRepository: NomisScheduleMappingRepository,
 ) {
   @Transactional
   fun createSchedule(schedule: ModelSchedule) {
@@ -57,6 +61,17 @@ class ScheduleService(
     offenceScheduleMappingRepository.saveAll(
       offences.map { offence ->
         transform(schedulePart, offence, linkOffence)
+      },
+    )
+
+    val nomisScheduleMapping = nomisScheduleMappingRepository.findOneBySchedulePartId(linkOffence.schedulePartId)
+
+    prisonApiUserClient.linkToSchedule(
+      offences.map {
+        OffenceToScheduleMappingDto(
+          schedule = nomisScheduleMapping.nomisScheduleName,
+          offenceCode = it.code,
+        )
       },
     )
   }
