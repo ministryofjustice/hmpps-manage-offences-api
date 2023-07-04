@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMapping
 
 @Repository
-interface NomisScheduleMappingRepository : JpaRepository<NomisScheduleMapping, Long>
+interface NomisScheduleMappingRepository : JpaRepository<NomisScheduleMapping, Long> {
+  fun findOneBySchedulePartId(schedulePartId: Long): NomisScheduleMapping
+}
