@@ -158,7 +158,16 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
           } ]
     """.trimIndent()
     private val unlinkOffenceRequest = """ [ {                         
-            "offenceCode" : "XX99001",
+            "offenceCode" : "AF06999",
+            "schedule" : "SCHEDULE_13"
+          },{                         
+            "offenceCode" : "AF06999A",
+            "schedule" : "SCHEDULE_13"
+          },{                         
+            "offenceCode" : "AF06999B",
+            "schedule" : "SCHEDULE_13"
+          },{                         
+            "offenceCode" : "AF06999C",
             "schedule" : "SCHEDULE_13"
           } ]
     """.trimIndent()

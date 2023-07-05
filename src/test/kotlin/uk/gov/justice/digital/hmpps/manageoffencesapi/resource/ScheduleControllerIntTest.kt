@@ -19,6 +19,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
   )
   fun `Link an offence that has children to a schedule, then unlink the offence and check all children are unlinked`() {
     prisonApiMockServer.stubLinkOffence()
+    prisonApiMockServer.stubUnlinkOffence()
     val allSchedules = getAllSchedules()
     val schedule13Id = allSchedules!!.filter { it.code == "13" }[0].id
     val scheduleBefore = getScheduleDetails(schedule13Id)
