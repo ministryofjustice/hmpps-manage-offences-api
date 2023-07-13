@@ -315,7 +315,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data-with-ho-code.sql",
+    "classpath:test_data/insert-multiple-offences-with-ho-codes.sql",
   )
   fun `Get offences by search string where searching by ho-code`() {
     val result = webTestClient.get().uri("/offences/search?searchString=1/13")
