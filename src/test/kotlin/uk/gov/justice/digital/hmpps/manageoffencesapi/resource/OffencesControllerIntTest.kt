@@ -311,4 +311,49 @@ class OffencesControllerIntTest : IntegrationTestBase() {
         ),
       )
   }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-multiple-offences-with-ho-codes.sql",
+  )
+  fun `Get offences by search string where searching by ho-code`() {
+    val result = webTestClient.get().uri("/offences/search?searchString=1/13")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(ModelOffence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*dDate")
+      .ignoringFieldsMatchingRegexes("id")
+      .isEqualTo(
+        listOf(
+          ModelOffence(
+            id = 1,
+            code = "HO06999",
+            description = "Brought before the court as being absent without leave from the Armed Forces",
+            revisionId = 570173,
+            startDate = LocalDate.of(2009, 11, 2),
+            legislation = "Contrary to section 19 of the Zoo Licensing Act 1981",
+            changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+            childOffenceIds = emptyList(),
+            homeOfficeStatsCode = "001/13",
+          ),
+          ModelOffence(
+            id = 1,
+            code = "HO07999",
+            description = "Random offence 1",
+            revisionId = 570173,
+            startDate = LocalDate.of(2009, 11, 2),
+            legislation = "Contrary to section 19 of the Zoo Licensing Act 1981",
+            changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+            childOffenceIds = emptyList(),
+            homeOfficeStatsCode = "001/13",
+          ),
+        ),
+      )
+  }
 }
