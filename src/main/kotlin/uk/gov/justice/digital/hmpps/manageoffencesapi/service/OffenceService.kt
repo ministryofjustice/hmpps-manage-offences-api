@@ -390,6 +390,10 @@ class OffenceService(
   }
 
   fun searchOffences(searchString: String): List<Offence> {
+    val hoCodeMatch = Regex("[0-9][0-9]?[0-9]?/[0-9][0-9]?")
+    if (searchString.matches(hoCodeMatch)) {
+      return searchByHoCode(searchString)
+    }
     return populateOffenceModel(
       offenceRepository.findByCodeStartsWithIgnoreCaseOrCjsTitleContainsIgnoreCaseOrLegislationContainsIgnoreCase(
         searchString,
@@ -397,6 +401,11 @@ class OffenceService(
         searchString,
       ),
     )
+  }
+
+  private fun searchByHoCode(searchString: String): List<Offence> {
+    val (category, subCategory) = searchString.split("/").map { it.toInt() }.let { Pair(it[0], it[1]) }
+    return populateOffenceModel(offenceRepository.findByCategoryAndSubCategory(category, subCategory))
   }
 
   companion object {
