@@ -43,6 +43,7 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     startDate = offence.startDate,
     endDate = offence.endDate,
     homeOfficeStatsCode = offence.homeOfficeStatsCode,
+    homeOfficeDescription = offence.homeOfficeCode?.description,
     changedDate = offence.changedDate,
     loadDate = offence.lastUpdatedDate,
     isChild = offence.parentCode != null,

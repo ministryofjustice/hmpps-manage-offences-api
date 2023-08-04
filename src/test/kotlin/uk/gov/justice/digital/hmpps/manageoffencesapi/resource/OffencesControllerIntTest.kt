@@ -341,6 +341,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             childOffenceIds = emptyList(),
             homeOfficeStatsCode = "001/13",
+            homeOfficeDescription = "Random HO offence 1",
           ),
           ModelOffence(
             id = 1,
@@ -352,6 +353,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             childOffenceIds = emptyList(),
             homeOfficeStatsCode = "001/13",
+            homeOfficeDescription = "Random HO offence 1",
           ),
         ),
       )

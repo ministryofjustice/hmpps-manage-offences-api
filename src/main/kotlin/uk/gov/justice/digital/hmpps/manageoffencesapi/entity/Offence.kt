@@ -7,6 +7,9 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinColumns
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import java.time.LocalDate
@@ -38,6 +41,12 @@ data class Offence(
   // The maxPeriodIsLife and maxPeriodOfIndictmentYears columns are populated via the schedule data supplied by the HMCTS NSD team
   val maxPeriodIsLife: Boolean? = false,
   val maxPeriodOfIndictmentYears: Int? = null,
+  @ManyToOne
+  @JoinColumns(
+    JoinColumn(name = "category", referencedColumnName = "category", insertable = false, updatable = false),
+    JoinColumn(name = "subCategory", referencedColumnName = "subCategory", insertable = false, updatable = false),
+  )
+  val homeOfficeCode: HomeOfficeCode? = null,
 ) {
   val statuteCode
     get() = code.substring(0, 4)
