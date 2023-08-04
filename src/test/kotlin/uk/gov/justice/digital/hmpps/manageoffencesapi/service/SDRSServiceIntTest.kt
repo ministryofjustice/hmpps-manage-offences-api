@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.LegacySdrsHoCodeMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
@@ -562,6 +563,12 @@ class SDRSServiceIntTest : IntegrationTestBase() {
               changedDate = LocalDateTime.now(),
               maxPeriodIsLife = null,
               sdrsCache = OFFENCES_A,
+              homeOfficeCode = HomeOfficeCode(
+                id = "00113",
+                category = 1,
+                subCategory = 13,
+                description = "Random HO offence 1",
+              ),
             ),
           ),
         )
