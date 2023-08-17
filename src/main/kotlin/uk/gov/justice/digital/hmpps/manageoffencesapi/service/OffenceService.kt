@@ -290,7 +290,7 @@ class OffenceService(
 
   private fun offenceDetailsSame(offence: EntityOffence, nomisOffence: PrisonApiOffence): Boolean =
     nomisOffence.hoCode?.code == offence.homeOfficeStatsCode &&
-      nomisOffence.description == offence.derivedDescription &&
+      nomisOffence.description == offence.derivedDescription.trim() &&
       nomisOffence.activeFlag == offence.activeFlag &&
       nomisOffence.expiryDate == offence.expiryDate
 
