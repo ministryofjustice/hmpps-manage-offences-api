@@ -259,6 +259,11 @@ class OffenceServiceTest {
           ),
         ),
       )
+      whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+        listOf(
+          OFFENCE_A1234AAA.copy(description = NOMIS_OFFENCE_A1234AAA.description),
+        ),
+      )
       whenever(offenceRepository.findBySdrsCache(OFFENCES_A)).thenReturn(
         listOf(
           OFFENCE_A1234AAA.copy(description = NOMIS_OFFENCE_A1234AAA.description),
@@ -271,6 +276,35 @@ class OffenceServiceTest {
         verify(prisonApiClient, times(1)).findByOffenceCodeStartsWith(alphaChar.toString(), 0)
       }
       verifyNoMoreInteractions(prisonApiClient)
+    }
+
+    @Test
+    fun `Does call update if the expiry date is different in prison-api and manage-offences`() {
+      whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
+        createPrisonApiOffencesResponse(
+          1,
+          listOf(
+            NOMIS_OFFENCE_A1234AAA.copy(expiryDate = LocalDate.of(2023, 1, 1)),
+          ),
+        ),
+      )
+      whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+        listOf(
+          OFFENCE_A1234AAA.copy(description = NOMIS_OFFENCE_A1234AAA.description),
+        ),
+      )
+      whenever(offenceRepository.findBySdrsCache(OFFENCES_A)).thenReturn(
+        listOf(
+          OFFENCE_A1234AAA.copy(description = NOMIS_OFFENCE_A1234AAA.description),
+        ),
+      )
+
+      offenceService.fullSyncWithNomis()
+
+      ('A'..'Z').forEach { alphaChar ->
+        verify(prisonApiClient, times(1)).findByOffenceCodeStartsWith(alphaChar.toString(), 0)
+      }
+      verify(prisonApiClient).updateOffences(listOf(NOMIS_OFFENCE_A1234AAA))
     }
 
     @Test

@@ -291,7 +291,8 @@ class OffenceService(
   private fun offenceDetailsSame(offence: EntityOffence, nomisOffence: PrisonApiOffence): Boolean =
     nomisOffence.hoCode?.code == offence.homeOfficeStatsCode &&
       nomisOffence.description == offence.derivedDescription &&
-      nomisOffence.activeFlag == offence.activeFlag
+      nomisOffence.activeFlag == offence.activeFlag &&
+      nomisOffence.expiryDate == offence.expiryDate
 
   private fun copyOffenceToUpdate(
     offence: uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence,
@@ -301,7 +302,7 @@ class OffenceService(
   ): PrisonApiOffence {
     log.info("Offence code {} to be updated in NOMIS", offence.code)
     return nomisOffence.copy(
-      description = offence.derivedDescription,
+      description = offence.derivedDescription.trim(),
       hoCode = homeOfficeCode,
       activeFlag = if (reactivatedOffences.contains(offence.code)) nomisOffence.activeFlag else offence.activeFlag,
       expiryDate = offence.expiryDate,
@@ -316,7 +317,7 @@ class OffenceService(
     log.info("Offence code {} to be created in NOMIS", offence.code)
     return PrisonApiOffence(
       code = offence.code,
-      description = offence.derivedDescription,
+      description = offence.derivedDescription.trim(),
       statuteCode = statute,
       hoCode = homeOfficeCode,
       severityRanking = offence.category?.toString() ?: "99",
