@@ -40,6 +40,27 @@ class OffenceServiceIntTest : IntegrationTestBase() {
     @Test
     @Sql(
       "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/insert-offence-data-with-spaces.sql",
+      "classpath:test_data/insert-offence-data-that-exists-in-nomis.sql",
+    )
+    fun `Fully sync with NOMIS when offence includes leading and trailing spaces`() {
+      ('A'..'Z').forEach { alphaChar ->
+        prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      }
+      prisonApiMockServer.stubFindByOffenceCodeStartsWith("M")
+      prisonApiMockServer.stubCreateHomeOfficeCode()
+      prisonApiMockServer.stubCreateStatute()
+      prisonApiMockServer.stubCreateOffence()
+      prisonApiMockServer.stubUpdateOffence()
+
+      offenceService.fullSyncWithNomis()
+
+      verifyPostOffenceToPrisonApi(FULL_SYNC_CREATE_OFFENCES)
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
       "classpath:test_data/insert-offence-data.sql",
       "classpath:test_data/insert-offence-data-that-is-reactivated-nomis.sql",
     )
