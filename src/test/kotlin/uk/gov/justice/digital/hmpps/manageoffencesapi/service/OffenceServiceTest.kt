@@ -250,7 +250,7 @@ class OffenceServiceTest {
     }
 
     @Test
-    fun `Does not call update if the offence details are the same in prison-api and manage-offences`() {
+    fun `Does not call update if the offence details are the same in prison-api as they are in manage-offences`() {
       whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
         createPrisonApiOffencesResponse(
           1,
