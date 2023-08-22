@@ -292,7 +292,8 @@ class OffenceService(
     nomisOffence.hoCode?.code == offence.homeOfficeStatsCode &&
       nomisOffence.description == offence.derivedDescription.trim() &&
       nomisOffence.activeFlag == offence.activeFlag &&
-      nomisOffence.expiryDate == offence.expiryDate
+      nomisOffence.expiryDate == offence.expiryDate &&
+      nomisOffence.severityRanking == offence.severityRanking
 
   private fun copyOffenceToUpdate(
     offence: uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence,
@@ -306,6 +307,7 @@ class OffenceService(
       hoCode = homeOfficeCode,
       activeFlag = if (reactivatedOffences.contains(offence.code)) nomisOffence.activeFlag else offence.activeFlag,
       expiryDate = offence.expiryDate,
+      severityRanking = offence.severityRanking,
     )
   }
 
@@ -320,7 +322,7 @@ class OffenceService(
       description = offence.derivedDescription.trim(),
       statuteCode = statute,
       hoCode = homeOfficeCode,
-      severityRanking = offence.category?.toString() ?: "99",
+      severityRanking = offence.severityRanking,
       activeFlag = offence.activeFlag,
       expiryDate = offence.expiryDate,
     )

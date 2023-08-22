@@ -172,7 +172,7 @@ class OffenceServiceIntTest : IntegrationTestBase() {
             "activeFlag" : "Y",
             "expiryDate" : null
           },
-          "severityRanking" : "500",
+          "severityRanking" : "91",
           "activeFlag" : "Y",
           "listSequence" : null,
           "expiryDate" : null
