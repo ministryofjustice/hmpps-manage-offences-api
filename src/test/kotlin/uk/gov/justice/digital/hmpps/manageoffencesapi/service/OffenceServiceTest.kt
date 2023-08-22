@@ -344,7 +344,7 @@ class OffenceServiceTest {
     }
 
     @Test
-    fun `Does call NOMIS update if the severity flag is different in prison-api and sets the severity to 99 if the categfory is Zero`() {
+    fun `Does call NOMIS update if the severity flag is different in prison-api and sets the severity to 99 if the category = 0`() {
       whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
         createPrisonApiOffencesResponse(
           1,
