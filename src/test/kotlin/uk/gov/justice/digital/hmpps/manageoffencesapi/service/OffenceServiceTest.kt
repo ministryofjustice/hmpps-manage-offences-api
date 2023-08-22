@@ -344,6 +344,42 @@ class OffenceServiceTest {
     }
 
     @Test
+    fun `Does call NOMIS update if the severity flag is different in prison-api and sets the severity to 99 if the categfory is Zero`() {
+      whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
+        createPrisonApiOffencesResponse(
+          1,
+          listOf(
+            NOMIS_OFFENCE_A1234AAA.copy(severityRanking = "45"),
+          ),
+        ),
+      )
+      whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+        listOf(
+          OFFENCE_A1234AAA.copy(category = 0, description = NOMIS_OFFENCE_A1234AAA.description),
+        ),
+      )
+      whenever(offenceRepository.findBySdrsCache(OFFENCES_A)).thenReturn(
+        listOf(
+          OFFENCE_A1234AAA.copy(category = 0, description = NOMIS_OFFENCE_A1234AAA.description),
+        ),
+      )
+
+      offenceService.fullSyncWithNomis()
+
+      ('A'..'Z').forEach { alphaChar ->
+        verify(prisonApiClient, times(1)).findByOffenceCodeStartsWith(alphaChar.toString(), 0)
+      }
+      verify(prisonApiClient).updateOffences(
+        listOf(
+          NOMIS_OFFENCE_A1234AAA.copy(
+            severityRanking = "99",
+            hoCode = HoCode("000/", description = "000/", activeFlag = "Y"),
+          ),
+        ),
+      )
+    }
+
+    @Test
     fun `Does call NOMIS update if the only difference is leading or trailing spaces`() {
       whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
         createPrisonApiOffencesResponse(
