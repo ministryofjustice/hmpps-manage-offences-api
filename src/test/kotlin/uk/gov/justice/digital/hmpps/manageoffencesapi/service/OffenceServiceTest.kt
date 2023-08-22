@@ -502,6 +502,7 @@ class OffenceServiceTest {
               description = "012/34",
               activeFlag = "Y",
             ),
+            severityRanking = "12",
           ),
         ),
       )
@@ -553,7 +554,7 @@ class OffenceServiceTest {
       verify(prisonApiClient).updateOffences(
         listOf(
           NOMIS_OFFENCE_A1234AAB.copy(description = "A NEW DESC", activeFlag = "N", expiryDate = LocalDate.now()),
-          NOMIS_OFFENCE_A123AA6.copy(hoCode = HoCode(code = "012/34", description = "012/34", activeFlag = "Y")),
+          NOMIS_OFFENCE_A123AA6.copy(hoCode = HoCode(code = "012/34", description = "012/34", activeFlag = "Y"), severityRanking = "12"),
         ),
       )
     }
@@ -633,7 +634,6 @@ class OffenceServiceTest {
       description = "A NEW DESC",
       legislation = "Statute desc A123",
     )
-
     private val OFFENCE_A1234AAB = BASE_OFFENCE.copy(
       sdrsCache = OFFENCES_A,
       code = "A1234AAB",
@@ -710,6 +710,7 @@ class OffenceServiceTest {
       description = "A Desc 1",
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y",
+      severityRanking = "99",
     )
 
     private val NOMIS_OFFENCE_A123AA6 = PrisonApiOffence(
@@ -725,12 +726,14 @@ class OffenceServiceTest {
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y",
       expiryDate = LocalDate.now(),
+      severityRanking = "99",
     )
     private val NOMIS_OFFENCE_A1234AAB = PrisonApiOffence(
       code = "A1234AAB",
       description = "A Desc 2",
       statuteCode = NOMIS_STATUTE_A123,
       activeFlag = "Y",
+      severityRanking = "99",
     )
     val PAGE_1_OF_2 = createPrisonApiOffencesResponse(
       2,
