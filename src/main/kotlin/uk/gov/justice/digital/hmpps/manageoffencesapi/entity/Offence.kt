@@ -79,4 +79,6 @@ data class Offence(
       if (code.length < 8) return null
       return code.substring(0, 7)
     }
+  val severityRanking: String?
+    get() = category?.toString() ?: "99"
 }

@@ -308,6 +308,42 @@ class OffenceServiceTest {
     }
 
     @Test
+    fun `Does call NOMIS update if the severity flag is different in prison-api and manage-offences`() {
+      whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
+        createPrisonApiOffencesResponse(
+          1,
+          listOf(
+            NOMIS_OFFENCE_A1234AAA.copy(severityRanking = "45"),
+          ),
+        ),
+      )
+      whenever(offenceRepository.findByCodeStartsWithIgnoreCase("A")).thenReturn(
+        listOf(
+          OFFENCE_A1234AAA.copy(category = 65, description = NOMIS_OFFENCE_A1234AAA.description),
+        ),
+      )
+      whenever(offenceRepository.findBySdrsCache(OFFENCES_A)).thenReturn(
+        listOf(
+          OFFENCE_A1234AAA.copy(category = 65, description = NOMIS_OFFENCE_A1234AAA.description),
+        ),
+      )
+
+      offenceService.fullSyncWithNomis()
+
+      ('A'..'Z').forEach { alphaChar ->
+        verify(prisonApiClient, times(1)).findByOffenceCodeStartsWith(alphaChar.toString(), 0)
+      }
+      verify(prisonApiClient).updateOffences(
+        listOf(
+          NOMIS_OFFENCE_A1234AAA.copy(
+            severityRanking = "65",
+            hoCode = HoCode("065/", description = "065/", activeFlag = "Y"),
+          ),
+        ),
+      )
+    }
+
+    @Test
     fun `Does call NOMIS update if the only difference is leading or trailing spaces`() {
       whenever(prisonApiClient.findByOffenceCodeStartsWith("A", 0)).thenReturn(
         createPrisonApiOffencesResponse(
@@ -431,8 +467,21 @@ class OffenceServiceTest {
           ),
         ),
       )
-      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A123AA6.code))).thenReturn(listOf(OFFENCE_A123AA6.copy(category = 12, subCategory = 34)))
-      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A1234AAB.code))).thenReturn(listOf(OFFENCE_A1234AAB.copy(endDate = LocalDate.now().plusDays(1))))
+      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A123AA6.code))).thenReturn(
+        listOf(
+          OFFENCE_A123AA6.copy(
+            category = 12,
+            subCategory = 34,
+          ),
+        ),
+      )
+      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A1234AAB.code))).thenReturn(
+        listOf(
+          OFFENCE_A1234AAB.copy(
+            endDate = LocalDate.now().plusDays(1),
+          ),
+        ),
+      )
       whenever(prisonApiClient.findByOffenceCodeStartsWith("A12", 0)).thenReturn(
         createPrisonApiOffencesResponse(
           1,
@@ -445,7 +494,17 @@ class OffenceServiceTest {
 
       offenceService.deltaSyncWithNomis()
 
-      verify(prisonApiClient).updateOffences(listOf(NOMIS_OFFENCE_A123AA6.copy(hoCode = HoCode(code = "012/34", description = "012/34", activeFlag = "Y"))))
+      verify(prisonApiClient).updateOffences(
+        listOf(
+          NOMIS_OFFENCE_A123AA6.copy(
+            hoCode = HoCode(
+              code = "012/34",
+              description = "012/34",
+              activeFlag = "Y",
+            ),
+          ),
+        ),
+      )
     }
 
     @Test
@@ -464,8 +523,21 @@ class OffenceServiceTest {
           ),
         ),
       )
-      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A123AA6.code))).thenReturn(listOf(OFFENCE_A123AA6.copy(category = 12, subCategory = 34)))
-      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A1234AAB.code))).thenReturn(listOf(OFFENCE_A1234AAB.copy(endDate = LocalDate.now().minusDays(1))))
+      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A123AA6.code))).thenReturn(
+        listOf(
+          OFFENCE_A123AA6.copy(
+            category = 12,
+            subCategory = 34,
+          ),
+        ),
+      )
+      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A1234AAB.code))).thenReturn(
+        listOf(
+          OFFENCE_A1234AAB.copy(
+            endDate = LocalDate.now().minusDays(1),
+          ),
+        ),
+      )
       whenever(prisonApiClient.findByOffenceCodeStartsWith("A12", 0)).thenReturn(
         createPrisonApiOffencesResponse(
           1,
@@ -485,6 +557,7 @@ class OffenceServiceTest {
         ),
       )
     }
+
     private fun getSdrsLoadResults() = listOf(
       SdrsLoadResult(
         OFFENCES_A,
@@ -560,6 +633,7 @@ class OffenceServiceTest {
       description = "A NEW DESC",
       legislation = "Statute desc A123",
     )
+
     private val OFFENCE_A1234AAB = BASE_OFFENCE.copy(
       sdrsCache = OFFENCES_A,
       code = "A1234AAB",
