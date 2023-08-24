@@ -76,9 +76,8 @@ class SDRSService(
     loadAllOffences()
   }
 
-  @Scheduled(cron = "16 21 * * * *")
-  // @Scheduled(cron = "0 */10 * * * *")
-  // @SchedulerLock(name = "deltaSynchroniseWithSdrsLock")
+  @Scheduled(cron = "0 */10 * * * *")
+  @SchedulerLock(name = "deltaSynchroniseWithSdrsLock")
   @Transactional
   fun deltaSynchroniseWithSdrs() {
     if (!adminService.isFeatureEnabled(DELTA_SYNC_SDRS) || adminService.isFeatureEnabled(FULL_SYNC_SDRS)) {
