@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.EventToRaise
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.EventType.OFFENCE_CHANGED
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus
@@ -37,6 +39,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Messag
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.EventToRaiseRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.LegacySdrsHoCodeMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
@@ -57,8 +60,8 @@ class SDRSService(
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val legacySdrsHoCodeMappingRepository: LegacySdrsHoCodeMappingRepository,
   private val offenceToSyncWithNomisRepository: OffenceToSyncWithNomisRepository,
+  private val eventToRaiseRepository: EventToRaiseRepository,
   private val adminService: AdminService,
-  private val eventService: EventService,
 ) {
 
   @Scheduled(cron = "0 0 */1 * * *")
@@ -164,7 +167,12 @@ class SDRSService(
   private fun scheduleNomisSyncFutureEndDatedOffences(offences: List<Offence>) {
     val futureEndDatedToSyncNomis = offences
       .filter { it.isEndDateInFuture }
-      .filter { !offenceToSyncWithNomisRepository.existsByOffenceCodeAndNomisSyncType(it.code, NomisSyncType.FUTURE_END_DATED) }
+      .filter {
+        !offenceToSyncWithNomisRepository.existsByOffenceCodeAndNomisSyncType(
+          it.code,
+          NomisSyncType.FUTURE_END_DATED,
+        )
+      }
       .map {
         OffenceToSyncWithNomis(
           offenceCode = it.code,
@@ -306,14 +314,14 @@ class SDRSService(
           offenceRepository.findOneByCode(it.code)
             .ifPresentOrElse(
               { offenceToUpdate ->
-                // This condition can only be false if the offence is in two different caches (edge case on delta load)
-                if (it.offenceStartDate.isAfter(offenceToUpdate.startDate)) {
+                // This condition is to cater for an edge case when updating an offence (will only return false for the edge case).
+                if (offenceRequiresUpdate(it, offenceToUpdate, cache)) {
                   offenceRepository.save(transform(it, offenceToUpdate, cache))
                 }
               },
               { offenceRepository.save(transform(it, cache)) },
             )
-          sendOffenceChangedEvent(it)
+          scheduleOffenceChangedEvent(it)
         }
         saveHoCodesToLegacyTable(latestOfEachOffence)
         scheduleNomisSyncFutureEndDatedOffences(latestOfEachOffence)
@@ -330,15 +338,20 @@ class SDRSService(
     }
   }
 
-  private fun sendOffenceChangedEvent(it: Offence) {
-    runCatching {
-      eventService.publishOffenceChangedEvent(it.code)
-    }.onFailure { error ->
-      log.error(
-        "Failed to send changed-event for offence code  ${it.code}",
-        error,
-      )
-    }
+  // This condition is to cater for an edge case when updating an offence (will only return false for the edge case).
+  // In the edge case we can get an offence in two different caches (A 'primaryCache' and a 'secondaryCache')
+  // Because each cache is loaded independently, we only want to take the record with the latest start date
+  // In the edge case this only happened in a case where the newer record had a more recent start date and is the correct one
+  private fun offenceRequiresUpdate(it: Offence, offenceToUpdate: EntityOffence, cache: SdrsCache) =
+    offenceToUpdate.sdrsCache == cache || it.offenceStartDate.isAfter(offenceToUpdate.startDate)
+
+  private fun scheduleOffenceChangedEvent(it: Offence) {
+    eventToRaiseRepository.save(
+      EventToRaise(
+        offenceCode = it.code,
+        eventType = OFFENCE_CHANGED,
+      ),
+    )
   }
 
   private fun getLatestOfEachOffence(sdrsResponse: SDRSResponse, sdrsCache: SdrsCache): List<Offence> {

@@ -173,13 +173,65 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
       """
         {
           "OffenceRevisionId": 99990,
-          "OffenceStartDate": "2009-11-03",
+          "OffenceStartDate": "2009-11-02",
           "OffenceEndDate": "",
           "Description": "Brought before the court UPDATED",
           "CjsTitle": "Brought before the court UPDATED",
           "code": "HO06999",
           "OffenceActsAndSections": "NEW ACT UPDATED",
           "MOJStatsCode": "991/99",
+          "ChangedDate": "2023-05-16T16:30:46"
+        }
+        """,
+    )
+  }
+
+  fun stubGetChangedOffencesForAWithSingleOffence() {
+    stubChangedOffences(
+      'A',
+      """
+        {
+          "OffenceRevisionId": 99990,
+          "OffenceStartDate": "2009-11-03",
+          "OffenceEndDate": "",
+          "Description": "Cache A UPDATED",
+          "CjsTitle": "Cache A UPDATED",
+          "code": "AO06999",
+          "OffenceActsAndSections": "NEW ACT",
+          "ChangedDate": "2023-05-16T16:30:46"
+        }
+        """,
+    )
+  }
+
+  fun stubGetMojSecondaryOffencesWithDuplicatedOlderOffence() {
+    getMojOffences(
+      """
+        {
+          "OffenceRevisionId": 99990,
+          "OffenceStartDate": "2009-11-02",
+          "OffenceEndDate": "2009-11-03"
+          "Description": "Secondary offence IGNORED",
+          "CjsTitle": "Secondary offence IGNORED",
+          "code": "AO06999",
+          "OffenceActsAndSections": "NEW ACT",
+          "ChangedDate": "2023-05-16T16:30:46"
+        }
+        """,
+    )
+  }
+
+  fun stubGetMojSecondaryOffencesWithDuplicatedNewerOffence() {
+    getMojOffences(
+      """
+        {
+          "OffenceRevisionId": 99990,
+          "OffenceStartDate": "2009-11-04",
+          "OffenceEndDate": "",
+          "Description": "Secondary offence UPDATED",
+          "CjsTitle": "Secondary offence UPDATED",
+          "code": "AO06999",
+          "OffenceActsAndSections": "NEW ACT",
           "ChangedDate": "2023-05-16T16:30:46"
         }
         """,
@@ -462,6 +514,47 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                             },
                             {
                               "DataSet":"offence_B",
+                              "LastUpdate":"2022-04-05T09:16:58.595"
+                            }
+                          ]
+                        }
+                      }
+                    },                    
+                    "MessageStatus": {
+                      "status": "SUCCESS"
+                    }
+                  }
+              """.trimIndent(),
+            ),
+        ),
+    )
+  }
+
+  fun stubControlTableRequestWithSecondaryCache() {
+    stubFor(
+      post("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetControlTable')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'CONSUMER_APPLICATION')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.To == 'SDRS_AZURE')]"))
+        .willReturn(
+          aResponse()
+            .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
+            .withBody(
+              """ {
+                    "MessageBody":{
+                      "GatewayOperationType":{
+                        "GetControlTableResponse":{
+                          "ReferenceDataSet":[
+                            {
+                              "DataSet":"offence_A",
+                              "LastUpdate":"2022-04-05T09:17:19.823"
+                            },
+                            {
+                              "DataSet":"offence_B",
+                              "LastUpdate":"2022-04-05T09:16:58.595"
+                            },
+                            {
+                              "DataSet": "getMojOffence",
                               "LastUpdate":"2022-04-05T09:16:58.595"
                             }
                           ]

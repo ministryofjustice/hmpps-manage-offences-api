@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.GET_MOJ_OFFENCE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_A
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_B
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
@@ -556,7 +557,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
               description = "Brought before the court UPDATED",
               cjsTitle = "Brought before the court UPDATED",
               revisionId = 99990,
-              startDate = LocalDate.of(2009, 11, 3),
+              startDate = LocalDate.of(2009, 11, 2),
               legislation = "NEW ACT UPDATED",
               category = 1,
               subCategory = 13,
@@ -569,6 +570,96 @@ class SDRSServiceIntTest : IntegrationTestBase() {
                 subCategory = 13,
                 description = "Random HO offence 1",
               ),
+            ),
+          ),
+        )
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/set-success-all-load-results.sql",
+      "classpath:test_data/insert-single-offence.sql",
+    )
+    fun `Perform delta load where the offence exists in multiple caches (primary and secondary)- only the later 'start date' one  is used (primary)`() {
+      sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+      sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+      sdrsApiMockServer.stubGetChangedOffencesForAWithSingleOffence()
+      sdrsApiMockServer.stubGetMojSecondaryOffencesWithDuplicatedOlderOffence()
+      sdrsApiMockServer.stubControlTableRequestWithSecondaryCache()
+      ('A'..'Z').forEach { alphaChar ->
+        prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      }
+      prisonApiMockServer.stubCreateStatute()
+      prisonApiMockServer.stubCreateOffence()
+
+      sdrsService.deltaSynchroniseWithSdrs()
+
+      val offences = offenceRepository.findAll()
+      assertThat(offences)
+        .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+          "id",
+          "createdDate",
+          "lastUpdatedDate",
+          "changedDate",
+        )
+        .isEqualTo(
+          listOf(
+            Offence(
+              code = "AO06999",
+              description = "Cache A UPDATED",
+              cjsTitle = "Cache A UPDATED",
+              revisionId = 99990,
+              startDate = LocalDate.of(2009, 11, 3),
+              legislation = "NEW ACT",
+              changedDate = LocalDateTime.now(),
+              sdrsCache = OFFENCES_A,
+              maxPeriodIsLife = null,
+            ),
+          ),
+        )
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/set-success-all-load-results.sql",
+      "classpath:test_data/insert-single-offence.sql",
+    )
+    fun `Perform delta load where the offence exists in multiple caches (primary and secondary)- only the later 'start date' one  is used (secondary)`() {
+      sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+      sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+      sdrsApiMockServer.stubGetChangedOffencesForAWithSingleOffence()
+      sdrsApiMockServer.stubGetMojSecondaryOffencesWithDuplicatedNewerOffence()
+      sdrsApiMockServer.stubControlTableRequestWithSecondaryCache()
+      ('A'..'Z').forEach { alphaChar ->
+        prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      }
+      prisonApiMockServer.stubCreateStatute()
+      prisonApiMockServer.stubCreateOffence()
+
+      sdrsService.deltaSynchroniseWithSdrs()
+
+      val offences = offenceRepository.findAll()
+      assertThat(offences)
+        .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+          "id",
+          "createdDate",
+          "lastUpdatedDate",
+          "changedDate",
+        )
+        .isEqualTo(
+          listOf(
+            Offence(
+              code = "AO06999",
+              description = "Secondary offence UPDATED",
+              cjsTitle = "Secondary offence UPDATED",
+              revisionId = 99990,
+              startDate = LocalDate.of(2009, 11, 4),
+              legislation = "NEW ACT",
+              changedDate = LocalDateTime.now(),
+              sdrsCache = GET_MOJ_OFFENCE,
+              maxPeriodIsLife = null,
             ),
           ),
         )

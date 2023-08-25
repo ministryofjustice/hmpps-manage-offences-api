@@ -8,8 +8,10 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.EventToRaise
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.EventType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
@@ -23,6 +25,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.GetOff
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageBodyResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.MessageStatusResponse
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.SDRSResponse
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.EventToRaiseRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.LegacySdrsHoCodeMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
@@ -40,9 +43,9 @@ class SDRSServiceTest {
   private val offenceScheduleMappingRepository = mock<OffenceScheduleMappingRepository>()
   private val legacySdrsHoCodeMappingRepository = mock<LegacySdrsHoCodeMappingRepository>()
   private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
+  private val eventToRaiseRepository = mock<EventToRaiseRepository>()
   private val adminService = mock<AdminService>()
   private val sdrsApiClient = mock<SDRSApiClient>()
-  private val eventService = mock<EventService>()
 
   private val sdrsService = SDRSService(
     sdrsApiClient,
@@ -52,8 +55,8 @@ class SDRSServiceTest {
     offenceScheduleMappingRepository,
     legacySdrsHoCodeMappingRepository,
     offenceToSyncWithNomisRepository,
+    eventToRaiseRepository,
     adminService,
-    eventService,
   )
 
   @BeforeEach
@@ -130,7 +133,12 @@ class SDRSServiceTest {
 
     sdrsService.deltaSynchroniseWithSdrs()
 
-    verify(eventService).publishOffenceChangedEvent(SDRS_OFFENCE.code)
+    verify(eventToRaiseRepository).save(
+      EventToRaise(
+        offenceCode = SDRS_OFFENCE.code,
+        eventType = EventType.OFFENCE_CHANGED,
+      ),
+    )
   }
 
   companion object {
