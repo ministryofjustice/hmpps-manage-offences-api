@@ -315,13 +315,7 @@ class SDRSService(
             .ifPresentOrElse(
               { offenceToUpdate ->
                 // This condition is to cater for an edge case when updating an offence (will only return false for the edge case).
-                // In the edge case we can get an offence in two different caches (A 'primaryCache' and a 'secondaryCache')
-                // Because each cache is loaded independently, we only want to take the record if the one already saved is not the latest
-                log.info("XXXXXXXXXXXX offenceRequiredUpdate 1")
-                log.info("XXXXXXXXXXXX offenceRequiredUpdate 1")
-                log.info("XXXXXXXXXXXX offenceRequiredUpdate 1")
                 if (offenceRequiresUpdate(it, offenceToUpdate, cache)) {
-                  log.info("XXXXXXXXXXXX offenceRequiredUpdate 2 YES")
                   offenceRepository.save(transform(it, offenceToUpdate, cache))
                 }
               },
