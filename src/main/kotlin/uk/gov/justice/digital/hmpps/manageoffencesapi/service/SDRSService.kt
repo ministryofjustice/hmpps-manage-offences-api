@@ -321,7 +321,7 @@ class SDRSService(
               },
               { offenceRepository.save(transform(it, cache)) },
             )
-          sendOffenceChangedEvent(it)
+          scheduleOffenceChangedEvent(it)
         }
         saveHoCodesToLegacyTable(latestOfEachOffence)
         scheduleNomisSyncFutureEndDatedOffences(latestOfEachOffence)
@@ -345,7 +345,7 @@ class SDRSService(
   private fun offenceRequiresUpdate(it: Offence, offenceToUpdate: EntityOffence, cache: SdrsCache) =
     offenceToUpdate.sdrsCache == cache || it.offenceStartDate.isAfter(offenceToUpdate.startDate)
 
-  private fun sendOffenceChangedEvent(it: Offence) {
+  private fun scheduleOffenceChangedEvent(it: Offence) {
     eventToRaiseRepository.save(
       EventToRaise(
         offenceCode = it.code,
