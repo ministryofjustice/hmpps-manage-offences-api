@@ -386,6 +386,19 @@ class OffenceService(
   fun findOffenceById(offenceId: Long): Offence {
     val offence = offenceRepository.findById(offenceId)
       .orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
+    return populateOffence(offenceId, offence)
+  }
+
+  fun findOffenceByCode(offenceCode: String): Offence {
+    val offence = offenceRepository.findByCodeIgnoreCase(offenceCode)
+      ?: throw EntityNotFoundException("No offence exists for the passed in offence code")
+    return populateOffence(offence.id, offence)
+  }
+
+  private fun populateOffence(
+    offenceId: Long,
+    offence: uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence,
+  ): Offence {
     val children = offenceRepository.findByParentOffenceId(offenceId)
     val offenceMappings = offenceScheduleMappingRepository.findByOffenceId(offenceId)
     val populatedOffence = transform(offence, children.map { it.id })

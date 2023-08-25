@@ -79,6 +79,40 @@ class OffencesControllerIntTest : IntegrationTestBase() {
     "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/insert-offence-data.sql",
   )
+  fun `Get a unique offence by offence code`() {
+    val result = webTestClient.get().uri("/offences/code/unique/AB14001")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(ModelOffence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result)
+      .usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*dDate")
+      .ignoringFieldsMatchingRegexes("id")
+      .isEqualTo(
+        ModelOffence(
+          id = 2,
+          code = "AB14001",
+          description = "Fail to comply with an animal by-product requirement",
+          revisionId = 574415,
+          startDate = LocalDate.of(2015, 3, 13),
+          endDate = null,
+          changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
+          loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
+          offenceType = "CI",
+          childOffenceIds = emptyList(),
+          schedules = emptyList(),
+        ),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql",
+  )
   fun `Get results of latest load`() {
     sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
     sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
