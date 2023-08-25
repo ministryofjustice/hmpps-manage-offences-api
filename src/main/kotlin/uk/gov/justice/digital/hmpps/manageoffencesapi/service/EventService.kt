@@ -92,8 +92,8 @@ abstract class OffenceDomainEvent {
 }
 
 class OffenceUpdatedDomainEvent(
-  override val eventType: String = "XX-manage-offences.offence.changed",
-  override var description: String = "XX An offence has been updated/created LOCAL TESTING",
+  override val eventType: String = "manage-offences.offence.changed",
+  override var description: String = "An offence has been updated/created",
   override val additionalInformation: OffenceAdditionalInformation,
   override val version: Int = 1,
 ) : OffenceDomainEvent()
