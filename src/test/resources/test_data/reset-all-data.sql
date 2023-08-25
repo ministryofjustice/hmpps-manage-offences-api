@@ -6,6 +6,7 @@ DELETE FROM ho_codes_load_history;
 DELETE FROM legacy_sdrs_ho_code_mapping;
 DELETE FROM offence_to_sync_with_nomis;
 DELETE FROM previous_offence_to_ho_code_mapping;
+DELETE FROM home_office_code;
 
 UPDATE sdrs_load_result SET status = NULL, load_type = NULL, load_date = NULL, last_successful_load_date = NULL;
 UPDATE feature_toggle SET enabled = TRUE;

@@ -12,4 +12,4 @@ INSERT INTO offence
 VALUES('HO09999', 'Random offence 3', 570173, 'Random offence 3', '2009-11-02', NULL, '2020-01-16 15:19:02.000', '2022-04-07 16:05:58.178', '2022-04-07 16:05:58.178', 'Contrary to section 19 of the Zoo Licensing Act 1981', 2, 13, 'OFFENCES_A');
 INSERT INTO home_office_code
 (id, category, sub_category, description)
-VALUES('00113', 1, 13, 'Random HO offence 1')
+VALUES('00113', 1, 13, 'Random HO offence 1');

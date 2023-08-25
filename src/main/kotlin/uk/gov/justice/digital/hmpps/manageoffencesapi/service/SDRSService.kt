@@ -314,9 +314,14 @@ class SDRSService(
           offenceRepository.findOneByCode(it.code)
             .ifPresentOrElse(
               { offenceToUpdate ->
-                // This condition is to cater for an edge case (rarely returns false) where sometimes we can get an offence in two different caches
-                // This basically is designed to take the latest between the two. It should work for everything else as well as changed dates only move forward
-                if (offenceRequiresUpdate(it, offenceToUpdate)) {
+                // This condition is to cater for an edge case when updating an offence (will only return false for the edge case).
+                // In the edge case we can get an offence in two different caches (A 'primaryCache' and a 'secondaryCache')
+                // Because each cache is loaded independently, we only want to take the record if the one already saved is not the latest
+                log.info("XXXXXXXXXXXX offenceRequiredUpdate 1")
+                log.info("XXXXXXXXXXXX offenceRequiredUpdate 1")
+                log.info("XXXXXXXXXXXX offenceRequiredUpdate 1")
+                if (offenceRequiresUpdate(it, offenceToUpdate, cache)) {
+                  log.info("XXXXXXXXXXXX offenceRequiredUpdate 2 YES")
                   offenceRepository.save(transform(it, offenceToUpdate, cache))
                 }
               },
@@ -339,11 +344,12 @@ class SDRSService(
     }
   }
 
-  private fun offenceRequiresUpdate(it: Offence, offenceToUpdate: EntityOffence) =
-    it.changedDate.isAfter(offenceToUpdate.changedDate) ||
-      it.changedDate.isEqual(offenceToUpdate.changedDate) ||
-      it.offenceStartDate.isAfter(offenceToUpdate.startDate) ||
-      it.offenceRevisionId > offenceToUpdate.revisionId
+  // This condition is to cater for an edge case when updating an offence (will only return false for the edge case).
+  // In the edge case we can get an offence in two different caches (A 'primaryCache' and a 'secondaryCache')
+  // Because each cache is loaded independently, we only want to take the record with the latest start date
+  // In the edge case this only happened in a case where the newer record had a more recent start date and is the correct one
+  private fun offenceRequiresUpdate(it: Offence, offenceToUpdate: EntityOffence, cache: SdrsCache) =
+    offenceToUpdate.sdrsCache == cache || it.offenceStartDate.isAfter(offenceToUpdate.startDate)
 
   private fun sendOffenceChangedEvent(it: Offence) {
     eventToRaiseRepository.save(
