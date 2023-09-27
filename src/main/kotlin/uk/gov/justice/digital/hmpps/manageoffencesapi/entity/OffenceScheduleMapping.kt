@@ -23,6 +23,6 @@ data class OffenceScheduleMapping(
   val offence: Offence,
   val lineReference: String? = null,
   val legislationText: String? = null,
-  val paragraphNumber: Int? = null,
+  val paragraphNumber: String? = null,
   val paragraphTitle: String? = null,
 )
