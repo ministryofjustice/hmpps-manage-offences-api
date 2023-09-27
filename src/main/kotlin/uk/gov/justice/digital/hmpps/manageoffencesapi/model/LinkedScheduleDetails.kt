@@ -9,7 +9,7 @@ data class LinkedScheduleDetails(
   val code: String,
   val url: String? = null,
   val partNumber: Int,
-  val paragraphNumber: Int? = null,
+  val paragraphNumber: String? = null,
   val paragraphTitle: String? = null,
   val lineReference: String? = null,
   val legislationText: String? = null,

@@ -88,7 +88,7 @@ data class OffenceToScheduleMapping(
   @Schema(description = "Schedule paragraph title that this offence is mapped to")
   val paragraphTitle: String? = null,
   @Schema(description = "Schedule paragraph number that this offence is mapped to")
-  val paragraphNumber: Int? = null,
+  val paragraphNumber: String? = null,
 )
 
 data class LinkOffence(
@@ -103,7 +103,7 @@ data class LinkOffence(
   @Schema(description = "Schedule paragraph title that this offence is mapped to")
   val paragraphTitle: String? = null,
   @Schema(description = "Schedule paragraph number that this offence is mapped to")
-  val paragraphNumber: Int? = null,
+  val paragraphNumber: String? = null,
 )
 
 data class BasicOffence(
