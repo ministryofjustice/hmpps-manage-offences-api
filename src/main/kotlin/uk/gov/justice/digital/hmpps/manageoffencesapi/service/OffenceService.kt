@@ -386,26 +386,25 @@ class OffenceService(
   fun findOffenceById(offenceId: Long): Offence {
     val offence = offenceRepository.findById(offenceId)
       .orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
-    return populateOffence(offenceId, offence)
+    return populateOffence(offence)
   }
 
   fun findOffenceByCode(offenceCode: String): Offence {
     val offence = offenceRepository.findByCodeIgnoreCase(offenceCode)
       ?: throw EntityNotFoundException("No offence exists for the passed in offence code")
-    return populateOffence(offence.id, offence)
+    return populateOffence(offence)
   }
 
   fun findOffenceByCodes(offenceCode: List<String>): List<Offence> {
     val offences = offenceRepository.findByCodeIgnoreCaseIn(offenceCode.toSet())
-    return offences.map { populateOffence(it.id, it) }
+    return offences.map { populateOffence(it) }
   }
 
   private fun populateOffence(
-    offenceId: Long,
-    offence: uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence,
+    offence: EntityOffence,
   ): Offence {
-    val children = offenceRepository.findByParentOffenceId(offenceId)
-    val offenceMappings = offenceScheduleMappingRepository.findByOffenceId(offenceId)
+    val children = offenceRepository.findByParentOffenceId(offence.id)
+    val offenceMappings = offenceScheduleMappingRepository.findByOffenceId(offence.id)
     val populatedOffence = transform(offence, children.map { it.id })
     return populatedOffence.copy(schedules = transform(offenceMappings))
   }
