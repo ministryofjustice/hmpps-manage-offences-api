@@ -503,7 +503,7 @@ class OffenceServiceTest {
           ),
         ),
       )
-      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A123AA6.code))).thenReturn(
+      whenever(offenceRepository.findByCodeIgnoreCaseIn(setOf(NOMIS_OFFENCE_A123AA6.code))).thenReturn(
         listOf(
           OFFENCE_A123AA6.copy(
             category = 12,
@@ -511,7 +511,7 @@ class OffenceServiceTest {
           ),
         ),
       )
-      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A1234AAB.code))).thenReturn(
+      whenever(offenceRepository.findByCodeIgnoreCaseIn(setOf(NOMIS_OFFENCE_A1234AAB.code))).thenReturn(
         listOf(
           OFFENCE_A1234AAB.copy(
             endDate = LocalDate.now().plusDays(1),
@@ -560,7 +560,7 @@ class OffenceServiceTest {
           ),
         ),
       )
-      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A123AA6.code))).thenReturn(
+      whenever(offenceRepository.findByCodeIgnoreCaseIn(setOf(NOMIS_OFFENCE_A123AA6.code))).thenReturn(
         listOf(
           OFFENCE_A123AA6.copy(
             category = 12,
@@ -568,7 +568,7 @@ class OffenceServiceTest {
           ),
         ),
       )
-      whenever(offenceRepository.findByCodeIn(setOf(NOMIS_OFFENCE_A1234AAB.code))).thenReturn(
+      whenever(offenceRepository.findByCodeIgnoreCaseIn(setOf(NOMIS_OFFENCE_A1234AAB.code))).thenReturn(
         listOf(
           OFFENCE_A1234AAB.copy(
             endDate = LocalDate.now().minusDays(1),

@@ -105,7 +105,7 @@ class HoCodeService(
           .map { it as HomeOfficeCodeToOffenceMapping }
           .filter { it.latestRecord }
       val mappingsByCode = mappingsToLoad.associateBy { it.offenceCode }
-      val offencesToUpdate = offenceRepository.findByCodeIn(
+      val offencesToUpdate = offenceRepository.findByCodeIgnoreCaseIn(
         mappingsToLoad
           .map { it.offenceCode }.toSet(),
       )

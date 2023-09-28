@@ -82,7 +82,7 @@ class HoCodeServiceTest {
         ),
       ).thenReturn(listOf(MAPPING_1, MAPPING_1_OLD))
 
-      whenever(offenceRepository.findByCodeIn(setOf(MAPPING_1.offenceCode))).thenReturn(listOf(OFFENCE_1))
+      whenever(offenceRepository.findByCodeIgnoreCaseIn(setOf(MAPPING_1.offenceCode))).thenReturn(listOf(OFFENCE_1))
 
       hoCodeService.fullLoadOfHomeOfficeCodes()
 
@@ -142,7 +142,7 @@ class HoCodeServiceTest {
       ).thenReturn(listOf(MAPPING_2, MAPPING_3, MAPPING_4))
 
       whenever(
-        offenceRepository.findByCodeIn(
+        offenceRepository.findByCodeIgnoreCaseIn(
           setOf(
             MAPPING_2.offenceCode,
             MAPPING_3.offenceCode,

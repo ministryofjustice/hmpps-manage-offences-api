@@ -105,8 +105,8 @@ class OffenceService(
   private fun syncOtherOffencesWithNomis() {
     log.info("Starting sync for other offence types with nomis (not from SDRS cache)")
     val (hoCodeUpdatedOffences, futureEndDatedOffences) = offenceToSyncWithNomisRepository.findAll().partition { it.nomisSyncType == NomisSyncType.HO_CODE_UPDATE }
-    val offencesNeedDeactivating = offenceRepository.findByCodeIn(futureEndDatedOffences.map { it.offenceCode }.toSet()).filter { it.activeFlag == "N" }
-    val offenceswithHoCodeUpdates = offenceRepository.findByCodeIn(hoCodeUpdatedOffences.map { it.offenceCode }.toSet())
+    val offencesNeedDeactivating = offenceRepository.findByCodeIgnoreCaseIn(futureEndDatedOffences.map { it.offenceCode }.toSet()).filter { it.activeFlag == "N" }
+    val offenceswithHoCodeUpdates = offenceRepository.findByCodeIgnoreCaseIn(hoCodeUpdatedOffences.map { it.offenceCode }.toSet())
     val allOffencesToSync = offencesNeedDeactivating.plus(offenceswithHoCodeUpdates)
 
     val offencesStartWithList = allOffencesToSync.map { it.code.substring(0, 3) }.toSet()
@@ -393,6 +393,11 @@ class OffenceService(
     val offence = offenceRepository.findByCodeIgnoreCase(offenceCode)
       ?: throw EntityNotFoundException("No offence exists for the passed in offence code")
     return populateOffence(offence.id, offence)
+  }
+
+  fun findOffenceByCodes(offenceCode: List<String>): List<Offence> {
+    val offences = offenceRepository.findByCodeIgnoreCaseIn(offenceCode.toSet())
+    return offences.map { populateOffence(it.id, it) }
   }
 
   private fun populateOffence(

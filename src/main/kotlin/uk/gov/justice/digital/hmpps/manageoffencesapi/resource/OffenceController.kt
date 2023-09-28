@@ -80,6 +80,19 @@ class OffenceController(
     return offenceService.findOffenceByCode(offenceCode)
   }
 
+  @GetMapping(value = ["/code/multiple"])
+  @ResponseBody
+  @Operation(
+    summary = "Get a list of offences that match the passed in list of offence codes",
+    description = "This endpoint will return the offences that match the codes passed in",
+  )
+  fun getOffencesByCodes(
+    @RequestParam offenceCodes: List<String>,
+  ): List<Offence> {
+    log.info("Request received to fetch offences for ${offenceCodes.size} offence codes")
+    return offenceService.findOffenceByCodes(offenceCodes)
+  }
+
   @GetMapping(value = ["/ho-code/{offenceCode}"])
   @ResponseBody
   @Operation(
