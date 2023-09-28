@@ -105,8 +105,8 @@ class OffenceService(
   private fun syncOtherOffencesWithNomis() {
     log.info("Starting sync for other offence types with nomis (not from SDRS cache)")
     val (hoCodeUpdatedOffences, futureEndDatedOffences) = offenceToSyncWithNomisRepository.findAll().partition { it.nomisSyncType == NomisSyncType.HO_CODE_UPDATE }
-    val offencesNeedDeactivating = offenceRepository.findByCodeIn(futureEndDatedOffences.map { it.offenceCode }.toSet()).filter { it.activeFlag == "N" }
-    val offenceswithHoCodeUpdates = offenceRepository.findByCodeIn(hoCodeUpdatedOffences.map { it.offenceCode }.toSet())
+    val offencesNeedDeactivating = offenceRepository.findByCodeIgnoreCaseIn(futureEndDatedOffences.map { it.offenceCode }.toSet()).filter { it.activeFlag == "N" }
+    val offenceswithHoCodeUpdates = offenceRepository.findByCodeIgnoreCaseIn(hoCodeUpdatedOffences.map { it.offenceCode }.toSet())
     val allOffencesToSync = offencesNeedDeactivating.plus(offenceswithHoCodeUpdates)
 
     val offencesStartWithList = allOffencesToSync.map { it.code.substring(0, 3) }.toSet()
@@ -386,21 +386,25 @@ class OffenceService(
   fun findOffenceById(offenceId: Long): Offence {
     val offence = offenceRepository.findById(offenceId)
       .orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
-    return populateOffence(offenceId, offence)
+    return populateOffence(offence)
   }
 
   fun findOffenceByCode(offenceCode: String): Offence {
     val offence = offenceRepository.findByCodeIgnoreCase(offenceCode)
       ?: throw EntityNotFoundException("No offence exists for the passed in offence code")
-    return populateOffence(offence.id, offence)
+    return populateOffence(offence)
+  }
+
+  fun findOffenceByCodes(offenceCode: List<String>): List<Offence> {
+    val offences = offenceRepository.findByCodeIgnoreCaseIn(offenceCode.toSet())
+    return offences.map { populateOffence(it) }
   }
 
   private fun populateOffence(
-    offenceId: Long,
-    offence: uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence,
+    offence: EntityOffence,
   ): Offence {
-    val children = offenceRepository.findByParentOffenceId(offenceId)
-    val offenceMappings = offenceScheduleMappingRepository.findByOffenceId(offenceId)
+    val children = offenceRepository.findByParentOffenceId(offence.id)
+    val offenceMappings = offenceScheduleMappingRepository.findByOffenceId(offence.id)
     val populatedOffence = transform(offence, children.map { it.id })
     return populatedOffence.copy(schedules = transform(offenceMappings))
   }

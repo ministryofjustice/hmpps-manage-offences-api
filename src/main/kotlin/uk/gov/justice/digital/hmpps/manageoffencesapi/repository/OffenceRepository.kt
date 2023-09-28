@@ -30,7 +30,7 @@ interface OffenceRepository : JpaRepository<Offence, Long> {
 
   fun deleteByParentOffenceIdIsNotNull()
 
-  fun findByCodeIn(codes: Set<String>): List<Offence>
+  fun findByCodeIgnoreCaseIn(codes: Set<String>): List<Offence>
 
   fun findByCodeIgnoreCase(code: String): Offence?
 

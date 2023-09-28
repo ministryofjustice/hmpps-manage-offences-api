@@ -193,7 +193,7 @@ class SDRSService(
         handleSdrsError(sdrsResponse, cache, loadDate, FULL_LOAD)
       } else {
         val latestOfEachOffence = getLatestOfEachOffence(sdrsResponse, cache)
-        val duplicateOffences = offenceRepository.findByCodeIn(latestOfEachOffence.map { it.code }.toSet())
+        val duplicateOffences = offenceRepository.findByCodeIgnoreCaseIn(latestOfEachOffence.map { it.code }.toSet())
         val (inserts, updates) = extractInsertsAndUpdates(latestOfEachOffence, duplicateOffences)
         offenceRepository.saveAll(inserts.map { transform(it, cache) })
         processUpdatesForOffencesThatExistInAnotherCache(updates, duplicateOffences, cache)
