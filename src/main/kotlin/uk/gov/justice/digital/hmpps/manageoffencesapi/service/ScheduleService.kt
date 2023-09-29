@@ -85,14 +85,8 @@ class ScheduleService(
     val parentOffences = offenceRepository.findAllById(allOffenceIds).filter { it.parentCode == null }
     val parentOffenceIds = parentOffences.map { it.id }
 
-    println("###################### ${schedulePartIdAndOffenceIds.size}")
-    println("###################### ${schedulePartIdAndOffenceIds.size}")
-    println("###################### ${schedulePartIdAndOffenceIds.size}")
-    println("###################### ${schedulePartIdAndOffenceIds.size}")
-    println("###################### ${schedulePartIdAndOffenceIds.size}")
     schedulePartIdAndOffenceIds.forEach {
       if (!parentOffenceIds.contains(it.offenceId)) return@forEach // ignore any children that have been directly passed in
-      println("Deleteing ${it.schedulePartId} ${it.offenceId}")
       deleteOffenceScheduleMapping(it.schedulePartId, it.offenceId)
 
       val childOffences = offenceRepository.findByParentOffenceId(it.offenceId)
