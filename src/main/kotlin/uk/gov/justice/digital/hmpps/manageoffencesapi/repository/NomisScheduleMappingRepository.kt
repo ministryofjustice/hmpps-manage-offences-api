@@ -6,5 +6,5 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMappin
 
 @Repository
 interface NomisScheduleMappingRepository : JpaRepository<NomisScheduleMapping, Long> {
-  fun findOneBySchedulePartId(schedulePartId: Long): NomisScheduleMapping
+  fun findOneBySchedulePartId(schedulePartId: Long): NomisScheduleMapping?
 }

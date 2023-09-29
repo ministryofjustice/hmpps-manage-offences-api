@@ -64,16 +64,16 @@ class ScheduleService(
       },
     )
 
-    val nomisScheduleMapping = nomisScheduleMappingRepository.findOneBySchedulePartId(linkOffence.schedulePartId)
-
-    prisonApiUserClient.linkToSchedule(
-      offences.map {
-        OffenceToScheduleMappingDto(
-          schedule = nomisScheduleMapping.nomisScheduleName,
-          offenceCode = it.code,
-        )
-      },
-    )
+    nomisScheduleMappingRepository.findOneBySchedulePartId(linkOffence.schedulePartId)?.let { nomisScheduleMapping ->
+      prisonApiUserClient.linkToSchedule(
+        offences.map {
+          OffenceToScheduleMappingDto(
+            schedule = nomisScheduleMapping.nomisScheduleName,
+            offenceCode = it.code,
+          )
+        },
+      )
+    }
   }
 
   /*
@@ -85,29 +85,35 @@ class ScheduleService(
     val parentOffences = offenceRepository.findAllById(allOffenceIds).filter { it.parentCode == null }
     val parentOffenceIds = parentOffences.map { it.id }
 
+    println("###################### ${schedulePartIdAndOffenceIds.size}")
+    println("###################### ${schedulePartIdAndOffenceIds.size}")
+    println("###################### ${schedulePartIdAndOffenceIds.size}")
+    println("###################### ${schedulePartIdAndOffenceIds.size}")
+    println("###################### ${schedulePartIdAndOffenceIds.size}")
     schedulePartIdAndOffenceIds.forEach {
       if (!parentOffenceIds.contains(it.offenceId)) return@forEach // ignore any children that have been directly passed in
+      println("Deleteing ${it.schedulePartId} ${it.offenceId}")
       deleteOffenceScheduleMapping(it.schedulePartId, it.offenceId)
 
       val childOffences = offenceRepository.findByParentOffenceId(it.offenceId)
       val childOffenceIds = childOffences.map { child -> child.id }
       childOffenceIds.forEach { childOffenceId -> deleteOffenceScheduleMapping(it.schedulePartId, childOffenceId) }
 
-      val nomisScheduleMapping = nomisScheduleMappingRepository.findOneBySchedulePartId(it.schedulePartId)
-
-      prisonApiUserClient.unlinkFromSchedule(
-        parentOffences.plus(childOffences).map { offenceToUnlink ->
-          OffenceToScheduleMappingDto(
-            schedule = nomisScheduleMapping.nomisScheduleName,
-            offenceCode = offenceToUnlink.code,
-          )
-        },
-      )
+      nomisScheduleMappingRepository.findOneBySchedulePartId(it.schedulePartId)?.let {
+        prisonApiUserClient.unlinkFromSchedule(
+          parentOffences.plus(childOffences).map { offenceToUnlink ->
+            OffenceToScheduleMappingDto(
+              schedule = it.nomisScheduleName,
+              offenceCode = offenceToUnlink.code,
+            )
+          },
+        )
+      }
     }
   }
 
-  private fun deleteOffenceScheduleMapping(scheduleParagraphId: Long, offenceId: Long) =
-    offenceScheduleMappingRepository.deleteBySchedulePartIdAndOffenceId(scheduleParagraphId, offenceId)
+  private fun deleteOffenceScheduleMapping(schedulePartId: Long, offenceId: Long) =
+    offenceScheduleMappingRepository.deleteBySchedulePartIdAndOffenceId(schedulePartId, offenceId)
 
   @Transactional(readOnly = true)
   fun findScheduleById(scheduleId: Long): ModelSchedule {
