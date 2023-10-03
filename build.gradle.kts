@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.2.0"
-  kotlin("plugin.spring") version "1.8.22"
-  kotlin("plugin.jpa") version "1.8.22"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.5.0"
+  kotlin("plugin.spring") version "1.9.10"
+  kotlin("plugin.jpa") version "1.9.10"
 }
 
 configurations {
@@ -10,8 +10,8 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.1")
-    mavenBom("software.amazon.awssdk:bom:2.20.91")
+    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.2")
+    mavenBom("software.amazon.awssdk:bom:2.20.157")
   }
 }
 
@@ -23,7 +23,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.6.0")
 
   // AppInsights
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.26.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.29.0")
 
   // JWT
   implementation("io.jsonwebtoken:jjwt-api:0.11.5")
@@ -39,16 +39,16 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
   implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.4.2")
 
   // Schedule locking
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.4.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.4.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:5.7.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.7.0")
 
   // SQS
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.1")
 
   // AWS
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
@@ -62,7 +62,7 @@ dependencies {
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.15")
   testImplementation("com.h2database:h2")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.27.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.29.0")
 }
 
 java {
