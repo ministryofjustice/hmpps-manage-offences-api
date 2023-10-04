@@ -48,7 +48,7 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.7.0")
 
   // AWS
-  // See comment below relating to the SQS lib, keep these dependencies above the SQS dependency
+  // See comment below relating to the SQS lib, keep these AWS dependencies above the SQS dependency
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
