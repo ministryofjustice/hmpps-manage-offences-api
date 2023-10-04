@@ -48,11 +48,15 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.7.0")
 
   // AWS
+  // See comment below relating to the SQS lib, keep these dependencies above the SQS dependency
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
   // SQS
+  // During a upgrade PR a springboot/aws related issue occurred which implied there was a conflict with the hmpps-sqs library
+  // Moving this SQS lib below the AWS libs solved the problem. Not exactly sure why! See the PR for more details
+  // https://github.com/ministryofjustice/hmpps-manage-offences-api/pull/175
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.1.0")
 
   // Miscellaneous
