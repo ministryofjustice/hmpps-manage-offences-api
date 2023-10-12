@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
@@ -97,6 +99,19 @@ class ScheduleController(
   ): OffenceToScheduleMapping {
     log.info("Request received to fetch OffenceWithScheduleData for offenceId {}", offenceId)
     return scheduleService.findOffenceById(offenceId)
+  }
+
+  @GetMapping(value = ["/pcsc-indicators"])
+  @ResponseBody
+  @Operation(
+    summary = "Determine if the passed in offence codes are related to any of the PCSC lists",
+    description = "This endpoint will return a list of offences and whether they are im any of the PCSC lists",
+  )
+  fun getPcscInformation(
+    @RequestParam offenceCodes: List<String>,
+  ): List<OffencePcscMarkers> {
+    OffenceController.log.info("Request received to determine pcsc markers for ${offenceCodes.size} offence codes")
+    return scheduleService.findPcscSchedules(offenceCodes)
   }
 
   companion object {

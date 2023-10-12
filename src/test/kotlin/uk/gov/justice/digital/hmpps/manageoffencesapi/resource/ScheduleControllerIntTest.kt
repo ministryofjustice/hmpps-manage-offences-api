@@ -6,6 +6,8 @@ import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
@@ -47,6 +49,45 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     )
     val scheduleAfterUnlinkingOffences = getScheduleDetails(schedule13Id)
     assertThat(scheduleAfterUnlinkingOffences?.scheduleParts?.first { it.partNumber == 1 }?.offences).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-pcsc.sql",
+  )
+  fun `Get PCSC indicators for multiple offences by offence codes`() {
+    val result = webTestClient.get().uri("/schedule/pcsc-indicators?offenceCodes=AB14001,AB14002")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(OffencePcscMarkers::class.java)
+      .returnResult().responseBody
+
+    assertThat(result)
+      .usingRecursiveComparison()
+      .isEqualTo(
+        listOf(
+          OffencePcscMarkers(
+            offenceCode = "AB14001",
+            PcscMarkers(
+              inListA = true,
+              inListB = true,
+              inListC = true,
+              inListD = true,
+            ),
+          ),
+          OffencePcscMarkers(
+            offenceCode = "AB14002",
+            PcscMarkers(
+              inListA = false,
+              inListB = false,
+              inListC = false,
+              inListD = false,
+            ),
+          ),
+        ),
+      )
   }
 
   private fun assertThatScheduleMatches(scheduleBefore: Schedule?, schedule: Schedule) {
