@@ -1,7 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.5.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.6.0"
   kotlin("plugin.spring") version "1.9.10"
   kotlin("plugin.jpa") version "1.9.10"
+  id("se.patrikerdes.use-latest-versions") version "0.2.18"
 }
 
 configurations {
@@ -23,12 +24,12 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.6.0")
 
   // AppInsights
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.29.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.31.0")
 
   // JWT
-  implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-  runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-  runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+  implementation("io.jsonwebtoken:jjwt-api:0.12.3")
+  runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
+  runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-security")
@@ -41,11 +42,11 @@ dependencies {
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.4.2")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.6.0")
 
   // Schedule locking
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.7.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.7.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:5.9.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.9.0")
 
   // AWS
   // See comment below relating to the SQS lib, keep these AWS dependencies above the SQS dependency
@@ -57,16 +58,16 @@ dependencies {
   // During a upgrade PR a springboot/aws related issue occurred which implied there was a conflict with the hmpps-sqs library
   // Moving this SQS lib below the AWS libs solved the problem. Not exactly sure why! See the PR for more details
   // https://github.com/ministryofjustice/hmpps-manage-offences-api/pull/175
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.1.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.1.1")
 
   // Miscellaneous
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
 
   // Test dependencies
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.15")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.18")
   testImplementation("com.h2database:h2")
-  testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.29.0")
+  testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.31.0")
 }
 
 java {
