@@ -409,18 +409,22 @@ class OffenceService(
     return populatedOffence.copy(schedules = transform(offenceMappings))
   }
 
-  fun searchOffences(searchString: String): List<Offence> {
+  fun searchOffences(searchString: String, excludeLegislation: Boolean): List<Offence> {
     val hoCodeMatch = Regex("[0-9][0-9]?[0-9]?/[0-9][0-9]?")
     if (searchString.matches(hoCodeMatch)) {
       return searchByHoCode(searchString)
     }
-    return populateOffenceModel(
+
+    val searchResults = if (excludeLegislation) {
+      offenceRepository.findByCodeStartsWithIgnoreCaseOrCjsTitleContainsIgnoreCase(searchString, searchString)
+    } else {
       offenceRepository.findByCodeStartsWithIgnoreCaseOrCjsTitleContainsIgnoreCaseOrLegislationContainsIgnoreCase(
         searchString,
         searchString,
         searchString,
-      ),
-    )
+      )
+    }
+    return populateOffenceModel(searchResults)
   }
 
   private fun searchByHoCode(searchString: String): List<Offence> {

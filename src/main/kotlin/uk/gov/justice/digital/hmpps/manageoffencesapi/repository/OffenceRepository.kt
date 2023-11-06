@@ -16,6 +16,11 @@ interface OffenceRepository : JpaRepository<Offence, Long> {
     legislationSearch: String,
   ): List<Offence>
 
+  fun findByCodeStartsWithIgnoreCaseOrCjsTitleContainsIgnoreCase(
+    codeSearch: String,
+    descriptionSearch: String,
+  ): List<Offence>
+
   fun findByCategoryAndSubCategory(category: Int, subCategory: Int): List<Offence>
 
   fun findBySdrsCache(sdrsCache: SdrsCache): List<Offence>
