@@ -45,9 +45,10 @@ class OffenceController(
   )
   fun searchOffences(
     @RequestParam(required = true) searchString: String,
+    @RequestParam(required = false, defaultValue = "false") excludeLegislation: Boolean,
   ): List<Offence> {
     log.info("Request received to search offences that start with searchString {}", searchString)
-    return offenceService.searchOffences(searchString)
+    return offenceService.searchOffences(searchString, excludeLegislation)
   }
 
   @GetMapping(value = ["/id/{offenceId}"])

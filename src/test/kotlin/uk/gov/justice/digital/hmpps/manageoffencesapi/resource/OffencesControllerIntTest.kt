@@ -349,6 +349,23 @@ class OffencesControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql",
+  )
+  fun `Get offences by search string excluding by legislation`() {
+    val result = webTestClient.get().uri("/offences/search?excludeLegislation=true&searchString=the Zoo Licensing")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(ModelOffence::class.java)
+      .returnResult().responseBody
+
+    assertThat(result)
+      .isEmpty()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/insert-multiple-offences-with-ho-codes.sql",
   )
   fun `Get offences by search string where searching by ho-code`() {
