@@ -8,4 +8,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 @Repository
 interface OffenceToSyncWithNomisRepository : JpaRepository<OffenceToSyncWithNomis, Long> {
   fun existsByOffenceCodeAndNomisSyncType(offenceCode: String, nomisSyncType: NomisSyncType): Boolean
+  fun findByNomisSyncTypeIn(nomisSyncTypes: List<NomisSyncType>): List<OffenceToSyncWithNomis>
+  fun findByNomisSyncType(nomisSyncType: NomisSyncType): List<OffenceToSyncWithNomis>
 }
