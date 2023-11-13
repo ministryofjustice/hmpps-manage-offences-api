@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.O
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
 import java.time.LocalDate
@@ -35,6 +36,8 @@ class ScheduleServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
   private val nomisScheduleMappingRepository = mock<NomisScheduleMappingRepository>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
+  private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
+  private val adminService = mock<AdminService>()
 
   private val scheduleService =
     ScheduleService(
@@ -44,6 +47,8 @@ class ScheduleServiceTest {
       offenceRepository,
       prisonApiUserClient,
       nomisScheduleMappingRepository,
+      offenceToSyncWithNomisRepository,
+      adminService,
     )
 
   @Nested

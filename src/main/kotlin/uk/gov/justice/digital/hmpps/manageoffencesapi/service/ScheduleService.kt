@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
@@ -41,15 +41,37 @@ class ScheduleService(
 
   //  Only used for migration purposes when the data is changed outside of the UI
   @Scheduled(cron = "0 0 */1 * * *")
-  @SchedulerLock(name = "synchroniseScheduleMappingsToNomis")
+  @SchedulerLock(name = "unlinkScheduleMappingsToNomis")
+  @Transactional
+  fun unlinkScheduleMappingsToNomis() {
+    if (!adminService.isFeatureEnabled(Feature.UNLINK_SCHEDULES_NOMIS)) {
+      log.info("Unlink schedules with NOMIS - disabled")
+      return
+    }
+
+    val schedulesToUnlink = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE_MAPPING)
+
+    prisonApiUserClient.unlinkFromSchedule(
+      schedulesToUnlink.map { s ->
+        OffenceToScheduleMappingDto(
+          schedule = s.nomisScheduleName?.name!!,
+          offenceCode = s.offenceCode,
+        )
+      },
+    )
+  }
+
+  //  Only used for migration purposes when the data is changed outside of the UI
+  @Scheduled(cron = "0 0 */1 * * *")
+  @SchedulerLock(name = "linkScheduleMappingsToNomis")
   @Transactional
   fun linkScheduleMappingsToNomis() {
-    if (!adminService.isFeatureEnabled(Feature.LINK_SCHEDULES_MAPPINGS_NOMIS)) {
+    if (!adminService.isFeatureEnabled(Feature.LINK_SCHEDULES_NOMIS)) {
       log.info("Link schedules with NOMIS - disabled")
       return
     }
 
-    val (schedulesToLink, schedulesToUnlink) = offenceToSyncWithNomisRepository.findByNomisSyncTypeIn(listOf(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE_MAPPING, NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE_MAPPING)).partition { it.nomisSyncType == NomisSyncType.LINK_SCHEDULE_TO_OFFENCE_MAPPING }
+    val (pcscSchedulesToLink, schedulesToLink) = offenceToSyncWithNomisRepository.findByNomisSyncTypeIn(listOf(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE_MAPPING, NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE_MAPPING)).partition { it.nomisScheduleName == NomisScheduleName.POTENTIAL_PCSC }
 
     prisonApiUserClient.linkToSchedule(
       schedulesToLink.map { s ->
@@ -60,14 +82,10 @@ class ScheduleService(
       },
     )
 
-    prisonApiUserClient.unlinkFromSchedule(
-      schedulesToUnlink.map { s ->
-        OffenceToScheduleMappingDto(
-          schedule = s.nomisScheduleName?.name!!,
-          offenceCode = s.offenceCode,
-        )
-      },
-    )
+    if (pcscSchedulesToLink.isNotEmpty()) {
+      val pcscMappings = determinePcscMappingsForNomis(pcscSchedulesToLink.map { o -> o.offenceCode })
+      prisonApiUserClient.linkToSchedule(pcscMappings)
+    }
   }
 
   @Transactional
@@ -120,7 +138,7 @@ class ScheduleService(
     }
 
     if (schedulePart.schedule.code == "15" && (schedulePart.partNumber == 1 || schedulePart.partNumber == 2)) {
-      val pcscMappings = determinePcscMappingsForNomis(offences)
+      val pcscMappings = determinePcscMappingsForNomis(offences.map { it.code })
       prisonApiUserClient.linkToSchedule(pcscMappings)
     }
   }
@@ -160,20 +178,20 @@ class ScheduleService(
         .orElseThrow { EntityNotFoundException("No schedulePart exists for ${it.schedulePartId}") }
 
       if (schedulePart.schedule.code == "15" && (schedulePart.partNumber == 1 || schedulePart.partNumber == 2)) {
-        val pcscMappings = determinePcscMappingsForNomis(offences)
+        val pcscMappings = determinePcscMappingsForNomis(offences.map { o -> o.code })
         prisonApiUserClient.unlinkFromSchedule(pcscMappings)
       }
     }
   }
 
-  private fun determinePcscMappingsForNomis(offences: List<Offence>): List<OffenceToScheduleMappingDto> {
-    val pcscSchedules = getOffencePcscMarkers(offences.map { o -> o.code })
+  private fun determinePcscMappingsForNomis(offences: List<String>): List<OffenceToScheduleMappingDto> {
+    val pcscSchedules = getOffencePcscMarkers(offences)
     val pcscMappings = mutableListOf<OffenceToScheduleMappingDto>()
     pcscSchedules.forEach { pcscSchedule ->
       if (pcscSchedule.pcscMarkers.inListA) {
         pcscMappings.add(
           OffenceToScheduleMappingDto(
-            schedule = "SCHEDULE_15_ATTRACTS_LIFE",
+            schedule = NomisScheduleName.SCHEDULE_15_ATTRACTS_LIFE.name,
             offenceCode = pcscSchedule.offenceCode,
           ),
         )
@@ -182,7 +200,7 @@ class ScheduleService(
       if (pcscSchedule.pcscMarkers.inListB) {
         pcscMappings.add(
           OffenceToScheduleMappingDto(
-            schedule = "PCSC_SDS",
+            schedule = NomisScheduleName.PCSC_SDS.name,
             offenceCode = pcscSchedule.offenceCode,
           ),
         )
@@ -191,7 +209,7 @@ class ScheduleService(
       if (pcscSchedule.pcscMarkers.inListC) {
         pcscMappings.add(
           OffenceToScheduleMappingDto(
-            schedule = "PCSC_SEC_250",
+            schedule = NomisScheduleName.PCSC_SEC_250.name,
             offenceCode = pcscSchedule.offenceCode,
           ),
         )
@@ -200,7 +218,7 @@ class ScheduleService(
       if (pcscSchedule.pcscMarkers.inListD) {
         pcscMappings.add(
           OffenceToScheduleMappingDto(
-            schedule = "PCSC_SDS_PLUS",
+            schedule = NomisScheduleName.PCSC_SDS_PLUS.name,
             offenceCode = pcscSchedule.offenceCode,
           ),
         )
@@ -244,15 +262,7 @@ class ScheduleService(
   }
 
   private fun getOffencePcscMarkers(offenceCodes: List<String>): List<OffencePcscMarkers> {
-    val schedule15 = scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")
-      ?: throw EntityNotFoundException("Schedule 15 not found")
-    val parts = schedulePartRepository.findByScheduleId(schedule15.id)
-    val part1Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 1 }.id)
-    val part1LifeMappings = part1Mappings.filter { it.offence.maxPeriodIsLife == true }
-    val part2Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 2 }.id)
-    val part2LifeMappings = part2Mappings.filter { it.offence.maxPeriodIsLife == true }
-    val seriousViolentOffenceMappings =
-      part1Mappings.filter { it.paragraphNumber == "1" || it.paragraphNumber == "4" || it.paragraphNumber == "6" || it.paragraphNumber == "64" || it.paragraphNumber == "65" }
+    val (part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings) = getSchedule15PcscMappings()
 
     return offenceCodes.map {
       OffencePcscMarkers(
@@ -267,8 +277,21 @@ class ScheduleService(
     }
   }
 
+  private fun getSchedule15PcscMappings(): Triple<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
+    val schedule15 = scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")
+      ?: throw EntityNotFoundException("Schedule 15 not found")
+    val parts = schedulePartRepository.findByScheduleId(schedule15.id)
+    val part1Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 1 }.id)
+    val part1LifeMappings = part1Mappings.filter { it.offence.maxPeriodIsLife == true }
+    val part2Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 2 }.id)
+    val part2LifeMappings = part2Mappings.filter { it.offence.maxPeriodIsLife == true }
+    val seriousViolentOffenceMappings =
+      part1Mappings.filter { it.paragraphNumber == "1" || it.paragraphNumber == "4" || it.paragraphNumber == "6" || it.paragraphNumber == "64" || it.paragraphNumber == "65" }
+    return Triple(part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings)
+  }
+
   // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start after 28 June 2022)
-// NOMIS SCHEDULE_15_ATTRACTS_LIFE - SDS >7 years between 01 April 2020 and 28 June 2022
+  // NOMIS SCHEDULE_15_ATTRACTS_LIFE - SDS >7 years between 01 April 2020 and 28 June 2022
   private fun inListA(
     part1LifeMappings: List<OffenceScheduleMapping>,
     part2LifeMappings: List<OffenceScheduleMapping>,
@@ -280,7 +303,7 @@ class ScheduleService(
       }
 
   // List B: Schedule 15 Part 2 that attract life + serious violent offences (same as List C)
-// NOMIS - PCSC_SDS - SDS between 4 and 7 years
+  // NOMIS - PCSC_SDS - SDS between 4 and 7 years
   private fun inListB(
     seriousViolentOffenceMappings: List<OffenceScheduleMapping>,
     part2LifeMappings: List<OffenceScheduleMapping>,
@@ -289,7 +312,7 @@ class ScheduleService(
     seriousViolentOffenceMappings.any { p -> offenceCode == p.offence.code } || part2LifeMappings.any { p -> offenceCode == p.offence.code }
 
   // List C: Schedule 15 Part 2 that attract life + serious violent offences (same as List B)
-// NOMIS - PCSC_SEC_250 - Sec250 >7 years
+  // NOMIS - PCSC_SEC_250 - Sec250 >7 years
   private fun inListC(
     seriousViolentOffenceMappings: List<OffenceScheduleMapping>,
     part2LifeMappings: List<OffenceScheduleMapping>,
@@ -298,7 +321,7 @@ class ScheduleService(
     seriousViolentOffenceMappings.any { p -> offenceCode == p.offence.code } || part2LifeMappings.any { p -> offenceCode == p.offence.code }
 
   // List D: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life
-// NOMIS - PCSC_SDS_PLUS
+  // NOMIS - PCSC_SDS_PLUS
   private fun inListD(
     part1LifeMappings: List<OffenceScheduleMapping>,
     part2LifeMappings: List<OffenceScheduleMapping>,
