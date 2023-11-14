@@ -70,14 +70,14 @@ INSERT INTO offence_to_sync_with_nomis
          FROM offence_to_sync_with_nomis  otsn
          WHERE otsn.nomis_sync_type = 'LINK_SCHEDULE_TO_OFFENCE'
            AND otsn.nomis_schedule_name = 'SCHEDULE_15'
-           AND otsn.offence_code = 02.code
+           AND otsn.offence_code = o2.code
         )
      order by o2.code );
 
 -- SCHEDULE_15_ATTRACTS_LIFE unlink from nomis where not in s15-life-nomis FROM HMCTS
 INSERT INTO offence_to_sync_with_nomis
 (offence_code, nomis_sync_type, nomis_schedule_name, created_date)
-    (select o.code, 'UNLINK_SCHEDULE_TO_OFFENCE', 'SCHEDULE_15', NOW()
+    (select o.code, 'UNLINK_SCHEDULE_TO_OFFENCE', 'SCHEDULE_15_ATTRACTS_LIFE', NOW()
      from nomis_schedule_mapping nsm
               join schedule_part sp on sp.id = nsm.schedule_part_id
               join schedule s on s.id = sp.schedule_id
@@ -121,7 +121,7 @@ INSERT INTO offence_to_sync_with_nomis
           FROM offence_to_sync_with_nomis  otsn
           WHERE otsn.nomis_sync_type = 'LINK_SCHEDULE_TO_OFFENCE'
           AND otsn.nomis_schedule_name = 'SCHEDULE_15'
-          AND otsn.offence_code = 02.code
+          AND otsn.offence_code = o2.code
      )
      order by o2.code );
 

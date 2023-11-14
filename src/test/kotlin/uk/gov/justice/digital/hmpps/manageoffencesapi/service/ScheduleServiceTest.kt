@@ -40,6 +40,7 @@ class ScheduleServiceTest {
   private val offenceRepository = mock<OffenceRepository>()
   private val nomisScheduleMappingRepository = mock<NomisScheduleMappingRepository>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
+  private val prisonApiClient = mock<PrisonApiClient>()
   private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
   private val adminService = mock<AdminService>()
 
@@ -50,6 +51,7 @@ class ScheduleServiceTest {
       offenceScheduleMappingRepository,
       offenceRepository,
       prisonApiUserClient,
+      prisonApiClient,
       nomisScheduleMappingRepository,
       offenceToSyncWithNomisRepository,
       adminService,
@@ -338,7 +340,7 @@ class ScheduleServiceTest {
 
       scheduleService.unlinkScheduleMappingsToNomis()
 
-      verify(prisonApiUserClient).unlinkFromSchedule(
+      verify(prisonApiClient).unlinkFromSchedule(
         listOf(
           OffenceToScheduleMappingDto(
             BASE_OFFENCE.code,
@@ -346,6 +348,7 @@ class ScheduleServiceTest {
           ),
         ),
       )
+      verify(offenceToSyncWithNomisRepository).deleteAllById(listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS.id))
     }
 
     @Test
@@ -375,7 +378,7 @@ class ScheduleServiceTest {
 
       scheduleService.linkScheduleMappingsToNomis()
 
-      verify(prisonApiUserClient).linkToSchedule(
+      verify(prisonApiClient).linkToSchedule(
         listOf(
           OffenceToScheduleMappingDto(
             BASE_OFFENCE.code,
@@ -383,7 +386,7 @@ class ScheduleServiceTest {
           ),
         ),
       )
-      verify(prisonApiUserClient).linkToSchedule(
+      verify(prisonApiClient).linkToSchedule(
         listOf(
           OffenceToScheduleMappingDto(
             BASE_OFFENCE.code,
@@ -403,6 +406,7 @@ class ScheduleServiceTest {
           ),
         ),
       )
+      verify(offenceToSyncWithNomisRepository).deleteAllById(listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS.id, POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS.id))
     }
   }
 

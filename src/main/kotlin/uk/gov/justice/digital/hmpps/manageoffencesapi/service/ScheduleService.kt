@@ -34,6 +34,7 @@ class ScheduleService(
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val offenceRepository: OffenceRepository,
   private val prisonApiUserClient: PrisonApiUserClient,
+  private val prisonApiClient: PrisonApiClient,
   private val nomisScheduleMappingRepository: NomisScheduleMappingRepository,
   private val offenceToSyncWithNomisRepository: OffenceToSyncWithNomisRepository,
   private val adminService: AdminService,
@@ -52,7 +53,7 @@ class ScheduleService(
 
     val schedulesToUnlink = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE)
 
-    prisonApiUserClient.unlinkFromSchedule(
+    prisonApiClient.unlinkFromSchedule(
       schedulesToUnlink.map { s ->
         OffenceToScheduleMappingDto(
           schedule = s.nomisScheduleName?.name!!,
@@ -77,7 +78,7 @@ class ScheduleService(
 
     val (pcscSchedulesToLink, schedulesToLink) = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE).partition { it.nomisScheduleName == NomisScheduleName.POTENTIAL_LINK_PCSC }
 
-    prisonApiUserClient.linkToSchedule(
+    prisonApiClient.linkToSchedule(
       schedulesToLink.map { s ->
         OffenceToScheduleMappingDto(
           schedule = s.nomisScheduleName?.name!!,
@@ -88,7 +89,7 @@ class ScheduleService(
 
     if (pcscSchedulesToLink.isNotEmpty()) {
       val pcscMappings = determinePcscMappingsForNomis(pcscSchedulesToLink.map { o -> o.offenceCode })
-      prisonApiUserClient.linkToSchedule(pcscMappings)
+      prisonApiClient.linkToSchedule(pcscMappings)
     }
     offenceToSyncWithNomisRepository.deleteAllById(pcscSchedulesToLink.plus(schedulesToLink).map { it.id })
     log.info("Link schedules with NOMIS finished")
