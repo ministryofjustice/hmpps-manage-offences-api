@@ -3,7 +3,7 @@ ALTER TABLE offence_to_sync_with_nomis ADD COLUMN nomis_schedule_name VARCHAR(10
 INSERT INTO feature_toggle (feature, enabled) VALUES ('UNLINK_SCHEDULES_NOMIS', false);
 INSERT INTO feature_toggle (feature, enabled) VALUES ('LINK_SCHEDULES_NOMIS', false);
 
--- SCHEDULE_15 unlink from nomis where not in s15 FROM HMCTS
+-- SCHEDULE_15 unlink legacy S15 mappings from nomis if the offence is not in s15 FROM HMCTS
 INSERT INTO offence_to_sync_with_nomis
 (offence_code, nomis_sync_type, nomis_schedule_name, created_date)
     (select o.code, 'UNLINK_SCHEDULE_TO_OFFENCE_MAPPING', 'SCHEDULE_15', NOW()
@@ -25,7 +25,7 @@ INSERT INTO offence_to_sync_with_nomis
      )
      order by o.code );
 
--- SCHEDULE_15 link to nomis where in s15 part 1 and 2 but not already linked
+-- SCHEDULE_15 link to nomis where in s15 part 1 and 2 but not already linked (could already be linked by the legacy mappings)
 INSERT INTO offence_to_sync_with_nomis
 (offence_code, nomis_sync_type, nomis_schedule_name, created_date)
     (select o2.code, 'LINK_SCHEDULE_TO_OFFENCE_MAPPING', 'SCHEDULE_15', NOW()
@@ -114,7 +114,7 @@ INSERT INTO offence_to_sync_with_nomis
 -- schedule 15 potentially link all from parts 1 and 2 to NOMIS PCSC indicators (actual pcsc check done in code)
 INSERT INTO offence_to_sync_with_nomis
 (offence_code, nomis_sync_type, nomis_schedule_name, created_date)
-    (select o.code, 'LINK_SCHEDULE_TO_OFFENCE_MAPPING', 'POTENTIAL_PCSC' , NOW()
+    (select o.code, 'LINK_SCHEDULE_TO_OFFENCE_MAPPING', 'POTENTIAL_LINK_PCSC' , NOW()
      from nomis_schedule_mapping nsm
               join schedule_part sp on sp.id = nsm.schedule_part_id
               join schedule s on s.id = sp.schedule_id
@@ -124,3 +124,19 @@ INSERT INTO offence_to_sync_with_nomis
        and sp.part_number in (1,2)
      order by o.code );
 
+DELETE FROM offence_schedule_mapping
+       WHERE schedule_part_id IN (SELECT id FROM schedule_part sp WHERE schedule_id = (SELECT id FROM schedule WHERE code = 'PCSC and Legacy NOMIS'));
+
+DELETE FROM nomis_schedule_mapping WHERE schedule_part_id IN (SELECT id FROM schedule_part sp WHERE schedule_id = (SELECT id FROM schedule WHERE code = 'PCSC and Legacy NOMIS'));
+
+DELETE FROM schedule_part WHERE schedule_id = (SELECT id FROM schedule WHERE code = 'PCSC and Legacy NOMIS');
+
+DELETE FROM schedule WHERE code = 'PCSC and Legacy NOMIS';
+
+INSERT INTO nomis_schedule_mapping (nomis_schedule_name, schedule_part_id)
+VALUES ('SCHEDULE_15', (SELECT id
+                     FROM schedule_part
+                     WHERE schedule_id = (SELECT id FROM schedule WHERE code = '15') AND part_number = 1)),
+       ('SCHEDULE_15', (SELECT id
+                          FROM schedule_part
+                          WHERE schedule_id = (SELECT id FROM schedule WHERE code = '15') AND part_number = 2));

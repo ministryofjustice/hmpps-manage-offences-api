@@ -48,6 +48,7 @@ class ScheduleService(
       log.info("Unlink schedules with NOMIS - disabled")
       return
     }
+    log.info("Unlink schedules with NOMIS used for migration records - starting")
 
     val schedulesToUnlink = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE_MAPPING)
 
@@ -59,6 +60,7 @@ class ScheduleService(
         )
       },
     )
+    log.info("Unlink schedules with NOMIS finished")
   }
 
   //  Only used for migration purposes when the data is changed outside of the UI
@@ -70,8 +72,9 @@ class ScheduleService(
       log.info("Link schedules with NOMIS - disabled")
       return
     }
+    log.info("Link schedules with NOMIS used for migration records - starting")
 
-    val (pcscSchedulesToLink, schedulesToLink) = offenceToSyncWithNomisRepository.findByNomisSyncTypeIn(listOf(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE_MAPPING, NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE_MAPPING)).partition { it.nomisScheduleName == NomisScheduleName.POTENTIAL_PCSC }
+    val (pcscSchedulesToLink, schedulesToLink) = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE_MAPPING).partition { it.nomisScheduleName == NomisScheduleName.POTENTIAL_LINK_PCSC }
 
     prisonApiUserClient.linkToSchedule(
       schedulesToLink.map { s ->
@@ -86,6 +89,7 @@ class ScheduleService(
       val pcscMappings = determinePcscMappingsForNomis(pcscSchedulesToLink.map { o -> o.offenceCode })
       prisonApiUserClient.linkToSchedule(pcscMappings)
     }
+    log.info("Link schedules with NOMIS finished")
   }
 
   @Transactional
@@ -164,6 +168,12 @@ class ScheduleService(
       val offences = childOffences.plus(parentOffence)
 
       nomisScheduleMappingRepository.findOneBySchedulePartId(it.schedulePartId)?.let {
+        val req = offences.map { offenceToUnlink ->
+          OffenceToScheduleMappingDto(
+            schedule = it.nomisScheduleName,
+            offenceCode = offenceToUnlink.code,
+          )
+        }
         prisonApiUserClient.unlinkFromSchedule(
           offences.map { offenceToUnlink ->
             OffenceToScheduleMappingDto(

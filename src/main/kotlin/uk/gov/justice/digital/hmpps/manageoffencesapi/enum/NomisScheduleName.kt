@@ -6,5 +6,5 @@ enum class NomisScheduleName {
   PCSC_SEC_250, // Sec250 >7 years = List C: Schedule 15 Part 2 that attract life + serious violent offences (same as List B)
   SCHEDULE_15,
   SCHEDULE_15_ATTRACTS_LIFE,
-  POTENTIAL_PCSC, // Used for potential pcsc mappings
+  POTENTIAL_LINK_PCSC, // Used for potential pcsc mappings
 }
