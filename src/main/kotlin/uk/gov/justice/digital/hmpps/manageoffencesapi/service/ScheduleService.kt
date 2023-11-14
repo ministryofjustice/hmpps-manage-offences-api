@@ -40,7 +40,7 @@ class ScheduleService(
 ) {
 
   //  Only used for migration purposes when the data is changed outside of the UI
-  @Scheduled(cron = "0 0 */1 * * *")
+  @Scheduled(cron = "0 */10 * * * *")
   @SchedulerLock(name = "unlinkScheduleMappingsToNomis")
   @Transactional
   fun unlinkScheduleMappingsToNomis() {
@@ -64,7 +64,7 @@ class ScheduleService(
   }
 
   //  Only used for migration purposes when the data is changed outside of the UI
-  @Scheduled(cron = "0 0 */1 * * *")
+  @Scheduled(cron = "0 5-55/10 * * * *")
   @SchedulerLock(name = "linkScheduleMappingsToNomis")
   @Transactional
   fun linkScheduleMappingsToNomis() {
