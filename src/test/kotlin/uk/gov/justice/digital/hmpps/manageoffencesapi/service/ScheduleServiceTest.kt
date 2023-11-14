@@ -332,7 +332,7 @@ class ScheduleServiceTest {
     @Test
     fun `Test scheduled job that unlinks schedule mappings to NOMIS`() {
       whenever(adminService.isFeatureEnabled(Feature.UNLINK_SCHEDULES_NOMIS)).thenReturn(true)
-      whenever(offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE_MAPPING)).thenReturn(
+      whenever(offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE)).thenReturn(
         listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS),
       )
 
@@ -351,7 +351,7 @@ class ScheduleServiceTest {
     @Test
     fun `Test scheduled job that links schedule mappings to NOMIS`() {
       whenever(adminService.isFeatureEnabled(Feature.LINK_SCHEDULES_NOMIS)).thenReturn(true)
-      whenever(offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE_MAPPING)).thenReturn(
+      whenever(offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE)).thenReturn(
         listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS, POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS),
       )
 
@@ -458,13 +458,13 @@ class ScheduleServiceTest {
     private val S15_OFFENCE_TO_SYNC_WITH_NOMIS = OffenceToSyncWithNomis(
       offenceCode = BASE_OFFENCE.code,
       nomisScheduleName = NomisScheduleName.SCHEDULE_15,
-      nomisSyncType = NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE_MAPPING,
+      nomisSyncType = NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE,
     )
 
     private val POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS = OffenceToSyncWithNomis(
       offenceCode = BASE_OFFENCE.code,
       nomisScheduleName = NomisScheduleName.POTENTIAL_LINK_PCSC,
-      nomisSyncType = NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE_MAPPING,
+      nomisSyncType = NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE,
     )
   }
 }
