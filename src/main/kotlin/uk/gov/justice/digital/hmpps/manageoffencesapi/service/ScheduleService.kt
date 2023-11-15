@@ -51,7 +51,7 @@ class ScheduleService(
     }
     log.info("Unlink schedules with NOMIS used for migration records - starting")
 
-    val schedulesToUnlink = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_TO_OFFENCE)
+    val schedulesToUnlink = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_FROM_OFFENCE)
 
     prisonApiClient.unlinkFromSchedule(
       schedulesToUnlink.map { s ->
@@ -191,8 +191,8 @@ class ScheduleService(
     }
   }
 
-  private fun determinePcscMappingsForNomis(offences: List<String>): List<OffenceToScheduleMappingDto> {
-    val pcscSchedules = getOffencePcscMarkers(offences)
+  private fun determinePcscMappingsForNomis(offenceCodes: List<String>): List<OffenceToScheduleMappingDto> {
+    val pcscSchedules = getOffencePcscMarkers(offenceCodes)
     val pcscMappings = mutableListOf<OffenceToScheduleMappingDto>()
     pcscSchedules.forEach { pcscSchedule ->
       if (pcscSchedule.pcscMarkers.inListA) {
