@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
@@ -341,6 +342,30 @@ class ScheduleService(
       .orElseThrow { EntityNotFoundException("Offence not found with ID $offenceId") }
     val children = offenceRepository.findByParentOffenceId(offenceId)
     return transform(offence, children)
+  }
+
+  fun getPcscLists(): PcscLists {
+    val (part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings) = getSchedule15PcscMappings()
+    val listA = mutableSetOf<OffenceToScheduleMapping>()
+    val listB = mutableSetOf<OffenceToScheduleMapping>()
+    val listC = mutableSetOf<OffenceToScheduleMapping>()
+    val listD = mutableSetOf<OffenceToScheduleMapping>()
+
+    part1LifeMappings.plus(part2LifeMappings).plus(seriousViolentOffenceMappings).forEach {
+      if (inListA(part1LifeMappings, part2LifeMappings, it.offence.code)) listA.add(transform(it))
+      if (inListB(seriousViolentOffenceMappings, part2LifeMappings, it.offence.code)) listB.add(transform(it))
+      if (inListC(seriousViolentOffenceMappings, part2LifeMappings, it.offence.code)) listC.add(transform(it))
+      if (inListD(part1LifeMappings, part2LifeMappings, it.offence.code)) listD.add(transform(it))
+    }
+
+    log.info("Returning PCSC lists sizes = list A: ${listA.size}, list B: ${listB.size}, list C: ${listC.size}, list D: ${listD.size}")
+
+    return PcscLists(
+      listA = listA.sortedBy { it.code }.toSet(),
+      listB = listB.sortedBy { it.code }.toSet(),
+      listC = listC.sortedBy { it.code }.toSet(),
+      listD = listD.sortedBy { it.code }.toSet(),
+    )
   }
 
   companion object {
