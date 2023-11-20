@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService
@@ -110,8 +111,19 @@ class ScheduleController(
   fun getPcscInformation(
     @RequestParam offenceCodes: List<String>,
   ): List<OffencePcscMarkers> {
-    OffenceController.log.info("Request received to determine pcsc markers for ${offenceCodes.size} offence codes")
+    log.info("Request received to determine pcsc markers for ${offenceCodes.size} offence codes")
     return scheduleService.findPcscSchedules(offenceCodes)
+  }
+
+  @GetMapping(value = ["/pcsc-lists"])
+  @ResponseBody
+  @Operation(
+    summary = "Retrieve all PCSC lists",
+    description = "This endpoint will return all four PCSC lists",
+  )
+  fun getPcscLists(): PcscLists {
+    log.info("Request received to get PCSC Lists")
+    return scheduleService.getPcscLists()
   }
 
   companion object {

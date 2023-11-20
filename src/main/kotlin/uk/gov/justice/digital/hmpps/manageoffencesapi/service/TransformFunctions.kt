@@ -72,6 +72,8 @@ fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToSchedule
     legislationText = offenceScheduleMapping.legislationText,
     paragraphTitle = offenceScheduleMapping.paragraphTitle,
     paragraphNumber = offenceScheduleMapping.paragraphNumber,
+    maxPeriodIsLife = offenceScheduleMapping.offence.maxPeriodIsLife,
+    maxPeriodOfIndictmentYears = offenceScheduleMapping.offence.maxPeriodOfIndictmentYears,
   )
 
 fun transform(offenceScheduleMappings: List<OffenceScheduleMapping>?): List<LinkedScheduleDetails>? =

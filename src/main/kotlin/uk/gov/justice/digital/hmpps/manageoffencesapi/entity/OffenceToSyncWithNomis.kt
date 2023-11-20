@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import java.time.LocalDateTime
 
@@ -19,5 +20,7 @@ data class OffenceToSyncWithNomis(
   val offenceCode: String,
   @Enumerated(EnumType.STRING)
   val nomisSyncType: NomisSyncType,
+  @Enumerated(EnumType.STRING)
+  val nomisScheduleName: NomisScheduleName? = null,
   val createdDate: LocalDateTime = LocalDateTime.now(),
 )

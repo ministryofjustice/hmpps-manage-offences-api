@@ -491,7 +491,11 @@ class OffenceServiceTest {
     fun `Delta sync with nomis where there is a hoCode update and future end dated offence - future end dated ommitted`() {
       whenever(adminService.isFeatureEnabled(FULL_SYNC_NOMIS)).thenReturn(false)
       whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(true)
-      whenever(offenceToSyncWithNomisRepository.findAll()).thenReturn(
+      whenever(
+        offenceToSyncWithNomisRepository.findByNomisSyncTypeIn(
+          listOf(NomisSyncType.HO_CODE_UPDATE, NomisSyncType.FUTURE_END_DATED),
+        ),
+      ).thenReturn(
         listOf(
           OffenceToSyncWithNomis(
             offenceCode = NOMIS_OFFENCE_A123AA6.code,
@@ -548,7 +552,11 @@ class OffenceServiceTest {
     fun `Delta sync with nomis where there is a hoCode update and future end dated offence - future end dated day has arrived`() {
       whenever(adminService.isFeatureEnabled(FULL_SYNC_NOMIS)).thenReturn(false)
       whenever(adminService.isFeatureEnabled(DELTA_SYNC_NOMIS)).thenReturn(true)
-      whenever(offenceToSyncWithNomisRepository.findAll()).thenReturn(
+      whenever(
+        offenceToSyncWithNomisRepository.findByNomisSyncTypeIn(
+          listOf(NomisSyncType.HO_CODE_UPDATE, NomisSyncType.FUTURE_END_DATED),
+        ),
+      ).thenReturn(
         listOf(
           OffenceToSyncWithNomis(
             offenceCode = NOMIS_OFFENCE_A123AA6.code,
@@ -590,7 +598,10 @@ class OffenceServiceTest {
       verify(prisonApiClient).updateOffences(
         listOf(
           NOMIS_OFFENCE_A1234AAB.copy(description = "A NEW DESC", activeFlag = "N", expiryDate = LocalDate.now()),
-          NOMIS_OFFENCE_A123AA6.copy(hoCode = HoCode(code = "012/34", description = "012/34", activeFlag = "Y"), severityRanking = "12"),
+          NOMIS_OFFENCE_A123AA6.copy(
+            hoCode = HoCode(code = "012/34", description = "012/34", activeFlag = "Y"),
+            severityRanking = "12",
+          ),
         ),
       )
     }
