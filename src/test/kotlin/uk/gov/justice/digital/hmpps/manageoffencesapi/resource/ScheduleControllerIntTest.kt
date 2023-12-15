@@ -90,6 +90,34 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       )
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-pcsc.sql",
+  )
+  fun `Unlink a PCSC offence from S15 and associated pcsc schedules`() {
+    prisonApiMockServer.stubLinkPcscOffence()
+    prisonApiMockServer.stubUnlinkPcscOffenceSchedule15()
+    prisonApiMockServer.stubUnlinkPcscOffence()
+    val allSchedules = getAllSchedules()
+    val schedule15Id = allSchedules!!.filter { it.code == "15" }[0].id
+    val scheduleBefore = getScheduleDetails(schedule15Id)
+
+    val firstSchedulePartId = scheduleBefore!!.scheduleParts!!.first { it.partNumber == 1 }.id
+    val offenceParent = getOffences("AB14001")!!.first { it.code == "AB14001" }
+
+    unlinkOffencesToSchedulePart(
+      listOf(
+        SchedulePartIdAndOffenceId(
+          schedulePartId = firstSchedulePartId,
+          offenceId = offenceParent.id,
+        ),
+      ),
+    )
+    val scheduleAfterUnlinkingOffences = getScheduleDetails(schedule15Id)
+    assertThat(scheduleAfterUnlinkingOffences?.scheduleParts?.first { it.partNumber == 1 }?.offences).isNull()
+  }
+
   private fun assertThatScheduleMatches(scheduleBefore: Schedule?, schedule: Schedule) {
     assertThat(scheduleBefore)
       .usingRecursiveComparison()

@@ -97,27 +97,31 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubLinkOffence(): StubMapping =
-    stubFor(
-      WireMock.post("/api/offences/link-to-schedule")
-        .withRequestBody(WireMock.equalToJson(linkOffenceRequest))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
+  fun stubLinkOffence(): StubMapping = stubForLinkOffence(linkOffenceRequest)
+  fun stubUnlinkOffence(): StubMapping = stubForUnlinkOffence(unlinkOffenceRequest)
 
-  fun stubUnlinkOffence(): StubMapping =
-    stubFor(
-      WireMock.post("/api/offences/unlink-from-schedule")
-        .withRequestBody(WireMock.equalToJson(unlinkOffenceRequest))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
+  fun stubLinkPcscOffence(): StubMapping = stubForLinkOffence(linkPcscOffenceRequest)
+  fun stubUnlinkPcscOffence(): StubMapping = stubForUnlinkOffence(unlinkPcscOffenceRequest)
+  fun stubUnlinkPcscOffenceSchedule15(): StubMapping = stubForUnlinkOffence(unlinkPcscOffenceRequestSchedule15)
+  private fun stubForLinkOffence(requestBody: String): StubMapping = stubFor(
+    WireMock.post("/api/offences/link-to-schedule")
+      .withRequestBody(WireMock.equalToJson(requestBody))
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+  )
+
+  private fun stubForUnlinkOffence(requestBody: String): StubMapping = stubFor(
+    WireMock.post("/api/offences/unlink-from-schedule")
+      .withRequestBody(WireMock.equalToJson(requestBody))
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+  )
 
   fun stubActivateOffence(): StubMapping =
     stubFor(
@@ -171,6 +175,32 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
             "schedule" : "SCHEDULE_13"
           } ]
     """.trimIndent()
+    private val linkPcscOffenceRequest = """ [ {                         
+            "offenceCode" : "AB14001",
+            "schedule" : "SCHEDULE_15"
+          } ]
+    """.trimIndent()
+    private val unlinkPcscOffenceRequestSchedule15 = """ [ {                         
+            "offenceCode" : "AB14001",
+            "schedule" : "SCHEDULE_15"
+          }]
+    """.trimIndent()
+
+    private val unlinkPcscOffenceRequest = """ [ {                         
+            "offenceCode" : "AB14001",
+            "schedule" : "SCHEDULE_15_ATTRACTS_LIFE"
+          },{                         
+            "offenceCode" : "AB14001",
+            "schedule" : "PCSC_SDS"
+          },{                         
+            "offenceCode" : "AB14001",
+            "schedule" : "PCSC_SEC_250"
+          },{                         
+            "offenceCode" : "AB14001",
+            "schedule" : "PCSC_SDS_PLUS"
+          } ]
+    """.trimIndent()
+
     private val activationDto = """ {                         
             "offenceCode" : "M5119999",
             "statuteCode" : "M511",
