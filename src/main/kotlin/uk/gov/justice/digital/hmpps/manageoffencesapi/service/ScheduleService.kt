@@ -41,7 +41,7 @@ class ScheduleService(
   private val adminService: AdminService,
 ) {
 
-  //  Only used for migration purposes when the data is changed outside of the UI
+  //  Only used for migration purposes when the data is changed outside the UI
   @Scheduled(cron = "0 */10 * * * *")
   @SchedulerLock(name = "unlinkScheduleMappingsToNomis")
   @Transactional
@@ -66,7 +66,7 @@ class ScheduleService(
     log.info("Unlink schedules with NOMIS finished")
   }
 
-  //  Only used for migration purposes when the data is changed outside of the UI
+  //  Only used for migration purposes when the data is changed outside the UI
   @Scheduled(cron = "0 5-55/10 * * * *")
   @SchedulerLock(name = "linkScheduleMappingsToNomis")
   @Transactional
@@ -163,13 +163,21 @@ class ScheduleService(
     schedulePartIdAndOffenceIds.forEach {
       if (!parentOffenceIds.contains(it.offenceId)) return@forEach // ignore any children that have been directly passed in
       val parentOffence = parentOffences.first { po -> po.id == it.offenceId }
-      deleteOffenceScheduleMapping(it.schedulePartId, it.offenceId)
 
       val childOffences = offenceRepository.findByParentOffenceId(it.offenceId)
+      val offences = childOffences.plus(parentOffence)
+
+      val schedulePart = schedulePartRepository.findById(it.schedulePartId)
+        .orElseThrow { EntityNotFoundException("No schedulePart exists for ${it.schedulePartId}") }
+
+      var pcscMappings = emptyList<OffenceToScheduleMappingDto>()
+      if (schedulePart.schedule.code == "15" && (schedulePart.partNumber == 1 || schedulePart.partNumber == 2)) {
+        pcscMappings = determinePcscMappingsForNomis(offences.map { o -> o.code })
+      }
+      deleteOffenceScheduleMapping(it.schedulePartId, it.offenceId)
+
       val childOffenceIds = childOffences.map { child -> child.id }
       childOffenceIds.forEach { childOffenceId -> deleteOffenceScheduleMapping(it.schedulePartId, childOffenceId) }
-
-      val offences = childOffences.plus(parentOffence)
 
       nomisScheduleMappingRepository.findOneBySchedulePartId(it.schedulePartId)?.let {
         prisonApiUserClient.unlinkFromSchedule(
@@ -182,11 +190,7 @@ class ScheduleService(
         )
       }
 
-      val schedulePart = schedulePartRepository.findById(it.schedulePartId)
-        .orElseThrow { EntityNotFoundException("No schedulePart exists for ${it.schedulePartId}") }
-
-      if (schedulePart.schedule.code == "15" && (schedulePart.partNumber == 1 || schedulePart.partNumber == 2)) {
-        val pcscMappings = determinePcscMappingsForNomis(offences.map { o -> o.code })
+      if (pcscMappings.isNotEmpty()) {
         prisonApiUserClient.unlinkFromSchedule(pcscMappings)
       }
     }
@@ -370,6 +374,6 @@ class ScheduleService(
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
-    val SDS_LIST_A_CUT_OFF_DATE = LocalDate.of(2022, 6, 28)
+    val SDS_LIST_A_CUT_OFF_DATE: LocalDate = LocalDate.of(2022, 6, 28)
   }
 }
