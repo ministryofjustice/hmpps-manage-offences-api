@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class MOJOffenceResponse(
   @JsonProperty("MOJOffence")
-  val offences: List<Offence>,
+  val offences: List<Offence> = emptyList(),
 )

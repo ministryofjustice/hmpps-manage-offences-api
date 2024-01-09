@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class GetApplicationsResponse(
   @JsonProperty("Application")
-  val offences: List<Offence>,
+  val offences: List<Offence> = emptyList(),
 )
