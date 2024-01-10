@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkedScheduleDetail
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceActivationDto
+import java.time.LocalDateTime
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory as EntityNomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule as EntitySchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart as EntitySchedulePart
@@ -115,6 +116,7 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache):
     legislation = sdrsOffence.offenceActsAndSections,
     offenceType = sdrsOffence.offenceType,
     sdrsCache = sdrsCache,
+    lastUpdatedDate = LocalDateTime.now(),
   )
 
 fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
