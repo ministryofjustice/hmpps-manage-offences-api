@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.HomeOfficeCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.LegacySdrsHoCodeMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.FAIL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadStatus.SUCCESS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.LoadType.FULL_LOAD
@@ -179,6 +180,8 @@ class SDRSServiceIntTest : IntegrationTestBase() {
               changedDate = LocalDateTime.now(),
               sdrsCache = OFFENCES_A,
               parentOffenceId = null,
+              custodialIndicator = CustodialIndicator.NO,
+
             ),
             Offence(
               code = "AX99001A",
@@ -189,6 +192,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
               endDate = LocalDate.of(2013, 3, 2),
               changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
               parentOffenceId = parentOne.id,
+              custodialIndicator = CustodialIndicator.YES,
             ),
             Offence(
               code = "AX99001B",
@@ -199,6 +203,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
               endDate = LocalDate.of(2013, 3, 2),
               changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
               parentOffenceId = parentOne.id,
+              custodialIndicator = CustodialIndicator.YES,
             ),
             Offence(
               code = "AX99002",
@@ -209,6 +214,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
               endDate = LocalDate.of(2013, 3, 2),
               changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
               parentOffenceId = null,
+              custodialIndicator = CustodialIndicator.NO,
             ),
             Offence(
               code = "AX99002B",
@@ -219,6 +225,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
               endDate = LocalDate.of(2013, 3, 2),
               changedDate = LocalDateTime.now(), sdrsCache = OFFENCES_A,
               parentOffenceId = parentTwo.id,
+              custodialIndicator = CustodialIndicator.EITHER,
             ),
           ),
         )

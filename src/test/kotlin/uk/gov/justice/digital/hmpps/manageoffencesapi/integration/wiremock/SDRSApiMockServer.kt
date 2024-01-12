@@ -79,7 +79,8 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                     "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                     "MOJStatsCode": "195/99",
                     "code": "AX99001A",
-                    "ChangedDate": "2014-07-16T16:30:46"
+                    "ChangedDate": "2014-07-16T16:30:46",
+                    "CustodialIndicator": "Y"
                   },
                   {
                     "OffenceRevisionId": 354116,
@@ -88,7 +89,8 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                     "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                     "MOJStatsCode": "195/99",
                     "code": "AX99001",
-                    "ChangedDate": "2014-07-16T16:30:46"
+                    "ChangedDate": "2014-07-16T16:30:46",
+                    "CustodialIndicator": "N"
                   },
                   {
                     "OffenceRevisionId": 410082,
@@ -97,7 +99,8 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                     "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                     "MOJStatsCode": "195/99",
                     "code": "AX99001B",
-                    "ChangedDate": "2014-07-16T16:30:46"
+                    "ChangedDate": "2014-07-16T16:30:46",
+                    "CustodialIndicator": "Y"
                   },
                   {
                     "OffenceRevisionId": 410082,
@@ -106,7 +109,8 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                     "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                     "MOJStatsCode": "195/99",
                     "code": "AX99002",
-                    "ChangedDate": "2014-07-16T16:30:46"
+                    "ChangedDate": "2014-07-16T16:30:46",
+                    "CustodialIndicator": "N"
                   },
                   {
                     "OffenceRevisionId": 410082,
@@ -115,7 +119,8 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
                     "Description": "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
                     "MOJStatsCode": "195/99",
                     "code": "AX99002B",
-                    "ChangedDate": "2014-07-16T16:30:46"
+                    "ChangedDate": "2014-07-16T16:30:46",
+                    "CustodialIndicator": "E"
                   }""",
     )
   }
