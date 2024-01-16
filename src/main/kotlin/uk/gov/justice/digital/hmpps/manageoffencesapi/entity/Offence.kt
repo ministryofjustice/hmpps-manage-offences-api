@@ -50,7 +50,7 @@ data class Offence(
   val homeOfficeCode: HomeOfficeCode? = null,
   @Enumerated(EnumType.ORDINAL)
   val custodialIndicator: CustodialIndicator? = null,
-  ) {
+) {
   val statuteCode
     get() = code.substring(0, 4)
   val homeOfficeStatsCode: String?

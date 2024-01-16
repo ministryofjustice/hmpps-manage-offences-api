@@ -22,7 +22,7 @@ data class Offence(
   val offenceActsAndSections: String? = null,
   val offenceType: String? = null,
   @JsonProperty("CustodialIndicator")
-  val custodialIndicator: CustodialIndicator?=null,
+  val custodialIndicator: CustodialIndicator? = null,
 ) {
   val isEndDateInFuture: Boolean
     get() = offenceEndDate?.isAfter(LocalDate.now()) ?: false
