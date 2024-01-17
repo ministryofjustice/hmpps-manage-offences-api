@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -43,6 +44,8 @@ data class Offence(
   val maxPeriodIsLife: Boolean? = null,
   @Schema(description = "Set to the max period of indictment in years")
   val maxPeriodOfIndictmentYears: Int? = null,
+  @Schema(description = "Custodial Indicator")
+  val custodialIndicator: CustodialIndicator? = null,
 )
 
 data class OffenceToScheduleMapping(
