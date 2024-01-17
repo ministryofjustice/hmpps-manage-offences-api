@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.UpperCamelCaseStrategy
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -20,6 +21,8 @@ data class Offence(
   val changedDate: LocalDateTime,
   val offenceActsAndSections: String? = null,
   val offenceType: String? = null,
+  @JsonProperty("CustodialIndicator")
+  val custodialIndicator: CustodialIndicator? = null,
 ) {
   val isEndDateInFuture: Boolean
     get() = offenceEndDate?.isAfter(LocalDate.now()) ?: false
