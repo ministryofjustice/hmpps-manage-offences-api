@@ -44,7 +44,7 @@ data class Offence(
   val maxPeriodIsLife: Boolean? = null,
   @Schema(description = "Set to the max period of indictment in years")
   val maxPeriodOfIndictmentYears: Int? = null,
-  @Schema(description = "Custodial Indicator")
+  @Schema(description = "Yes if the offence caries a custodial sentence, Either if it does when tried as an indictment and No otherwise.")
   val custodialIndicator: CustodialIndicator? = null,
 )
 
