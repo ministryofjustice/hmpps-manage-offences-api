@@ -4,6 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.EITHER
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.NO
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.YES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkedScheduleDetails
@@ -47,6 +50,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             offenceType = "CI",
             childOffenceIds = emptyList(),
+            custodialIndicator = YES,
           ),
           ModelOffence(
             id = 3,
@@ -58,6 +62,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             childOffenceIds = emptyList(),
+            custodialIndicator = EITHER,
           ),
           ModelOffence(
             id = 4,
@@ -69,6 +74,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             childOffenceIds = emptyList(),
+            custodialIndicator = NO,
           ),
         ),
       )
@@ -104,6 +110,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
           offenceType = "CI",
           childOffenceIds = emptyList(),
           schedules = emptyList(),
+          custodialIndicator = YES,
         ),
       )
   }
@@ -139,6 +146,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             offenceType = "CI",
             childOffenceIds = emptyList(),
             schedules = emptyList(),
+            custodialIndicator = YES,
           ),
           ModelOffence(
             id = 3,
@@ -151,6 +159,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             childOffenceIds = emptyList(),
             schedules = emptyList(),
+            custodialIndicator = EITHER,
           ),
         ),
       )
@@ -220,6 +229,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             childOffenceIds = emptyList(),
+            custodialIndicator = EITHER,
           ),
           ModelOffence(
             id = 1,
@@ -231,6 +241,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             loadDate = LocalDateTime.of(2022, 4, 7, 17, 5, 58, 178000000),
             childOffenceIds = emptyList(),
+            custodialIndicator = YES,
           ),
         ),
       )
@@ -389,6 +400,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             legislation = "Contrary to section 19 of the Zoo Licensing Act 1981",
             changedDate = LocalDateTime.of(2020, 6, 17, 16, 31, 26),
             childOffenceIds = emptyList(),
+            custodialIndicator = NO,
           ),
         ),
       )
@@ -441,6 +453,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             childOffenceIds = emptyList(),
             homeOfficeStatsCode = "001/13",
             homeOfficeDescription = "Random HO offence 1",
+            custodialIndicator = YES,
           ),
           ModelOffence(
             id = 1,
@@ -453,6 +466,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             childOffenceIds = emptyList(),
             homeOfficeStatsCode = "001/13",
             homeOfficeDescription = "Random HO offence 1",
+            custodialIndicator = NO,
           ),
         ),
       )

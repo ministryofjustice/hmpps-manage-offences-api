@@ -53,6 +53,7 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     maxPeriodIsLife = offence.maxPeriodIsLife,
     maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
     childOffenceIds = childOffenceIds ?: emptyList(),
+    custodialIndicator = offence.custodialIndicator,
   )
 
 fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToScheduleMapping =
