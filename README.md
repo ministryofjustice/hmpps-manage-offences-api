@@ -1,4 +1,10 @@
 # Manage offences API
+[![repo standards badge](https://img.shields.io/badge/dynamic/json?color=blue&style=flat&logo=github&label=MoJ%20Compliant&query=%24.result&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fapi%2Fv1%2Fcompliant_public_repositories%2Fhmpps-manage-offences-api)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/public-github-repositories.html#hmpps-manage-offences-api "Link to report")
+[![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-manage-offences-api/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/hmpps-manage-offences-api)
+[![Docker Repository on Quay](https://quay.io/repository/hmpps/hmpps-manage-offences-api/status "Docker Repository on Quay")](https://quay.io/repository/hmpps/hmpps-manage-offences-api)
+[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://manage-offences-api-dev.hmpps.service.justice.gov.uk/swagger-ui.html)
+
+
 This is the API service for Managing Offences.
 
 # Dependencies
@@ -6,7 +12,7 @@ This service requires a postgresql database.
 
 # Building the project
 Tools required:
-* JDK v19+
+* JDK v21+
 * Kotlin
 * docker
 * docker-compose
@@ -30,9 +36,9 @@ that is seeded with data specific to each test suite.
 ## Start the postgres database and auth
 This will run the service locally. It starts the database and auth using docker compose then runs manage-offences-api via a bash script.
 Run the following commands from the root directory of the project:
-1. `docker-compose -f docker-compose-test.yml pull`
-2. `docker-compose -f docker-compose-test.yml up --no-start`
-3. `docker-compose -f docker-compose-test.yml start hmpps-auth manage-offences-db`
+1. `docker compose -f docker-compose-test.yml pull`
+2. `docker compose -f docker-compose-test.yml up --no-start`
+3. `docker compose -f docker-compose-test.yml start hmpps-auth manage-offences-db`
 4. `./run-local.sh`
 
 ## Connecting to the SDRS staging API

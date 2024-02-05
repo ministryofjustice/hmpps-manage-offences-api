@@ -1,5 +1,6 @@
 generic-service:
   nameOverride: hmpps-manage-offences-api
+  productId: "DPS074"
 
   replicaCount: 4
 
