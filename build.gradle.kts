@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.6.0"
-  kotlin("plugin.spring") version "1.9.10"
-  kotlin("plugin.jpa") version "1.9.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.13.0"
+  kotlin("plugin.spring") version "1.9.22"
+  kotlin("plugin.jpa") version "1.9.22"
   id("se.patrikerdes.use-latest-versions") version "0.2.18"
 }
 
@@ -70,14 +70,14 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.31.0")
 }
 
-java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(19))
+kotlin {
+  jvmToolchain(21)
 }
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-      jvmTarget = "19"
+      jvmTarget = "21"
     }
   }
 }
