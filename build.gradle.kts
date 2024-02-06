@@ -42,7 +42,7 @@ dependencies {
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.6.0")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.1")
 
   // Schedule locking
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.9.0")
