@@ -1,4 +1,6 @@
-package uk.gov.justice.digital.hmpps.manageoffencesapi.model // ktlint-disable
+@file:Suppress("ktlint")
+
+package uk.gov.justice.digital.hmpps.manageoffencesapi.model
 
 import com.fasterxml.jackson.databind.JsonNode
 
