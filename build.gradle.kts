@@ -24,7 +24,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.7.1")
 
   // AppInsights
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.32.1")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.2.0")
 
   // JWT
   implementation("io.jsonwebtoken:jjwt-api:0.12.5")
