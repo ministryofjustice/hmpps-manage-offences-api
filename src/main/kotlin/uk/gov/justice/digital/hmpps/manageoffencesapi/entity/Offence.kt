@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.JoinColumns
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -47,6 +48,8 @@ data class Offence(
     JoinColumn(name = "subCategory", referencedColumnName = "subCategory", insertable = false, updatable = false),
   )
   val homeOfficeCode: HomeOfficeCode? = null,
+  @Enumerated(EnumType.ORDINAL)
+  val custodialIndicator: CustodialIndicator? = null,
 ) {
   val statuteCode
     get() = code.substring(0, 4)

@@ -53,6 +53,7 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     maxPeriodIsLife = offence.maxPeriodIsLife,
     maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
     childOffenceIds = childOffenceIds ?: emptyList(),
+    custodialIndicator = offence.custodialIndicator,
   )
 
 fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToScheduleMapping =
@@ -103,6 +104,7 @@ fun transform(sdrsOffence: SdrsOffence, cache: SdrsCache): Offence = Offence(
   legislation = sdrsOffence.offenceActsAndSections,
   sdrsCache = cache,
   offenceType = sdrsOffence.offenceType,
+  custodialIndicator = sdrsOffence.custodialIndicator,
 )
 
 fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache): Offence =
@@ -117,6 +119,7 @@ fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache):
     offenceType = sdrsOffence.offenceType,
     sdrsCache = sdrsCache,
     lastUpdatedDate = LocalDateTime.now(),
+    custodialIndicator = sdrsOffence.custodialIndicator,
   )
 
 fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
