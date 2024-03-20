@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.1"
-  kotlin("plugin.spring") version "1.9.22"
-  kotlin("plugin.jpa") version "1.9.22"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.3"
+  kotlin("plugin.spring") version "1.9.23"
+  kotlin("plugin.jpa") version "1.9.23"
   id("se.patrikerdes.use-latest-versions") version "0.2.18"
 }
 
@@ -11,8 +11,8 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0")
-    mavenBom("software.amazon.awssdk:bom:2.23.18")
+    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
+    mavenBom("software.amazon.awssdk:bom:2.25.13")
   }
 }
 
@@ -21,7 +21,7 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-core")
-  runtimeOnly("org.postgresql:postgresql:42.7.1")
+  runtimeOnly("org.postgresql:postgresql:42.7.3")
 
   // AppInsights
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.2.0")
@@ -40,13 +40,13 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.1")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
 
   // Schedule locking
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.10.2")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.10.2")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:5.12.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.12.0")
 
   // AWS
   // See comment below relating to the SQS lib, keep these AWS dependencies above the SQS dependency
@@ -61,13 +61,13 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.1")
 
   // Miscellaneous
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
 
   // Test dependencies
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.20")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.21")
   testImplementation("com.h2database:h2")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.34.1")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.36.0")
 }
 
 kotlin {
