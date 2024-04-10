@@ -7,7 +7,7 @@ generic-service:
 
   env:
     HMPPS_AUTH_URL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
-    API_BASE_URL_SDRS: https://crime-reference-data-api.service.justice.gov.uk
+    API_BASE_URL_SDRS: https://sdrs.apps.hmcts.net
     API_BASE_URL_PRISON_API: https://api-preprod.prison.service.justice.gov.uk
 
   serviceAccountName: hmpps-manage-offences-api-preprod
