@@ -34,7 +34,7 @@ class HoCodeService(
   private val log = LoggerFactory.getLogger(this::class.java)
 
   // This does a full load whenever there is a new directory in the S3 bucket - at the moment the AP side creates a new release directory with all the data every cycle
-  @Scheduled(cron = "0 0 */12 * * *")
+  @Scheduled(cron = "0 0 5,17 * * *")
   @Transactional
   @SchedulerLock(name = "fullLoadOfHomeOfficeCodes")
   fun fullLoadOfHomeOfficeCodes() {
