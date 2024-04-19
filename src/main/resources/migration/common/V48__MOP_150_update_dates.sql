@@ -1,0 +1,1 @@
+UPDATE offence SET start_date = '2022-06-28' WHERE code IN ('DV04003', 'DV04004', 'RA88046');
