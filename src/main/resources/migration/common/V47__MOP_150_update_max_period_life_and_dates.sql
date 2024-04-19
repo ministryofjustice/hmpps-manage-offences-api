@@ -1,2 +1,0 @@
-UPDATE offence SET max_period_is_life = TRUE WHERE code IN ('RA88043',  'RA88045',  'RA88047', 'RA88048','RA88044');
-UPDATE offence SET start_date = '2022-06-28' WHERE code IN ('DV04003', 'DV04004', 'RA88046');
