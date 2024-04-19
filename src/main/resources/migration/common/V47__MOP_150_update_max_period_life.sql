@@ -1,0 +1,1 @@
+UPDATE offence SET max_period_is_life = TRUE WHERE code IN ('RA88043', 'RA88045', 'RA88047', 'RA88048','RA88044');
