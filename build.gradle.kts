@@ -12,7 +12,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
-    mavenBom("software.amazon.awssdk:bom:2.25.37")
+    mavenBom("software.amazon.awssdk:bom:2.25.38")
   }
 }
 
