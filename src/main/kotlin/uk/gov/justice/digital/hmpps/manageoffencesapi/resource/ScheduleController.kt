@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
@@ -113,6 +114,19 @@ class ScheduleController(
   ): List<OffencePcscMarkers> {
     log.info("Request received to determine pcsc markers for ${offenceCodes.size} offence codes")
     return scheduleService.findPcscSchedules(offenceCodes)
+  }
+
+  @GetMapping(value = ["/sexual-or-violent"])
+  @ResponseBody
+  @Operation(
+    summary = "Determine if the passed in offence codes are either sexual or violent offences",
+    description = "This endpoint will return a list of offences and whether they are violent or sexual offences",
+  )
+  fun getSexualOrViolentInformation(
+    @RequestParam offenceCodes: List<String>,
+  ): List<OffenceSexualOrViolent> {
+    log.info("Request received to determine sexual or violent status for ${offenceCodes.size} offence codes")
+    return scheduleService.categoriseSexualOrViolentOffences(offenceCodes)
   }
 
   @GetMapping(value = ["/pcsc-lists"])
