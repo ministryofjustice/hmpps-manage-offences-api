@@ -16,13 +16,11 @@ data class OffenceSexualOrViolent(
       inSchedule15Part1: Boolean,
       inSchedule15Part2: Boolean,
     ): OffenceSexualOrViolentIndicator {
-      if (inSchedule15Part2 || inSchedule3) {
-        return SEXUAL
+      return when {
+        inSchedule15Part2 || inSchedule3 -> SEXUAL
+        inSchedule15Part1 -> VIOLENT
+        else -> NONE
       }
-      if (inSchedule15Part1) {
-        return VIOLENT
-      }
-      return NONE
     }
   }
 }
