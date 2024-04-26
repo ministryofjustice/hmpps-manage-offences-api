@@ -14,6 +14,8 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent.Companion.getSexualOrViolentIndicator
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
@@ -52,7 +54,8 @@ class ScheduleService(
     }
     log.info("Unlink schedules with NOMIS used for migration records - starting")
 
-    val schedulesToUnlink = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_FROM_OFFENCE)
+    val schedulesToUnlink =
+      offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_FROM_OFFENCE)
 
     prisonApiClient.unlinkFromSchedule(
       schedulesToUnlink.map { s ->
@@ -77,7 +80,8 @@ class ScheduleService(
     }
     log.info("Link schedules with NOMIS used for migration records - starting")
 
-    val (pcscSchedulesToLink, schedulesToLink) = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE).partition { it.nomisScheduleName == NomisScheduleName.POTENTIAL_LINK_PCSC }
+    val (pcscSchedulesToLink, schedulesToLink) = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE)
+      .partition { it.nomisScheduleName == NomisScheduleName.POTENTIAL_LINK_PCSC }
 
     prisonApiClient.linkToSchedule(
       schedulesToLink.map { s ->
@@ -273,6 +277,25 @@ class ScheduleService(
     return getOffencePcscMarkers(offenceCodes)
   }
 
+  @Transactional(readOnly = true)
+  fun categoriseSexualOrViolentOffences(offenceCodes: List<String>): List<OffenceSexualOrViolent> {
+    log.info("Determining Sexual or Violent status for passed in offences")
+    return getSexualOrViolentIndicators(offenceCodes)
+  }
+  private fun getSexualOrViolentIndicators(offenceCodes: List<String>): List<OffenceSexualOrViolent> {
+    val (scheduleThreeMapping, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
+    return offenceCodes.map {
+      OffenceSexualOrViolent(
+        offenceCode = it,
+        schedulePart = getSexualOrViolentIndicator(
+          scheduleThreeMapping.any { p -> p.offence.code == it },
+          part1Mappings.any { p -> p.offence.code == it },
+          part2Mappings.any { p -> p.offence.code == it },
+        ),
+      )
+    }
+  }
+
   private fun getOffencePcscMarkers(offenceCodes: List<String>): List<OffencePcscMarkers> {
     val (part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings) = getSchedule15PcscMappings()
 
@@ -290,16 +313,30 @@ class ScheduleService(
   }
 
   private fun getSchedule15PcscMappings(): Triple<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
-    val schedule15 = scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")
-      ?: throw EntityNotFoundException("Schedule 15 not found")
-    val parts = schedulePartRepository.findByScheduleId(schedule15.id)
-    val part1Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 1 }.id)
+    val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val part1LifeMappings = part1Mappings.filter { it.offence.maxPeriodIsLife == true }
-    val part2Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 2 }.id)
     val part2LifeMappings = part2Mappings.filter { it.offence.maxPeriodIsLife == true }
     val seriousViolentOffenceMappings =
       part1Mappings.filter { it.paragraphNumber == "1" || it.paragraphNumber == "4" || it.paragraphNumber == "6" || it.paragraphNumber == "64" || it.paragraphNumber == "65" }
     return Triple(part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings)
+  }
+
+  private fun getSchedule15Mappings(): Pair<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
+    val schedule15 = scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")
+      ?: throw EntityNotFoundException("Schedule 15 not found")
+    val parts = schedulePartRepository.findByScheduleId(schedule15.id)
+    val part1Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 1 }.id)
+    val part2Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 2 }.id)
+    return Pair(part1Mappings, part2Mappings)
+  }
+
+  private fun getSexualOrViolentMappings(): Triple<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
+    val scheduleThree = scheduleRepository.findOneByActAndCode("Sexual Offences Act 2003", "3")
+      ?: throw EntityNotFoundException("Schedule 3 not found")
+    val partThree = schedulePartRepository.findByScheduleId(scheduleThree.id)
+    val scheduleThreeMapping = offenceScheduleMappingRepository.findBySchedulePartId(partThree.first().id)
+    val (part1Mappings, part2Mappings) = getSchedule15Mappings()
+    return Triple(scheduleThreeMapping, part1Mappings, part2Mappings)
   }
 
   // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start after 28 June 2022)

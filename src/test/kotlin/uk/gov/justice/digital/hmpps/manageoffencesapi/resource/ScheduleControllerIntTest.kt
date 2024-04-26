@@ -7,6 +7,10 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTes
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NONE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.SEXUAL
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.VIOLENT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
@@ -86,6 +90,31 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
               inListD = false,
             ),
           ),
+        ),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-sexual-or-violent.sql",
+  )
+  fun `Get Sexual or Violent indicators for multiple offences by offence codes`() {
+    val result = webTestClient.get().uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(OffenceSexualOrViolent::class.java)
+      .returnResult().responseBody
+
+    assertThat(result)
+      .usingRecursiveComparison()
+      .isEqualTo(
+        listOf(
+          OffenceSexualOrViolent(offenceCode = "AB14001", schedulePart = VIOLENT),
+          OffenceSexualOrViolent(offenceCode = "AB14002", schedulePart = SEXUAL),
+          OffenceSexualOrViolent(offenceCode = "AB14003", schedulePart = SEXUAL),
+          OffenceSexualOrViolent(offenceCode = "AF06999", schedulePart = NONE),
         ),
       )
   }
