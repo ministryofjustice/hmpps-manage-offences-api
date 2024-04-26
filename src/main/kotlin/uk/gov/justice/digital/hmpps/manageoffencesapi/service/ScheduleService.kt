@@ -283,12 +283,12 @@ class ScheduleService(
     return getSexualOrViolentIndicators(offenceCodes)
   }
   private fun getSexualOrViolentIndicators(offenceCodes: List<String>): List<OffenceSexualOrViolent> {
-    val (scheduleThreeMapping, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
+    val (scheduleThreeMappings, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
     return offenceCodes.map {
       OffenceSexualOrViolent(
         offenceCode = it,
         schedulePart = getSexualOrViolentIndicator(
-          scheduleThreeMapping.any { p -> p.offence.code == it },
+          scheduleThreeMappings.any { p -> p.offence.code == it },
           part1Mappings.any { p -> p.offence.code == it },
           part2Mappings.any { p -> p.offence.code == it },
         ),
@@ -333,10 +333,9 @@ class ScheduleService(
   private fun getSexualOrViolentMappings(): Triple<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
     val scheduleThree = scheduleRepository.findOneByActAndCode("Sexual Offences Act 2003", "3")
       ?: throw EntityNotFoundException("Schedule 3 not found")
-    val partThree = schedulePartRepository.findByScheduleId(scheduleThree.id)
-    val scheduleThreeMapping = offenceScheduleMappingRepository.findBySchedulePartId(partThree.first().id)
+    val scheduleThreeMappings = offenceScheduleMappingRepository.findBySchedulePartScheduleId(scheduleThree.id)
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
-    return Triple(scheduleThreeMapping, part1Mappings, part2Mappings)
+    return Triple(scheduleThreeMappings, part1Mappings, part2Mappings)
   }
 
   // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start after 28 June 2022)
