@@ -338,7 +338,7 @@ class ScheduleService(
     return Triple(scheduleThreeMappings, part1Mappings, part2Mappings)
   }
 
-  // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start after 28 June 2022)
+  // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start on or after 28 June 2022)
   // NOMIS SCHEDULE_15_ATTRACTS_LIFE - SDS >7 years between 01 April 2020 and 28 June 2022
   private fun inListA(
     part1LifeMappings: List<OffenceScheduleMapping>,
