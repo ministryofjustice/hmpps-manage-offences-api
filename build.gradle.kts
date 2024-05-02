@@ -12,7 +12,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
-    mavenBom("software.amazon.awssdk:bom:2.25.38")
+    mavenBom("software.amazon.awssdk:bom:2.25.43")
   }
 }
 
@@ -42,7 +42,7 @@ dependencies {
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.4")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.5")
 
   // Schedule locking
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.13.0")
