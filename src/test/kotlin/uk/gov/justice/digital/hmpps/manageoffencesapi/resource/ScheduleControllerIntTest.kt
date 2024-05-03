@@ -11,11 +11,14 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViole
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NONE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.SEXUAL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.VIOLENT
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SexualOrViolentLists
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 class ScheduleControllerIntTest : IntegrationTestBase() {
 
@@ -133,22 +136,45 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .expectBody(SexualOrViolentLists::class.java)
       .returnResult().responseBody
 
-    val returnedLists = result ?: SexualOrViolentLists()
-    val sexualOffenceToScheduleCodes = returnedLists.sexual.map { it.code }.toList()
-    val violentOffenceToScheduleCodes = returnedLists.violent.map { it.code }.toList()
+    val changeDate = LocalDateTime.of(2020, 6, 17, 15, 31, 26)
+    val startDate = LocalDate.of(2015, 3, 13)
+    val loadDate = LocalDateTime.of(2022, 4, 7, 0, 0, 0)
 
-    assertThat(sexualOffenceToScheduleCodes.size).isEqualTo(2)
-    assertThat(violentOffenceToScheduleCodes.size).isEqualTo(1)
-
-    assertThat(sexualOffenceToScheduleCodes.contains("AB14001")).isEqualTo(false)
-    assertThat(sexualOffenceToScheduleCodes.contains("AB14002")).isEqualTo(true)
-    assertThat(sexualOffenceToScheduleCodes.contains("AB14003")).isEqualTo(true)
-    assertThat(sexualOffenceToScheduleCodes.contains("AF06999")).isEqualTo(false)
-
-    assertThat(violentOffenceToScheduleCodes.contains("AB14001")).isEqualTo(true)
-    assertThat(violentOffenceToScheduleCodes.contains("AB14002")).isEqualTo(false)
-    assertThat(violentOffenceToScheduleCodes.contains("AB14003")).isEqualTo(false)
-    assertThat(violentOffenceToScheduleCodes.contains("AF06999")).isEqualTo(false)
+    assertThat(result).usingRecursiveComparison().isEqualTo(
+      SexualOrViolentLists(
+        sexual = hashSetOf(
+          OffenceToScheduleMapping(
+            id = 4,
+            description = "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
+            code = "AB14003",
+            changedDate = changeDate,
+            startDate = startDate,
+            loadDate = loadDate,
+            revisionId = 574449,
+          ),
+          OffenceToScheduleMapping(
+            id = 3,
+            description = "Intentionally obstruct an authorised person",
+            code = "AB14002",
+            changedDate = changeDate,
+            startDate = startDate,
+            loadDate = loadDate,
+            revisionId = 574487,
+          ),
+        ),
+        violent = hashSetOf(
+          OffenceToScheduleMapping(
+            id = 2,
+            description = "Fail to comply with an animal by-product requirement",
+            code = "AB14001",
+            changedDate = changeDate,
+            startDate = startDate,
+            loadDate = loadDate,
+            revisionId = 574415,
+          ),
+        ),
+      ),
+    )
   }
 
   @Test
