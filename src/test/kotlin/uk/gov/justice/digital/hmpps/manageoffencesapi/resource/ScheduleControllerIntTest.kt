@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SexualOrViolentLists
 
 class ScheduleControllerIntTest : IntegrationTestBase() {
 
@@ -117,6 +118,37 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
           OffenceSexualOrViolent(offenceCode = "AF06999", schedulePart = NONE),
         ),
       )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-sexual-or-violent.sql",
+  )
+  fun `Get Sexual or Violent lists`() {
+    val result = webTestClient.get().uri("/schedule/sexual-or-violent-lists")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(SexualOrViolentLists::class.java)
+      .returnResult().responseBody
+
+    val returnedLists = result ?: SexualOrViolentLists()
+    val sexualOffenceToScheduleCodes = returnedLists.sexual.map { it.code }.toList()
+    val violentOffenceToScheduleCodes = returnedLists.violent.map { it.code }.toList()
+
+    assertThat(sexualOffenceToScheduleCodes.size).isEqualTo(2)
+    assertThat(violentOffenceToScheduleCodes.size).isEqualTo(1)
+
+    assertThat(sexualOffenceToScheduleCodes.contains("AB14001")).isEqualTo(false)
+    assertThat(sexualOffenceToScheduleCodes.contains("AB14002")).isEqualTo(true)
+    assertThat(sexualOffenceToScheduleCodes.contains("AB14003")).isEqualTo(true)
+    assertThat(sexualOffenceToScheduleCodes.contains("AF06999")).isEqualTo(false)
+
+    assertThat(violentOffenceToScheduleCodes.contains("AB14001")).isEqualTo(true)
+    assertThat(violentOffenceToScheduleCodes.contains("AB14002")).isEqualTo(false)
+    assertThat(violentOffenceToScheduleCodes.contains("AB14003")).isEqualTo(false)
+    assertThat(violentOffenceToScheduleCodes.contains("AF06999")).isEqualTo(false)
   }
 
   @Test

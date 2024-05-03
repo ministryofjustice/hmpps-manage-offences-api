@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMap
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SexualOrViolentLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
@@ -405,6 +406,19 @@ class ScheduleService(
       listB = listB.sortedBy { it.code }.toSet(),
       listC = listC.sortedBy { it.code }.toSet(),
       listD = listD.sortedBy { it.code }.toSet(),
+    )
+  }
+
+  fun getSexualOrVioletLists(): SexualOrViolentLists {
+    val (scheduleThreeMappings, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
+    val sexual = mutableSetOf<OffenceToScheduleMapping>()
+    scheduleThreeMappings.forEach { sexual.add(transform(it)) }
+    part2Mappings.forEach { sexual.add(transform(it)) }
+    val violent = mutableSetOf<OffenceToScheduleMapping>()
+    part1Mappings.forEach { violent.add(transform(it)) }
+    return SexualOrViolentLists(
+      sexual = sexual.sortedBy { it.code }.toSet(),
+      violent = violent.sortedBy { it.code }.toSet(),
     )
   }
 

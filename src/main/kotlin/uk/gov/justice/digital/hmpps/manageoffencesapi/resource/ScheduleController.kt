@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMap
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SexualOrViolentLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService
 
 @RestController
@@ -127,6 +128,17 @@ class ScheduleController(
   ): List<OffenceSexualOrViolent> {
     log.info("Request received to determine sexual or violent status for ${offenceCodes.size} offence codes")
     return scheduleService.categoriseSexualOrViolentOffences(offenceCodes)
+  }
+
+  @GetMapping(value = ["/sexual-or-violent-lists"])
+  @ResponseBody
+  @Operation(
+    summary = "Retrieves the list of all the offences that are either sexual or violent",
+    description = "This endpoint will return a list of all the offences that are sexual (Schedule 3 or 15 Part 2) or violent (Schedule 15 Part 1)",
+  )
+  fun getSexualOrViolentLists(): SexualOrViolentLists {
+    log.info("Request received to get list of sexual or violent offences")
+    return scheduleService.getSexualOrVioletLists()
   }
 
   @GetMapping(value = ["/pcsc-lists"])
