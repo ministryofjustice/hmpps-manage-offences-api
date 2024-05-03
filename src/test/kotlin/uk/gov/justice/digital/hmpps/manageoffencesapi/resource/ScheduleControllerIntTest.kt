@@ -11,10 +11,14 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViole
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NONE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.SEXUAL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.VIOLENT
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SexualOrViolentLists
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 class ScheduleControllerIntTest : IntegrationTestBase() {
 
@@ -115,6 +119,63 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
           OffenceSexualOrViolent(offenceCode = "AB14002", schedulePart = SEXUAL),
           OffenceSexualOrViolent(offenceCode = "AB14003", schedulePart = SEXUAL),
           OffenceSexualOrViolent(offenceCode = "AF06999", schedulePart = NONE),
+        ),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-sexual-or-violent.sql",
+  )
+  fun `Get Sexual or Violent lists`() {
+    val result = webTestClient.get().uri("/schedule/sexual-or-violent-lists")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(SexualOrViolentLists::class.java)
+      .returnResult().responseBody
+
+    val changeDate = LocalDateTime.of(2020, 6, 17, 15, 31, 26)
+    val startDate = LocalDate.of(2015, 3, 13)
+    val loadDate = LocalDateTime.of(2022, 4, 7, 0, 0, 0)
+
+    assertThat(result).usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*id")
+      .ignoringCollectionOrder()
+      .isEqualTo(
+        SexualOrViolentLists(
+          sexual = hashSetOf(
+            OffenceToScheduleMapping(
+              id = 4,
+              description = "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
+              code = "AB14003",
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              revisionId = 574449,
+            ),
+            OffenceToScheduleMapping(
+              id = 3,
+              description = "Intentionally obstruct an authorised person",
+              code = "AB14002",
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              revisionId = 574487,
+            ),
+          ),
+          violent = hashSetOf(
+            OffenceToScheduleMapping(
+              id = 2,
+              description = "Fail to comply with an animal by-product requirement",
+              code = "AB14001",
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              revisionId = 574415,
+            ),
+          ),
         ),
       )
   }
