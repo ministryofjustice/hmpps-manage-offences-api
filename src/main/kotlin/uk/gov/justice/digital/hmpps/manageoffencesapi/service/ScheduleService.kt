@@ -9,7 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.LINK_SCHEDULES_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SEXUAL_OFFENCES_FROM_CODES_AND_S15P2
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.UNLINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
@@ -49,7 +51,7 @@ class ScheduleService(
   @SchedulerLock(name = "unlinkScheduleMappingsToNomis")
   @Transactional
   fun unlinkScheduleMappingsToNomis() {
-    if (!adminService.isFeatureEnabled(Feature.UNLINK_SCHEDULES_NOMIS)) {
+    if (!adminService.isFeatureEnabled(UNLINK_SCHEDULES_NOMIS)) {
       log.info("Unlink schedules with NOMIS - disabled")
       return
     }
@@ -75,7 +77,7 @@ class ScheduleService(
   @SchedulerLock(name = "linkScheduleMappingsToNomis")
   @Transactional
   fun linkScheduleMappingsToNomis() {
-    if (!adminService.isFeatureEnabled(Feature.LINK_SCHEDULES_NOMIS)) {
+    if (!adminService.isFeatureEnabled(LINK_SCHEDULES_NOMIS)) {
       log.info("Link schedules with NOMIS - disabled")
       return
     }
@@ -292,6 +294,8 @@ class ScheduleService(
           scheduleThreeMappings.any { p -> p.offence.code == it },
           part1Mappings.any { p -> p.offence.code == it },
           part2Mappings.any { p -> p.offence.code == it },
+          adminService.isFeatureEnabled(SEXUAL_OFFENCES_FROM_CODES_AND_S15P2),
+          it,
         ),
       )
     }

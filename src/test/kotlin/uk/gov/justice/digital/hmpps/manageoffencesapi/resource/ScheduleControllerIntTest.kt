@@ -103,8 +103,9 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     "classpath:test_data/reset-all-data.sql",
     "classpath:test_data/insert-offence-data-sexual-or-violent.sql",
   )
-  fun `Get Sexual or Violent indicators for multiple offences by offence codes`() {
-    val result = webTestClient.get().uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999")
+  fun `Get Sexual or Violent indicators for multiple offences by offence codes (Codes and S15P2)`() {
+    val result = webTestClient.get()
+      .uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus().isOk
@@ -113,10 +114,43 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
 
     assertThat(result)
       .usingRecursiveComparison()
+      .ignoringCollectionOrder()
       .isEqualTo(
         listOf(
           OffenceSexualOrViolent(offenceCode = "AB14001", schedulePart = VIOLENT),
           OffenceSexualOrViolent(offenceCode = "AB14002", schedulePart = SEXUAL),
+          OffenceSexualOrViolent(offenceCode = "SX03TEST", schedulePart = SEXUAL),
+          OffenceSexualOrViolent(offenceCode = "SX56TEST", schedulePart = SEXUAL),
+          OffenceSexualOrViolent(offenceCode = "AB14003", schedulePart = NONE),
+          OffenceSexualOrViolent(offenceCode = "AF06999", schedulePart = NONE),
+        ),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/disable_sexual_offences_from_codes_ands15p2.sql",
+    "classpath:test_data/insert-offence-data-sexual-or-violent.sql",
+  )
+  fun `Get Sexual or Violent indicators for multiple offences by offence codes (S3 and S15P2)`() {
+    val result = webTestClient.get()
+      .uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(OffenceSexualOrViolent::class.java)
+      .returnResult().responseBody
+
+    assertThat(result)
+      .usingRecursiveComparison()
+      .ignoringCollectionOrder()
+      .isEqualTo(
+        listOf(
+          OffenceSexualOrViolent(offenceCode = "AB14001", schedulePart = VIOLENT),
+          OffenceSexualOrViolent(offenceCode = "AB14002", schedulePart = SEXUAL),
+          OffenceSexualOrViolent(offenceCode = "SX03TEST", schedulePart = NONE),
+          OffenceSexualOrViolent(offenceCode = "SX56TEST", schedulePart = NONE),
           OffenceSexualOrViolent(offenceCode = "AB14003", schedulePart = SEXUAL),
           OffenceSexualOrViolent(offenceCode = "AF06999", schedulePart = NONE),
         ),

@@ -1,0 +1,1 @@
+UPDATE feature_toggle SET enabled = FALSE WHERE feature = 'SEXUAL_OFFENCES_FROM_CODES_AND_S15P2';
