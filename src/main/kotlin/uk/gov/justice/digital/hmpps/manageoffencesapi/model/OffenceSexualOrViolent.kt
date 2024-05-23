@@ -15,12 +15,19 @@ data class OffenceSexualOrViolent(
       inSchedule3: Boolean,
       inSchedule15Part1: Boolean,
       inSchedule15Part2: Boolean,
+      useOffenceCodesForSexual: Boolean,
+      offenceCode: String,
     ): OffenceSexualOrViolentIndicator {
       return when {
-        inSchedule15Part2 || inSchedule3 -> SEXUAL
+        useOffenceCodesForSexual && (inSchedule15Part2 || isOffenceCodePrefixedWithSX03orSX56(offenceCode)) -> SEXUAL
+        !useOffenceCodesForSexual && (inSchedule15Part2 || inSchedule3) -> SEXUAL
         inSchedule15Part1 -> VIOLENT
         else -> NONE
       }
+    }
+
+    private fun isOffenceCodePrefixedWithSX03orSX56(offenceCode: String): Boolean {
+      return offenceCode.startsWith("SX03") || offenceCode.startsWith("SX56")
     }
   }
 }
