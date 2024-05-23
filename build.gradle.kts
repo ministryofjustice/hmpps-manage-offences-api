@@ -1,7 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.6"
-  kotlin("plugin.spring") version "1.9.23"
-  kotlin("plugin.jpa") version "1.9.23"
+  kotlin("plugin.spring") version "1.9.24"
+  kotlin("plugin.jpa") version "1.9.24"
   id("se.patrikerdes.use-latest-versions") version "0.2.18"
 }
 
@@ -12,7 +12,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
-    mavenBom("software.amazon.awssdk:bom:2.25.43")
+    mavenBom("software.amazon.awssdk:bom:2.25.58")
   }
 }
 
@@ -24,7 +24,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.7.3")
 
   // AppInsights
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.3.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.4.0")
 
   // JWT
   implementation("io.jsonwebtoken:jjwt-api:0.12.5")
@@ -61,13 +61,13 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.3")
 
   // Miscellaneous
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
 
   // Test dependencies
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.22")
   testImplementation("com.h2database:h2")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.37.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.38.0")
 }
 
 kotlin {
