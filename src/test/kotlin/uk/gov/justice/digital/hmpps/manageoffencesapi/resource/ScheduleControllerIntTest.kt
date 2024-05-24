@@ -175,11 +175,40 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     val loadDate = LocalDateTime.of(2022, 4, 7, 0, 0, 0)
 
     assertThat(result).usingRecursiveComparison()
-      .ignoringFieldsMatchingRegexes(".*id")
+      .ignoringFieldsMatchingRegexes(".*id|.*isChild|.*childOffences")
       .ignoringCollectionOrder()
       .isEqualTo(
         SexualOrViolentLists(
-          sexual = hashSetOf(
+          sexualCodesAndS15P2 = hashSetOf(
+            OffenceToScheduleMapping(
+              id = 3,
+              description = "Intentionally obstruct an authorised person",
+              code = "AB14002",
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              revisionId = 574487,
+            ),
+            OffenceToScheduleMapping(
+              id = 3,
+              description = "Test for SX03 prefixed codes",
+              code = "SX03TEST",
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              revisionId = 574450,
+            ),
+            OffenceToScheduleMapping(
+              id = 3,
+              description = "Test for SX56 prefixed codes",
+              code = "SX56TEST",
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              revisionId = 574431,
+            ),
+          ),
+          sexualS3AndS15P2 = hashSetOf(
             OffenceToScheduleMapping(
               id = 4,
               description = "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
