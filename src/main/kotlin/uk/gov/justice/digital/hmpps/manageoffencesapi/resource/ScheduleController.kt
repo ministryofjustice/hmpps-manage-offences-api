@@ -138,7 +138,7 @@ class ScheduleController(
   )
   fun getSexualOrViolentLists(): SexualOrViolentLists {
     log.info("Request received to get list of sexual or violent offences")
-    return scheduleService.getSexualOrVioletLists()
+    return scheduleService.getSexualOrViolentLists()
   }
 
   @GetMapping(value = ["/pcsc-lists"])

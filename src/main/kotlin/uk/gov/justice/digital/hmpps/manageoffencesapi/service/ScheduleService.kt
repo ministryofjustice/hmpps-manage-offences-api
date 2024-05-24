@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.LINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SEXUAL_OFFENCES_FROM_CODES_AND_S15P2
@@ -285,6 +286,7 @@ class ScheduleService(
     log.info("Determining Sexual or Violent status for passed in offences")
     return getSexualOrViolentIndicators(offenceCodes)
   }
+
   private fun getSexualOrViolentIndicators(offenceCodes: List<String>): List<OffenceSexualOrViolent> {
     val (scheduleThreeMappings, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
     return offenceCodes.map {
@@ -413,16 +415,21 @@ class ScheduleService(
     )
   }
 
-  fun getSexualOrVioletLists(): SexualOrViolentLists {
+  fun getSexualOrViolentLists(): SexualOrViolentLists {
     val (scheduleThreeMappings, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
-    val sexual = mutableSetOf<OffenceToScheduleMapping>()
-    scheduleThreeMappings.forEach { sexual.add(transform(it)) }
-    part2Mappings.forEach { sexual.add(transform(it)) }
-    val violent = mutableSetOf<OffenceToScheduleMapping>()
-    part1Mappings.forEach { violent.add(transform(it)) }
+
+    var sexualS3AndS15P2 = scheduleThreeMappings.map { transform(it) }
+    sexualS3AndS15P2 += part2Mappings.map { transform(it) }
+
+    var sexualCodesAndS15P2 = part2Mappings.map { transform(it) }
+
+    sexualCodesAndS15P2 += offenceRepository.findByCodeStartsWithIgnoreCase("SX03").map { transform(it, emptyList<Offence>()) }
+    sexualCodesAndS15P2 += offenceRepository.findByCodeStartsWithIgnoreCase("SX56").map { transform(it, emptyList<Offence>()) }
+
     return SexualOrViolentLists(
-      sexual = sexual.sortedBy { it.code }.toSet(),
-      violent = violent.sortedBy { it.code }.toSet(),
+      sexualCodesAndS15P2 = sexualCodesAndS15P2.distinctBy { it.code }.sortedBy { it.code }.toSet(),
+      sexualS3AndS15P2 = sexualS3AndS15P2.distinctBy { it.code }.sortedBy { it.code }.toSet(),
+      violent = (part1Mappings.map { transform(it) }).sortedBy { it.code }.toSet(),
     )
   }
 
