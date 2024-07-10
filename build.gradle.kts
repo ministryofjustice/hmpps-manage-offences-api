@@ -58,7 +58,7 @@ dependencies {
   // During a upgrade PR a springboot/aws related issue occurred which implied there was a conflict with the hmpps-sqs library
   // Moving this SQS lib below the AWS libs solved the problem. Not exactly sure why! See the PR for more details
   // https://github.com/ministryofjustice/hmpps-manage-offences-api/pull/175
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.3")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:4.0.1")
 
   // Miscellaneous
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
