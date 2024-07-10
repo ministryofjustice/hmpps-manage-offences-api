@@ -12,7 +12,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
-    mavenBom("software.amazon.awssdk:bom:2.26.8")
+    mavenBom("software.amazon.awssdk:bom:2.26.18")
   }
 }
 
@@ -40,9 +40,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.7")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.1")
 
   // Schedule locking
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.13.0")
@@ -61,13 +61,13 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:4.0.1")
 
   // Miscellaneous
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
 
   // Test dependencies
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.22")
   testImplementation("com.h2database:h2")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.39.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.40.0")
 }
 
 kotlin {
