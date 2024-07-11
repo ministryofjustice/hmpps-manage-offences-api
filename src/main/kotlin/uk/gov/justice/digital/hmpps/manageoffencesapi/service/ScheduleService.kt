@@ -290,20 +290,27 @@ class ScheduleService(
   private fun getSexualOrViolentIndicators(offenceCodes: List<String>): List<OffenceSexualOrViolent> {
     val (scheduleThreeMappings, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
     val domesticViolenceMappings = getDomesticViolenceScheduleMappings()
+    val nationalSecurityMappings = getMappingsFromLegislation(NATIONAL_SECURITY_LEGISLATION)
+    val sexualMappingsFromLegislation = getMappingsFromLegislation(SEXUAL_OFFENCES_LEGISLATION)
     return offenceCodes.map {
       OffenceSexualOrViolent(
         offenceCode = it,
         schedulePart = getSexualOrViolentIndicator(
-          scheduleThreeMappings.any { p -> p.offence.code == it },
-          part1Mappings.any { p -> p.offence.code == it },
-          part2Mappings.any { p -> p.offence.code == it },
-          domesticViolenceMappings.any { p -> p.offence.code == it },
-          adminService.isFeatureEnabled(SEXUAL_OFFENCES_FROM_CODES_AND_S15P2),
-          it,
+          inSchedule3 = scheduleThreeMappings.any { p -> p.offence.code == it },
+          inSchedule15Part1 = part1Mappings.any { p -> p.offence.code == it },
+          inSchedule15Part2 = part2Mappings.any { p -> p.offence.code == it },
+          domesticViolence = domesticViolenceMappings.any { p -> p.offence.code == it },
+          useOffenceCodesForSexual = adminService.isFeatureEnabled(SEXUAL_OFFENCES_FROM_CODES_AND_S15P2),
+          isNationalSecurity = nationalSecurityMappings.any { p -> p.offence.code == it },
+          isSexOffenceLegislation = sexualMappingsFromLegislation.any { p -> p.offence.code == it },
+          offenceCode = it,
         ),
       )
     }
   }
+
+  private fun getMappingsFromLegislation(legislationTexts: List<String>): List<OffenceScheduleMapping> =
+    offenceScheduleMappingRepository.findByLegislationTextInIgnoreCase(legislationTexts.map { it.lowercase() })
 
   private fun getOffencePcscMarkers(offenceCodes: List<String>): List<OffencePcscMarkers> {
     val (part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings) = getSchedule15PcscMappings()
@@ -431,8 +438,10 @@ class ScheduleService(
 
     var sexualCodesAndS15P2 = part2Mappings.map { transform(it) }
 
-    sexualCodesAndS15P2 += offenceRepository.findByCodeStartsWithIgnoreCase("SX03").map { transform(it, emptyList<Offence>()) }
-    sexualCodesAndS15P2 += offenceRepository.findByCodeStartsWithIgnoreCase("SX56").map { transform(it, emptyList<Offence>()) }
+    sexualCodesAndS15P2 += offenceRepository.findByCodeStartsWithIgnoreCase("SX03")
+      .map { transform(it, emptyList<Offence>()) }
+    sexualCodesAndS15P2 += offenceRepository.findByCodeStartsWithIgnoreCase("SX56")
+      .map { transform(it, emptyList<Offence>()) }
 
     return SexualOrViolentLists(
       sexualCodesAndS15P2 = sexualCodesAndS15P2.distinctBy { it.code }.sortedBy { it.code }.toSet(),
@@ -444,5 +453,12 @@ class ScheduleService(
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     val SDS_LIST_A_CUT_OFF_DATE: LocalDate = LocalDate.of(2022, 6, 28)
+    val NATIONAL_SECURITY_LEGISLATION = listOf(
+      "National Security Act 2023",
+      "Official Secrets Act 1989",
+      "Official Secrets Act 1920",
+      "Official Secrets Act 1911",
+    )
+    val SEXUAL_OFFENCES_LEGISLATION = listOf("Sexual Offences Act 2003")
   }
 }
