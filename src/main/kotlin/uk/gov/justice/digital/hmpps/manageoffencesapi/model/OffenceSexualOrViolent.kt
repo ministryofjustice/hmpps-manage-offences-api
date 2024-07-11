@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.DOMESTIC_ABUSE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NATIONAL_SECURITY
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NONE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.SEXUAL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.VIOLENT
@@ -17,12 +19,16 @@ data class OffenceSexualOrViolent(
       inSchedule15Part2: Boolean,
       domesticViolence: Boolean,
       useOffenceCodesForSexual: Boolean,
+      isNationalSecurity: Boolean,
+      isSexOffenceLegislation: Boolean,
       offenceCode: String,
     ): OffenceSexualOrViolentIndicator {
       return when {
-        domesticViolence -> SEXUAL
         useOffenceCodesForSexual && (inSchedule15Part2 || isOffenceCodePrefixedWithSX03orSX56(offenceCode)) -> SEXUAL
         !useOffenceCodesForSexual && (inSchedule15Part2 || inSchedule3) -> SEXUAL
+        isSexOffenceLegislation -> SEXUAL
+        domesticViolence -> DOMESTIC_ABUSE
+        isNationalSecurity -> NATIONAL_SECURITY
         inSchedule15Part1 -> VIOLENT
         else -> NONE
       }
@@ -37,6 +43,8 @@ data class OffenceSexualOrViolent(
 @Schema(description = "Categories for the offence")
 enum class OffenceSexualOrViolentIndicator {
   SEXUAL,
+  DOMESTIC_ABUSE,
   VIOLENT,
   NONE,
+  NATIONAL_SECURITY,
 }
