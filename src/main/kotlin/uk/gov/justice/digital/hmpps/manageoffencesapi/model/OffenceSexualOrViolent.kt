@@ -15,10 +15,12 @@ data class OffenceSexualOrViolent(
       inSchedule3: Boolean,
       inSchedule15Part1: Boolean,
       inSchedule15Part2: Boolean,
+      domesticViolence: Boolean,
       useOffenceCodesForSexual: Boolean,
       offenceCode: String,
     ): OffenceSexualOrViolentIndicator {
       return when {
+        domesticViolence -> SEXUAL
         useOffenceCodesForSexual && (inSchedule15Part2 || isOffenceCodePrefixedWithSX03orSX56(offenceCode)) -> SEXUAL
         !useOffenceCodesForSexual && (inSchedule15Part2 || inSchedule3) -> SEXUAL
         inSchedule15Part1 -> VIOLENT
