@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOM
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.LINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.PUBLISH_EVENTS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SEXUAL_OFFENCES_FROM_CODES_AND_S15P2
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SYNC_HOME_OFFICE_CODES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.UNLINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
@@ -47,7 +46,6 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(PUBLISH_EVENTS, true),
           FeatureToggle(UNLINK_SCHEDULES_NOMIS, true),
           FeatureToggle(LINK_SCHEDULES_NOMIS, true),
-          FeatureToggle(SEXUAL_OFFENCES_FROM_CODES_AND_S15P2, true),
         ),
       )
   }
@@ -79,7 +77,6 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(PUBLISH_EVENTS, true),
           FeatureToggle(UNLINK_SCHEDULES_NOMIS, true),
           FeatureToggle(LINK_SCHEDULES_NOMIS, true),
-          FeatureToggle(SEXUAL_OFFENCES_FROM_CODES_AND_S15P2, true),
         ),
       )
   }

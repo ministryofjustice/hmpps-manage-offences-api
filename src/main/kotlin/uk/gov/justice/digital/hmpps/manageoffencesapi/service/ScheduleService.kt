@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.LINK_SCHEDULES_NOMIS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SEXUAL_OFFENCES_FROM_CODES_AND_S15P2
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.UNLINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
@@ -288,29 +287,66 @@ class ScheduleService(
   }
 
   private fun getSexualOrViolentIndicators(offenceCodes: List<String>): List<OffenceSexualOrViolent> {
-    val (scheduleThreeMappings, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
+    val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val domesticViolenceMappings = getDomesticViolenceScheduleMappings()
-    val nationalSecurityMappings = getMappingsFromLegislation(NATIONAL_SECURITY_LEGISLATION)
-    val sexualMappingsFromLegislation = getMappingsFromLegislation(SEXUAL_OFFENCES_LEGISLATION)
-    return offenceCodes.map {
+    val securityOffencesFromLegislation = getSecurityOffencesLegislation()
+    val sexualOffencesFromLegislation = getSexOffencesLegislation()
+
+    return offenceCodes.map { offenceCode ->
+      val isSexual =
+        part2Mappings.any { it.offence.code == offenceCode } || hasSexualCodePrefix(offenceCode) || sexualOffencesFromLegislation.any { it.code == offenceCode }
+      val isDomesticViolence = domesticViolenceMappings.any { it.offence.code == offenceCode }
+      val isNationalSecurity = securityOffencesFromLegislation.any { it.code == offenceCode }
+      val isViolent = part1Mappings.any { it.offence.code == offenceCode }
+
+      val indicator = getSexualOrViolentIndicator(isSexual, isDomesticViolence, isNationalSecurity, isViolent)
+
       OffenceSexualOrViolent(
-        offenceCode = it,
-        schedulePart = getSexualOrViolentIndicator(
-          inSchedule3 = scheduleThreeMappings.any { p -> p.offence.code == it },
-          inSchedule15Part1 = part1Mappings.any { p -> p.offence.code == it },
-          inSchedule15Part2 = part2Mappings.any { p -> p.offence.code == it },
-          domesticViolence = domesticViolenceMappings.any { p -> p.offence.code == it },
-          useOffenceCodesForSexual = adminService.isFeatureEnabled(SEXUAL_OFFENCES_FROM_CODES_AND_S15P2),
-          isNationalSecurity = nationalSecurityMappings.any { p -> p.offence.code == it },
-          isSexOffenceLegislation = sexualMappingsFromLegislation.any { p -> p.offence.code == it },
-          offenceCode = it,
-        ),
+        offenceCode = offenceCode,
+        schedulePart = indicator,
       )
     }
   }
 
-  private fun getMappingsFromLegislation(legislationTexts: List<String>): List<OffenceScheduleMapping> =
-    offenceScheduleMappingRepository.findByLegislationTextInIgnoreCase(legislationTexts.map { it.lowercase() })
+  fun getSexualOrViolentLists(): SexualOrViolentLists {
+    val (part1Mappings, part2Mappings) = getSchedule15Mappings()
+    val domesticViolenceMappings = getDomesticViolenceScheduleMappings()
+    val securityOffencesFromLegislation = getSecurityOffencesLegislation()
+    val sexualOffencesFromLegislation = getSexOffencesLegislation()
+    val sexOffencesByPrefix = offenceRepository.findByCodeStartsWithAnyIgnoreCase(
+      SEXUAL_OFFENCE_CODE_PREFIXES[0],
+      SEXUAL_OFFENCE_CODE_PREFIXES[1],
+    )
+
+    val allSexualOffence = part2Mappings.asSequence().map { transform(it) }
+      .plus(sexualOffencesFromLegislation.map { transform(it, emptyList<Offence>()) })
+      .plus(sexOffencesByPrefix.map { transform(it, emptyList<Offence>()) })
+      .distinctBy { it.code }
+      .sortedBy { it.code }
+      .toSet()
+
+    return SexualOrViolentLists(
+      sexual = allSexualOffence,
+      domesticAbuse = domesticViolenceMappings.map { transform(it) }.sortedBy { it.code }.toSet(),
+      nationalSecurity = securityOffencesFromLegislation.map { transform(it, emptyList<Offence>()) }
+        .sortedBy { it.code }.toSet(),
+      violent = (part1Mappings.map { transform(it) }).sortedBy { it.code }.toSet(),
+    )
+  }
+
+  private fun hasSexualCodePrefix(offenceCode: String): Boolean =
+    SEXUAL_OFFENCE_CODE_PREFIXES.any { offenceCode.startsWith(it) }
+
+  private fun getSecurityOffencesLegislation(): List<Offence> =
+    offenceRepository.findByLegislationLikeIgnoreCase(
+      NATIONAL_SECURITY_LEGISLATION[0],
+      NATIONAL_SECURITY_LEGISLATION[1],
+      NATIONAL_SECURITY_LEGISLATION[2],
+      NATIONAL_SECURITY_LEGISLATION[3],
+    )
+
+  private fun getSexOffencesLegislation(): List<Offence> =
+    offenceRepository.findByLegislationLikeIgnoreCase(SEXUAL_OFFENCES_LEGISLATION)
 
   private fun getOffencePcscMarkers(offenceCodes: List<String>): List<OffencePcscMarkers> {
     val (part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings) = getSchedule15PcscMappings()
@@ -341,22 +377,17 @@ class ScheduleService(
     val schedule15 = scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")
       ?: throw EntityNotFoundException("Schedule 15 not found")
     val parts = schedulePartRepository.findByScheduleId(schedule15.id)
-    val part1Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 1 }.id)
-    val part2Mappings = offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 2 }.id)
+    val part1Mappings =
+      offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 1 }.id)
+    val part2Mappings =
+      offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 2 }.id)
     return Pair(part1Mappings, part2Mappings)
   }
 
-  private fun getSexualOrViolentMappings(): Triple<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
-    val scheduleThree = scheduleRepository.findOneByActAndCode("Sexual Offences Act 2003", "3")
-      ?: throw EntityNotFoundException("Schedule 3 not found")
-    val scheduleThreeMappings = offenceScheduleMappingRepository.findBySchedulePartScheduleId(scheduleThree.id)
-    val (part1Mappings, part2Mappings) = getSchedule15Mappings()
-    return Triple(scheduleThreeMappings, part1Mappings, part2Mappings)
-  }
-
   private fun getDomesticViolenceScheduleMappings(): List<OffenceScheduleMapping> {
-    val domesticViolenceSchedule = scheduleRepository.findOneByActAndCode("Domestic Violence Excluded Offences", "DVEO")
-      ?: throw EntityNotFoundException("Domestic Violence Schedule Not Found")
+    val domesticViolenceSchedule =
+      scheduleRepository.findOneByActAndCode("Domestic Violence Excluded Offences", "DVEO")
+        ?: throw EntityNotFoundException("Domestic Violence Schedule Not Found")
     return offenceScheduleMappingRepository.findBySchedulePartScheduleId(domesticViolenceSchedule.id)
   }
 
@@ -430,26 +461,6 @@ class ScheduleService(
     )
   }
 
-  fun getSexualOrViolentLists(): SexualOrViolentLists {
-    val (scheduleThreeMappings, part1Mappings, part2Mappings) = getSexualOrViolentMappings()
-
-    var sexualS3AndS15P2 = scheduleThreeMappings.map { transform(it) }
-    sexualS3AndS15P2 += part2Mappings.map { transform(it) }
-
-    var sexualCodesAndS15P2 = part2Mappings.map { transform(it) }
-
-    sexualCodesAndS15P2 += offenceRepository.findByCodeStartsWithIgnoreCase("SX03")
-      .map { transform(it, emptyList<Offence>()) }
-    sexualCodesAndS15P2 += offenceRepository.findByCodeStartsWithIgnoreCase("SX56")
-      .map { transform(it, emptyList<Offence>()) }
-
-    return SexualOrViolentLists(
-      sexualCodesAndS15P2 = sexualCodesAndS15P2.distinctBy { it.code }.sortedBy { it.code }.toSet(),
-      sexualS3AndS15P2 = sexualS3AndS15P2.distinctBy { it.code }.sortedBy { it.code }.toSet(),
-      violent = (part1Mappings.map { transform(it) }).sortedBy { it.code }.toSet(),
-    )
-  }
-
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     val SDS_LIST_A_CUT_OFF_DATE: LocalDate = LocalDate.of(2022, 6, 28)
@@ -459,6 +470,7 @@ class ScheduleService(
       "Official Secrets Act 1920",
       "Official Secrets Act 1911",
     )
-    val SEXUAL_OFFENCES_LEGISLATION = listOf("Sexual Offences Act 2003")
+    const val SEXUAL_OFFENCES_LEGISLATION = "Sexual Offences Act 2003"
+    val SEXUAL_OFFENCE_CODE_PREFIXES = listOf("SX03", "SX56")
   }
 }

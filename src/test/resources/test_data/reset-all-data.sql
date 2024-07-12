@@ -11,5 +11,4 @@ DELETE FROM home_office_code;
 UPDATE sdrs_load_result SET status = NULL, load_type = NULL, load_date = NULL, last_successful_load_date = NULL;
 UPDATE feature_toggle SET enabled = TRUE;
 UPDATE feature_toggle SET enabled = FALSE WHERE feature = 'FULL_SYNC_SDRS';
-UPDATE feature_toggle SET enabled = TRUE WHERE feature = 'SEXUAL_OFFENCES_FROM_CODES_AND_S15P2';
 
