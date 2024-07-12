@@ -14,28 +14,16 @@ data class OffenceSexualOrViolent(
 ) {
   companion object {
     fun getSexualOrViolentIndicator(
-      inSchedule3: Boolean,
-      inSchedule15Part1: Boolean,
-      inSchedule15Part2: Boolean,
+      sexual: Boolean,
       domesticViolence: Boolean,
-      useOffenceCodesForSexual: Boolean,
-      isNationalSecurity: Boolean,
-      isSexOffenceLegislation: Boolean,
-      offenceCode: String,
-    ): OffenceSexualOrViolentIndicator {
-      return when {
-        useOffenceCodesForSexual && (inSchedule15Part2 || isOffenceCodePrefixedWithSX03orSX56(offenceCode)) -> SEXUAL
-        !useOffenceCodesForSexual && (inSchedule15Part2 || inSchedule3) -> SEXUAL
-        isSexOffenceLegislation -> SEXUAL
-        domesticViolence -> DOMESTIC_ABUSE
-        isNationalSecurity -> NATIONAL_SECURITY
-        inSchedule15Part1 -> VIOLENT
-        else -> NONE
-      }
-    }
-
-    private fun isOffenceCodePrefixedWithSX03orSX56(offenceCode: String): Boolean {
-      return offenceCode.startsWith("SX03") || offenceCode.startsWith("SX56")
+      nationalSecurity: Boolean,
+      violent: Boolean,
+    ): OffenceSexualOrViolentIndicator = when {
+      sexual -> SEXUAL
+      domesticViolence -> DOMESTIC_ABUSE
+      nationalSecurity -> NATIONAL_SECURITY
+      violent -> VIOLENT
+      else -> NONE
     }
   }
 }

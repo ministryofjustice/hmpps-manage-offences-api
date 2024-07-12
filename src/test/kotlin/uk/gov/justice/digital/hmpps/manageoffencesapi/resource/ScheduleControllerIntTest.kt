@@ -8,6 +8,8 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.DOMESTIC_ABUSE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NATIONAL_SECURITY
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NONE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.SEXUAL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.VIOLENT
@@ -105,7 +107,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
   )
   fun `Get Sexual or Violent indicators for multiple offences by offence codes (Codes and S15P2)`() {
     val result = webTestClient.get()
-      .uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST")
+      .uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST,SXLEGIS,DV00001,NSLEGIS")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus().isOk
@@ -123,36 +125,9 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
           OffenceSexualOrViolent(offenceCode = "SX56TEST", schedulePart = SEXUAL),
           OffenceSexualOrViolent(offenceCode = "AB14003", schedulePart = NONE),
           OffenceSexualOrViolent(offenceCode = "AF06999", schedulePart = NONE),
-        ),
-      )
-  }
-
-  @Test
-  @Sql(
-    "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/disable_sexual_offences_from_codes_ands15p2.sql",
-    "classpath:test_data/insert-offence-data-sexual-or-violent.sql",
-  )
-  fun `Get Sexual or Violent indicators for multiple offences by offence codes (S3 and S15P2)`() {
-    val result = webTestClient.get()
-      .uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus().isOk
-      .expectBodyList(OffenceSexualOrViolent::class.java)
-      .returnResult().responseBody
-
-    assertThat(result)
-      .usingRecursiveComparison()
-      .ignoringCollectionOrder()
-      .isEqualTo(
-        listOf(
-          OffenceSexualOrViolent(offenceCode = "AB14001", schedulePart = VIOLENT),
-          OffenceSexualOrViolent(offenceCode = "AB14002", schedulePart = SEXUAL),
-          OffenceSexualOrViolent(offenceCode = "SX03TEST", schedulePart = NONE),
-          OffenceSexualOrViolent(offenceCode = "SX56TEST", schedulePart = NONE),
-          OffenceSexualOrViolent(offenceCode = "AB14003", schedulePart = SEXUAL),
-          OffenceSexualOrViolent(offenceCode = "AF06999", schedulePart = NONE),
+          OffenceSexualOrViolent(offenceCode = "SXLEGIS", schedulePart = SEXUAL),
+          OffenceSexualOrViolent(offenceCode = "DV00001", schedulePart = DOMESTIC_ABUSE),
+          OffenceSexualOrViolent(offenceCode = "NSLEGIS", schedulePart = NATIONAL_SECURITY),
         ),
       )
   }
@@ -175,68 +150,81 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     val loadDate = LocalDateTime.of(2022, 4, 7, 0, 0, 0)
 
     assertThat(result).usingRecursiveComparison()
-      .ignoringFieldsMatchingRegexes(".*id|.*isChild|.*childOffences")
+      .ignoringFieldsMatchingRegexes(".*id|.*isChild|.*childOffences|.*changedDate|.*loadDate")
       .ignoringCollectionOrder()
       .isEqualTo(
         SexualOrViolentLists(
-          sexualCodesAndS15P2 = hashSetOf(
+          sexual = setOf(
             OffenceToScheduleMapping(
-              id = 3,
-              description = "Intentionally obstruct an authorised person",
-              code = "AB14002",
-              changedDate = changeDate,
-              startDate = startDate,
-              loadDate = loadDate,
-              revisionId = 574487,
-            ),
-            OffenceToScheduleMapping(
-              id = 3,
+              id = 5,
               description = "Test for SX03 prefixed codes",
               code = "SX03TEST",
+              revisionId = 574450,
               changedDate = changeDate,
               startDate = startDate,
               loadDate = loadDate,
-              revisionId = 574450,
             ),
             OffenceToScheduleMapping(
-              id = 3,
+              id = 7,
+              description = "Test for sex legislation",
+              code = "SXLEGIS",
+              revisionId = 574432,
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              legislation = "Sexual Offences Act 2003",
+            ),
+            OffenceToScheduleMapping(
+              id = 6,
               description = "Test for SX56 prefixed codes",
               code = "SX56TEST",
-              changedDate = changeDate,
-              startDate = startDate,
-              loadDate = loadDate,
               revisionId = 574431,
-            ),
-          ),
-          sexualS3AndS15P2 = hashSetOf(
-            OffenceToScheduleMapping(
-              id = 4,
-              description = "CJS Title Fail to give to an authorised person information / assistance / provide facilities that person may require",
-              code = "AB14003",
               changedDate = changeDate,
               startDate = startDate,
               loadDate = loadDate,
-              revisionId = 574449,
             ),
             OffenceToScheduleMapping(
               id = 3,
               description = "Intentionally obstruct an authorised person",
               code = "AB14002",
+              revisionId = 574487,
               changedDate = changeDate,
               startDate = startDate,
               loadDate = loadDate,
-              revisionId = 574487,
             ),
           ),
-          violent = hashSetOf(
+          domesticAbuse = setOf(
+            OffenceToScheduleMapping(
+              id = 9,
+              description = "Test for DV",
+              code = "DV00001",
+              revisionId = 574432,
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+            ),
+          ),
+          nationalSecurity = setOf(
+            OffenceToScheduleMapping(
+              id = 8,
+              description = "Test for NS legislation",
+              code = "NSLEGIS",
+              revisionId = 574432,
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              legislation = "National Security Act 2023",
+            ),
+          ),
+          violent = setOf(
             OffenceToScheduleMapping(
               id = 2,
               description = "Fail to comply with an animal by-product requirement",
               code = "AB14001",
+              revisionId = 574415,
               changedDate = changeDate,
               startDate = startDate,
               loadDate = loadDate,
-              revisionId = 574415,
             ),
           ),
         ),

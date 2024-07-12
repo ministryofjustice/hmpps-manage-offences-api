@@ -8,52 +8,27 @@ class OffenceSexualOrViolentTest {
 
   @ParameterizedTest
   @CsvSource(
-//   S3     S15P1  S15P2  DV,    toggle  NS     SEX    code     result
-    "true,  false, false, false, false,  false, false, AB1234,  SEXUAL",
-    "false, false, true,  false, false,  false, false, AB1234,  SEXUAL",
-    "false, true,  false, false, false,  false, false, AB1234,  VIOLENT",
-    "false, false, false, false, false,  false, false, AB1234,  NONE",
-//   Sexual takes priority over violent
-    "true , true,  false, false, false,  false, false, AB1234,  SEXUAL",
-    "false, true,  true,  false, false,  false, false, AB1234,  SEXUAL",
-//   Tests for the toggle
-    "false, false, false, false, true,   false, false, SX0334,  SEXUAL",
-    "false, false, false, false, true,   false, false, SX5634B, SEXUAL",
-    "false, false, false, false, true,   false, false, AB5634B, NONE",
-    "false, false, true,  false, true,   false, false, AB5634B, SEXUAL",
-    "false, true,  false, false, true,   false, false, AB5634B, VIOLENT",
-//   Sexual takes priority over violent (with codes)
-    "false, true,  false, false, true,   false, false, SX0345,  SEXUAL",
-    "false, true,  false, false, true,   false, false, SX5678,  SEXUAL",
-    "false, true,  true,  false, true,   false, false, CF2478,  SEXUAL",
-//   DV returns DOMESTIC_ABUSE, even if the offence is also violent
-    "false, false, false, true,  true,   false, false, SC15004, DOMESTIC_ABUSE",
-    "false, true,  false, true,  true,   false, false, SC15005, DOMESTIC_ABUSE",
-    "false, true,  false, true,  true,   true, false, SC15005, DOMESTIC_ABUSE",
-//   NATIONAL_SECURITY
-    "false, true,  false, false,  false,   true, false, SC15005, NATIONAL_SECURITY",
+//   SEX     DV,    NS      VIOL   result
+    "true,  false, false,  false, SEXUAL",
+    "true,  true,  false, false,  SEXUAL",
+    "false, true,  false, false,  DOMESTIC_ABUSE",
+    "false, false, false, false,  NONE",
+    "false, false,  false, true,  VIOLENT",
+    "false, false,  true, false,  NATIONAL_SECURITY",
   )
   fun `Test all combinations of schedules and codes return the correct result`(
-    inSchedule3: Boolean,
-    inSchedule15Part1: Boolean,
-    inSchedule15Part2: Boolean,
+    sexual: Boolean,
     domesticViolence: Boolean,
-    useOffenceCodesForSexual: Boolean,
-    isNationalSecurity: Boolean,
-    isSexOffenceLegislation: Boolean,
-    offenceCode: String,
+    nationalSecurity: Boolean,
+    violent: Boolean,
     offenceSexualOrViolentIndicator: OffenceSexualOrViolentIndicator,
   ) {
     assertThat(
       OffenceSexualOrViolent.getSexualOrViolentIndicator(
-        inSchedule3 = inSchedule3,
-        inSchedule15Part1 = inSchedule15Part1,
-        inSchedule15Part2 = inSchedule15Part2,
+        sexual = sexual,
+        nationalSecurity = nationalSecurity,
         domesticViolence = domesticViolence,
-        useOffenceCodesForSexual = useOffenceCodesForSexual,
-        isNationalSecurity = isNationalSecurity,
-        isSexOffenceLegislation = isSexOffenceLegislation,
-        offenceCode = offenceCode,
+        violent = violent,
       ),
     ).isEqualTo(offenceSexualOrViolentIndicator)
   }

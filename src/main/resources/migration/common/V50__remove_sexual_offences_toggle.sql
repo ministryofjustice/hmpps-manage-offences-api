@@ -1,0 +1,1 @@
+DELETE FROM feature_toggle WHERE feature = 'SEXUAL_OFFENCES_FROM_CODES_AND_S15P2';
