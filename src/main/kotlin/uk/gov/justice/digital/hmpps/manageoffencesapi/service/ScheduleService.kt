@@ -320,9 +320,6 @@ class ScheduleService(
       SEXUAL_OFFENCE_CODE_PREFIXES[3],
     )
 
-    println("PREFIXES ############")
-    println("PREFIXES ############" + sexOffencesByPrefix)
-
     val allSexualOffence = part2Mappings.asSequence().map { transform(it) }
       .plus(sexualOffencesFromLegislation.map { transform(it, emptyList<Offence>()) })
       .plus(sexOffencesByPrefix.map { transform(it, emptyList<Offence>()) })
