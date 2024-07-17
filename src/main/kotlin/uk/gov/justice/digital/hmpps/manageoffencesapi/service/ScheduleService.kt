@@ -16,13 +16,13 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent.Companion.getSexualOrViolentIndicator
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion.Companion.getSdsExclusionIndicator
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SexualOrViolentLists
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
@@ -281,16 +281,17 @@ class ScheduleService(
   }
 
   @Transactional(readOnly = true)
-  fun categoriseSexualOrViolentOffences(offenceCodes: List<String>): List<OffenceSexualOrViolent> {
+  fun categoriseSdsExclusionsOffences(offenceCodes: List<String>): List<OffenceSdsExclusion> {
     log.info("Determining Sexual or Violent status for passed in offences")
-    return getSexualOrViolentIndicators(offenceCodes)
+    return getSdsExclusionIndicators(offenceCodes)
   }
 
-  private fun getSexualOrViolentIndicators(offenceCodes: List<String>): List<OffenceSexualOrViolent> {
+  private fun getSdsExclusionIndicators(offenceCodes: List<String>): List<OffenceSdsExclusion> {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val domesticViolenceMappings = getDomesticViolenceScheduleMappings()
     val securityOffencesFromLegislation = getSecurityOffencesLegislation()
     val sexualOffencesFromLegislation = getSexOffencesLegislation()
+    val terrorismMapping = getTerrorismScheduleMappings()
 
     return offenceCodes.map { offenceCode ->
       val isSexual =
@@ -298,17 +299,18 @@ class ScheduleService(
       val isDomesticViolence = domesticViolenceMappings.any { it.offence.code == offenceCode }
       val isNationalSecurity = securityOffencesFromLegislation.any { it.code == offenceCode }
       val isViolent = part1Mappings.any { it.offence.code == offenceCode }
+      val isTerrorism = getTerrorismScheduleMappings().any { it.offence.code == offenceCode }
 
-      val indicator = getSexualOrViolentIndicator(isSexual, isDomesticViolence, isNationalSecurity, isViolent)
+      val indicator = getSdsExclusionIndicator(isSexual, isDomesticViolence, isNationalSecurity, isTerrorism, isViolent)
 
-      OffenceSexualOrViolent(
+      OffenceSdsExclusion(
         offenceCode = offenceCode,
         schedulePart = indicator,
       )
     }
   }
 
-  fun getSexualOrViolentLists(): SexualOrViolentLists {
+  fun getSdsExclusionLists(): SdsExclusionLists {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val domesticViolenceMappings = getDomesticViolenceScheduleMappings()
     val securityOffencesFromLegislation = getSecurityOffencesLegislation()
@@ -319,6 +321,7 @@ class ScheduleService(
       SEXUAL_CODES_FOR_EXCLUSION_LIST[2],
       SEXUAL_CODES_FOR_EXCLUSION_LIST[3],
     )
+    val terrorismMapping = getTerrorismScheduleMappings()
 
     val allSexualOffence = part2Mappings.asSequence().map { transform(it) }
       .plus(sexualOffencesFromLegislation.map { transform(it, emptyList<Offence>()) })
@@ -327,12 +330,13 @@ class ScheduleService(
       .sortedBy { it.code }
       .toSet()
 
-    return SexualOrViolentLists(
+    return SdsExclusionLists(
       sexual = allSexualOffence,
       domesticAbuse = domesticViolenceMappings.map { transform(it) }.sortedBy { it.code }.toSet(),
       nationalSecurity = securityOffencesFromLegislation.map { transform(it, emptyList<Offence>()) }
         .sortedBy { it.code }.toSet(),
       violent = (part1Mappings.map { transform(it) }).sortedBy { it.code }.toSet(),
+      terrorism = terrorismMapping.map { transform(it) }.sortedBy { it.code }.toSet(),
     )
   }
 
@@ -390,6 +394,13 @@ class ScheduleService(
     val domesticViolenceSchedule =
       scheduleRepository.findOneByActAndCode("Domestic Violence Excluded Offences", "DVEO")
         ?: throw EntityNotFoundException("Domestic Violence Schedule Not Found")
+    return offenceScheduleMappingRepository.findBySchedulePartScheduleId(domesticViolenceSchedule.id)
+  }
+
+  private fun getTerrorismScheduleMappings(): List<OffenceScheduleMapping> {
+    val domesticViolenceSchedule =
+      scheduleRepository.findOneByActAndCode("Terrorism Excluded Offences", "TEO")
+        ?: throw EntityNotFoundException("Terrorism Schedule Not Found")
     return offenceScheduleMappingRepository.findBySchedulePartScheduleId(domesticViolenceSchedule.id)
   }
 

@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SexualOrViolentLists
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService
 
 @RestController
@@ -117,28 +117,28 @@ class ScheduleController(
     return scheduleService.findPcscSchedules(offenceCodes)
   }
 
-  @GetMapping(value = ["/sexual-or-violent"])
+  @GetMapping(value = ["/sds-early-release-exclusions"])
   @ResponseBody
   @Operation(
-    summary = "Determine if the passed in offence codes are either sexual or violent offences",
-    description = "This endpoint will return a list of offences and whether they are violent or sexual offences",
+    summary = "Determine if the passed in offence codes are to be excluded from early release due to being Sexual, Violent, Domestic Abuse, National Security or Terrorism.",
+    description = "This endpoint will return a list of offences and the exclusion category if applicable.",
   )
-  fun getSexualOrViolentInformation(
+  fun getSdsExclusionInformation(
     @RequestParam offenceCodes: List<String>,
-  ): List<OffenceSexualOrViolent> {
+  ): List<OffenceSdsExclusion> {
     log.info("Request received to determine sexual or violent status for ${offenceCodes.size} offence codes")
-    return scheduleService.categoriseSexualOrViolentOffences(offenceCodes)
+    return scheduleService.categoriseSdsExclusionsOffences(offenceCodes)
   }
 
-  @GetMapping(value = ["/sexual-or-violent-lists"])
+  @GetMapping(value = ["/sds-early-release-exclusion-lists"])
   @ResponseBody
   @Operation(
-    summary = "Retrieves the list of all the offences that are either sexual or violent",
-    description = "This endpoint will return a list of all the offences that are sexual (Schedule 3 or 15 Part 2) or violent (Schedule 15 Part 1)",
+    summary = "Retrieves the lists of all the offences that are to be excluded from early release.",
+    description = "This returns five lists for Sexual, Violent, Domestic Abuse, National Security or Terrorism offences.",
   )
-  fun getSexualOrViolentLists(): SexualOrViolentLists {
+  fun getSdsExclusionLists(): SdsExclusionLists {
     log.info("Request received to get list of sexual or violent offences")
-    return scheduleService.getSexualOrViolentLists()
+    return scheduleService.getSdsExclusionLists()
   }
 
   @GetMapping(value = ["/pcsc-lists"])
