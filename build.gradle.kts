@@ -12,7 +12,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
-    mavenBom("software.amazon.awssdk:bom:2.26.19")
+    mavenBom("software.amazon.awssdk:bom:2.26.20")
   }
 }
 
@@ -24,7 +24,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.7.3")
 
   // AppInsights
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.5.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.6.0")
 
   // JWT
   implementation("io.jsonwebtoken:jjwt-api:0.12.6")
