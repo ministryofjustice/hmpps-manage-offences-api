@@ -7,18 +7,19 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTes
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolent
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.DOMESTIC_ABUSE
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NATIONAL_SECURITY
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.NONE
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.SEXUAL
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSexualOrViolentIndicator.VIOLENT
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.DOMESTIC_ABUSE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.NATIONAL_SECURITY
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.NONE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.SEXUAL
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.TERRORISM
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.VIOLENT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SexualOrViolentLists
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -103,15 +104,15 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data-sexual-or-violent.sql",
+    "classpath:test_data/insert-offence-data-sds-exclusions.sql",
   )
-  fun `Get Sexual or Violent indicators for multiple offences by offence codes (Codes and S15P2)`() {
+  fun `Get early release exclusion indicators for multiple offences by offence codes`() {
     val result = webTestClient.get()
-      .uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST,SXLEGIS,DV00001,NSLEGIS,SA00001")
+      .uri("/schedule/sds-early-release-exclusions?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST,SXLEGIS,DV00001,NSLEGIS,TR00001")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus().isOk
-      .expectBodyList(OffenceSexualOrViolent::class.java)
+      .expectBodyList(OffenceSdsExclusion::class.java)
       .returnResult().responseBody
 
     assertThat(result)
@@ -119,16 +120,16 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .ignoringCollectionOrder()
       .isEqualTo(
         listOf(
-          OffenceSexualOrViolent(offenceCode = "AB14001", schedulePart = VIOLENT),
-          OffenceSexualOrViolent(offenceCode = "AB14002", schedulePart = SEXUAL),
-          OffenceSexualOrViolent(offenceCode = "SX03TEST", schedulePart = SEXUAL),
-          OffenceSexualOrViolent(offenceCode = "SX56TEST", schedulePart = SEXUAL),
-          OffenceSexualOrViolent(offenceCode = "AB14003", schedulePart = NONE),
-          OffenceSexualOrViolent(offenceCode = "AF06999", schedulePart = NONE),
-          OffenceSexualOrViolent(offenceCode = "SXLEGIS", schedulePart = SEXUAL),
-          OffenceSexualOrViolent(offenceCode = "DV00001", schedulePart = DOMESTIC_ABUSE),
-          OffenceSexualOrViolent(offenceCode = "NSLEGIS", schedulePart = NATIONAL_SECURITY),
-          OffenceSexualOrViolent(offenceCode = "SA00001", schedulePart = SEXUAL),
+          OffenceSdsExclusion(offenceCode = "AB14001", schedulePart = VIOLENT),
+          OffenceSdsExclusion(offenceCode = "AB14002", schedulePart = SEXUAL),
+          OffenceSdsExclusion(offenceCode = "SX03TEST", schedulePart = SEXUAL),
+          OffenceSdsExclusion(offenceCode = "SX56TEST", schedulePart = SEXUAL),
+          OffenceSdsExclusion(offenceCode = "AB14003", schedulePart = NONE),
+          OffenceSdsExclusion(offenceCode = "AF06999", schedulePart = NONE),
+          OffenceSdsExclusion(offenceCode = "SXLEGIS", schedulePart = SEXUAL),
+          OffenceSdsExclusion(offenceCode = "DV00001", schedulePart = DOMESTIC_ABUSE),
+          OffenceSdsExclusion(offenceCode = "NSLEGIS", schedulePart = NATIONAL_SECURITY),
+          OffenceSdsExclusion(offenceCode = "TR00001", schedulePart = TERRORISM),
         ),
       )
   }
@@ -136,14 +137,14 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
   @Test
   @Sql(
     "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-offence-data-sexual-or-violent.sql",
+    "classpath:test_data/insert-offence-data-sds-exclusions.sql",
   )
-  fun `Get Sexual or Violent lists`() {
-    val result = webTestClient.get().uri("/schedule/sexual-or-violent-lists")
+  fun `Get early release exclusion lists`() {
+    val result = webTestClient.get().uri("/schedule/sds-early-release-exclusion-lists")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus().isOk
-      .expectBody(SexualOrViolentLists::class.java)
+      .expectBody(SdsExclusionLists::class.java)
       .returnResult().responseBody
 
     val changeDate = LocalDateTime.of(2020, 6, 17, 15, 31, 26)
@@ -154,7 +155,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .ignoringFieldsMatchingRegexes(".*id|.*isChild|.*childOffences|.*changedDate|.*loadDate")
       .ignoringCollectionOrder()
       .isEqualTo(
-        SexualOrViolentLists(
+        SdsExclusionLists(
           sexual = setOf(
             OffenceToScheduleMapping(
               id = 6,
@@ -233,6 +234,17 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
               description = "Fail to comply with an animal by-product requirement",
               code = "AB14001",
               revisionId = 574415,
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+            ),
+          ),
+          terrorism = setOf(
+            OffenceToScheduleMapping(
+              id = 9,
+              description = "Test for Terrorism",
+              code = "TR00001",
+              revisionId = 574433,
               changedDate = changeDate,
               startDate = startDate,
               loadDate = loadDate,
