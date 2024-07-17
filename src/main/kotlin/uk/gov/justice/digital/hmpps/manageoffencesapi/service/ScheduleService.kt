@@ -316,7 +316,12 @@ class ScheduleService(
     val sexOffencesByPrefix = offenceRepository.findByCodeStartsWithAnyIgnoreCase(
       SEXUAL_OFFENCE_CODE_PREFIXES[0],
       SEXUAL_OFFENCE_CODE_PREFIXES[1],
+      SEXUAL_OFFENCE_CODE_PREFIXES[2],
+      SEXUAL_OFFENCE_CODE_PREFIXES[3],
     )
+
+    println("PREFIXES ############")
+    println("PREFIXES ############" + sexOffencesByPrefix)
 
     val allSexualOffence = part2Mappings.asSequence().map { transform(it) }
       .plus(sexualOffencesFromLegislation.map { transform(it, emptyList<Offence>()) })
@@ -471,6 +476,6 @@ class ScheduleService(
       "Official Secrets Act 1911",
     )
     const val SEXUAL_OFFENCES_LEGISLATION = "Sexual Offences Act 2003"
-    val SEXUAL_OFFENCE_CODE_PREFIXES = listOf("SX03", "SX56")
+    val SEXUAL_OFFENCE_CODE_PREFIXES = listOf("SX03", "SX56", "SA00001", "SA00002")
   }
 }

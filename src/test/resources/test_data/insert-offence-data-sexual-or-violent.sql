@@ -8,6 +8,7 @@ VALUES
 ('SX03TEST', 'Test for SX03 prefixed codes', 574450, 'Test for SX03 prefixed codes', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07', null),
 ('SX56TEST', 'Test for SX56 prefixed codes', 574431, 'Test for SX56 prefixed codes', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07', null),
 ('SXLEGIS', 'Test for sex legislation', 574432, 'Test for sex legislation', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07', 'Sexual Offences Act 2003'),
+('SA00001', 'Test for SA00001', 574432, 'Test for SA00001', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07', 'Any act'),
 ('NSLEGIS', 'Test for NS legislation', 574432, 'Test for NS legislation', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07', 'National Security Act 2023'),
 ('DV00001', 'Test for DV', 574432, 'Test for DV', '2015-03-13', NULL, '2020-06-17 15:31:26.000', '2022-04-07 16:05:58.178', '2022-04-07', 'xxx');
 

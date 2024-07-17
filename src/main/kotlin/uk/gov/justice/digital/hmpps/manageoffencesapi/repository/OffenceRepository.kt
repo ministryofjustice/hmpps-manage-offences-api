@@ -42,8 +42,15 @@ interface OffenceRepository : JpaRepository<Offence, Long> {
 
   fun findByCategoryIsNotNullAndSubCategoryIsNotNull(): List<Offence>
 
-  @Query("SELECT o FROM Offence o WHERE LOWER(o.code) LIKE LOWER(CONCAT(:prefix1, '%')) OR LOWER(o.code) LIKE LOWER(CONCAT(:prefix2, '%'))")
-  fun findByCodeStartsWithAnyIgnoreCase(prefix1: String, prefix2: String): List<Offence>
+  @Query(
+    "SELECT o FROM Offence o WHERE " +
+      "LOWER(o.code) LIKE LOWER(CONCAT(:prefix1, '%')) " +
+      "OR LOWER(o.code) LIKE LOWER(CONCAT(:prefix2, '%')) " +
+      "OR LOWER(o.code) LIKE LOWER(CONCAT(:prefix3, '%')) " +
+      "OR LOWER(o.code) LIKE LOWER(CONCAT(:prefix4, '%')) " +
+      "",
+  )
+  fun findByCodeStartsWithAnyIgnoreCase(prefix1: String, prefix2: String, prefix3: String, prefix4: String): List<Offence>
 
   @Query(
     """

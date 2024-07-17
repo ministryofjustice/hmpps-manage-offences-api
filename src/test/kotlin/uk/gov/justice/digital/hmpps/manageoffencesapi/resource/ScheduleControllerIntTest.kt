@@ -107,7 +107,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
   )
   fun `Get Sexual or Violent indicators for multiple offences by offence codes (Codes and S15P2)`() {
     val result = webTestClient.get()
-      .uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST,SXLEGIS,DV00001,NSLEGIS")
+      .uri("/schedule/sexual-or-violent?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST,SXLEGIS,DV00001,NSLEGIS,SA00001")
       .headers(setAuthorisation())
       .exchange()
       .expectStatus().isOk
@@ -128,6 +128,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
           OffenceSexualOrViolent(offenceCode = "SXLEGIS", schedulePart = SEXUAL),
           OffenceSexualOrViolent(offenceCode = "DV00001", schedulePart = DOMESTIC_ABUSE),
           OffenceSexualOrViolent(offenceCode = "NSLEGIS", schedulePart = NATIONAL_SECURITY),
+          OffenceSexualOrViolent(offenceCode = "SA00001", schedulePart = SEXUAL),
         ),
       )
   }
@@ -155,6 +156,16 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .isEqualTo(
         SexualOrViolentLists(
           sexual = setOf(
+            OffenceToScheduleMapping(
+              id = 6,
+              description = "Test for SA00001",
+              code = "SA00001",
+              revisionId = 574432,
+              changedDate = changeDate,
+              startDate = startDate,
+              loadDate = loadDate,
+              legislation = "Any act",
+            ),
             OffenceToScheduleMapping(
               id = 5,
               description = "Test for SX03 prefixed codes",
