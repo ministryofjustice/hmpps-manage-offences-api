@@ -398,10 +398,10 @@ class ScheduleService(
   }
 
   private fun getTerrorismScheduleMappings(): List<OffenceScheduleMapping> {
-    val domesticViolenceSchedule =
+    val terrorismSchedule =
       scheduleRepository.findOneByActAndCode("Terrorism Excluded Offences", "TEO")
         ?: throw EntityNotFoundException("Terrorism Schedule Not Found")
-    return offenceScheduleMappingRepository.findBySchedulePartScheduleId(domesticViolenceSchedule.id)
+    return offenceScheduleMappingRepository.findBySchedulePartScheduleId(terrorismSchedule.id)
   }
 
   // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start on or after 28 June 2022)
