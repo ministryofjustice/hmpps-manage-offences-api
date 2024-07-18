@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion.
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleInfo
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
@@ -292,14 +293,17 @@ class ScheduleService(
     val securityOffencesFromLegislation = getSecurityOffencesLegislation()
     val sexualOffencesFromLegislation = getSexOffencesLegislation()
     val terrorismMapping = getTerrorismScheduleMappings()
+    val sexScheduleMappings = getSexScheduleMappings()
 
     return offenceCodes.map { offenceCode ->
-      val isSexual =
-        part2Mappings.any { it.offence.code == offenceCode } || hasSexualCodePrefix(offenceCode) || sexualOffencesFromLegislation.any { it.code == offenceCode }
+      val isSexual = part2Mappings.any { it.offence.code == offenceCode } ||
+        hasSexualCodePrefix(offenceCode) ||
+        sexualOffencesFromLegislation.any { it.code == offenceCode } ||
+        sexScheduleMappings.any { it.offence.code == offenceCode }
       val isDomesticViolence = domesticViolenceMappings.any { it.offence.code == offenceCode }
       val isNationalSecurity = securityOffencesFromLegislation.any { it.code == offenceCode }
       val isViolent = part1Mappings.any { it.offence.code == offenceCode }
-      val isTerrorism = getTerrorismScheduleMappings().any { it.offence.code == offenceCode }
+      val isTerrorism = terrorismMapping.any { it.offence.code == offenceCode }
 
       val indicator = getSdsExclusionIndicator(isSexual, isDomesticViolence, isNationalSecurity, isTerrorism, isViolent)
 
@@ -310,6 +314,12 @@ class ScheduleService(
     }
   }
 
+  private fun getSexScheduleMappings() =
+    offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+      SEXUAL_EXLUDED_OFFENCES_SCHEDULE.act,
+      SEXUAL_EXLUDED_OFFENCES_SCHEDULE.code,
+    )
+
   fun getSdsExclusionLists(): SdsExclusionLists {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val domesticViolenceMappings = getDomesticViolenceScheduleMappings()
@@ -318,14 +328,14 @@ class ScheduleService(
     val sexOffencesByPrefix = offenceRepository.findByCodeStartsWithAnyIgnoreCase(
       SEXUAL_CODES_FOR_EXCLUSION_LIST[0],
       SEXUAL_CODES_FOR_EXCLUSION_LIST[1],
-      SEXUAL_CODES_FOR_EXCLUSION_LIST[2],
-      SEXUAL_CODES_FOR_EXCLUSION_LIST[3],
     )
-    val terrorismMapping = getTerrorismScheduleMappings()
+    val terrorismMappings = getTerrorismScheduleMappings()
+    val sexScheduleMappings = getSexScheduleMappings()
 
     val allSexualOffence = part2Mappings.asSequence().map { transform(it) }
       .plus(sexualOffencesFromLegislation.map { transform(it, emptyList<Offence>()) })
       .plus(sexOffencesByPrefix.map { transform(it, emptyList<Offence>()) })
+      .plus(sexScheduleMappings.map { transform(it) })
       .distinctBy { it.code }
       .sortedBy { it.code }
       .toSet()
@@ -336,7 +346,7 @@ class ScheduleService(
       nationalSecurity = securityOffencesFromLegislation.map { transform(it, emptyList<Offence>()) }
         .sortedBy { it.code }.toSet(),
       violent = (part1Mappings.map { transform(it) }).sortedBy { it.code }.toSet(),
-      terrorism = terrorismMapping.map { transform(it) }.sortedBy { it.code }.toSet(),
+      terrorism = terrorismMappings.map { transform(it) }.sortedBy { it.code }.toSet(),
     )
   }
 
@@ -484,6 +494,10 @@ class ScheduleService(
       "Official Secrets Act 1911",
     )
     const val SEXUAL_OFFENCES_LEGISLATION = "Sexual Offences Act 2003"
-    val SEXUAL_CODES_FOR_EXCLUSION_LIST = listOf("SX03", "SX56", "SA00001", "SA00002")
+    val SEXUAL_CODES_FOR_EXCLUSION_LIST = listOf("SX03", "SX56")
+    val SEXUAL_EXLUDED_OFFENCES_SCHEDULE = ScheduleInfo(
+      act = "Sexual Excluded Offences",
+      code = "SEO",
+    )
   }
 }

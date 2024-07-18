@@ -10,5 +10,6 @@ interface OffenceScheduleMappingRepository : JpaRepository<OffenceScheduleMappin
   fun findByOffenceIdIn(offenceId: List<Long>): List<OffenceScheduleMapping>
   fun findByOffenceId(offenceId: Long): List<OffenceScheduleMapping>
   fun deleteBySchedulePartIdAndOffenceId(schedulePartId: Long, offenceId: Long): Long
-  fun findBySchedulePartId(partI: Long): List<OffenceScheduleMapping>
+  fun findBySchedulePartId(partId: Long): List<OffenceScheduleMapping>
+  fun findBySchedulePartScheduleActAndSchedulePartScheduleCode(act: String, code: String): List<OffenceScheduleMapping>
 }

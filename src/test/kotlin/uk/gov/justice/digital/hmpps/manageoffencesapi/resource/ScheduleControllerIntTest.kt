@@ -165,7 +165,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
               changedDate = changeDate,
               startDate = startDate,
               loadDate = loadDate,
-              legislation = "Any act",
+              legislationText = "SA0001 legislation",
             ),
             OffenceToScheduleMapping(
               id = 5,
