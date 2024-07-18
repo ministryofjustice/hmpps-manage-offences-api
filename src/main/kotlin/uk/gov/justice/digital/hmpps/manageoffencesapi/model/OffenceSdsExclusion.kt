@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionI
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.TERRORISM
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.VIOLENT
 
-@Schema(description = "Categorises the offence based on the schedule it appears in")
+@Schema(description = "Categorises the offence based on the exclusion list it appears in")
 data class OffenceSdsExclusion(
   val offenceCode: String,
   val schedulePart: OffenceSdsExclusionIndicator,
