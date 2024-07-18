@@ -10,3 +10,8 @@ data class Schedule(
   val url: String?,
   val scheduleParts: List<SchedulePart>?,
 )
+
+data class ScheduleInfo(
+  val act: String,
+  val code: String,
+)
