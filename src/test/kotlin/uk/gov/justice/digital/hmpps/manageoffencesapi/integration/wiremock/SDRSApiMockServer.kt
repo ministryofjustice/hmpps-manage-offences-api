@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.http.HttpHeader
@@ -512,31 +513,50 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetControlTable')]"))
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'CONSUMER_APPLICATION')]"))
         .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.To == 'SDRS_AZURE')]"))
+        .withRequestBody(
+          matchingJsonPath(
+            "$.MessageBody.GatewayOperationType.GetControlTableRequest.ChangedDateTime",
+            matching("^2022-04-18.*"),
+          ),
+        )
         .willReturn(
           aResponse()
-            .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
+            .withHeader("Content-Type", "application/json")
             .withBody(
-              """ {
-                    "MessageBody":{
-                      "GatewayOperationType":{
-                        "GetControlTableResponse":{
-                          "ReferenceDataSet":[
-                            {
-                              "DataSet":"offence_A",
-                              "LastUpdate":"2022-04-05T09:17:19.823"
+              """{
+                            "MessageBody": {
+                                "GatewayOperationType": {
+                                    "GetControlTableResponse": {
+                                        "ReferenceDataSet": [
+                                            {
+                                                "DataSet": "offence_A",
+                                                "LastUpdate": "2022-04-05T09:17:19.823"
+                                            },
+                                            {
+                                                "DataSet": "offence_B",
+                                                "LastUpdate": "2022-04-05T09:16:58.595"
+                                            }
+                                        ]
+                                    }
+                                }
                             },
-                            {
-                              "DataSet":"offence_B",
-                              "LastUpdate":"2022-04-05T09:16:58.595"
+                            "MessageHeader": {
+                                "MessageID": {
+                                    "UUID": "7717d82c-9cc2-4983-acf1-0d42770e88bd",
+                                    "RelatesTo": "df2200e6-241c-4642-b391-3d53299185cd"
+                                },
+                                "TimeStamp": "2022-03-01T15:00:00Z",
+                                "MessageType": "GetControlTableResponse",
+                                "From": "SDRS_AZURE",
+                                "To": "CONSUMER_APPLICATION"
+                            },
+                            "MessageStatus": {
+                                "status": "SUCCESS",
+                                "code": " ",
+                                "reason": " ",
+                                "detail": " "
                             }
-                          ]
                         }
-                      }
-                    },                    
-                    "MessageStatus": {
-                      "status": "SUCCESS"
-                    }
-                  }
               """.trimIndent(),
             ),
         ),

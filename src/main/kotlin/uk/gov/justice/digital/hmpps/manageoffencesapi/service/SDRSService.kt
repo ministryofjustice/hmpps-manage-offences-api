@@ -85,7 +85,9 @@ class SDRSService(
       return
     }
 
+    // Reduce the 'last successful load date' by 24 hours to fix an edge case issue where some offence updates are not being returned by the SDRS cache when we only check the last 10 minutes
     val sdrsLoadResults = sdrsLoadResultRepository.findAll()
+      .map { it.copy(lastSuccessfulLoadDate = it.lastSuccessfulLoadDate?.minusHours(24)) }
 
     log.info("The 'Synchronise with SDRS' job is checking for any updates since the last load")
     loadOffenceUpdates(sdrsLoadResults)
@@ -100,7 +102,7 @@ class SDRSService(
     log.info("finish")
 
     val loadDate = LocalDateTime.now()
-    (SdrsCache.values()).forEach { cache ->
+    (SdrsCache.entries.toTypedArray()).forEach { cache ->
       log.info("Starting full load for cache {} ", cache)
       if (cache.isPrimaryCache) {
         fullLoadPrimaryCache(cache, loadDate)
@@ -128,7 +130,7 @@ class SDRSService(
   }
 
   private fun resetLoadResultAndDeleteOffences() {
-    SdrsCache.values().forEach { cache ->
+    SdrsCache.entries.forEach { cache ->
       sdrsLoadResultRepository.save(SdrsLoadResult(cache = cache))
     }
     offenceScheduleMappingRepository.deleteAll()
@@ -371,7 +373,7 @@ class SDRSService(
 
   private fun getUpdatedCachesSinceLastLoadDate(lastLoadDate: LocalDateTime): Set<SdrsCache> {
     val controlResults = makeControlTableRequest(lastLoadDate)
-    val offenceRelatedDataSetNames = SdrsCache.values().map { it.sdrsDataSetName }
+    val offenceRelatedDataSetNames = SdrsCache.entries.map { it.sdrsDataSetName }
     return controlResults.messageBody.gatewayOperationType.getControlTableResponse!!.referenceDataSet.filter {
       offenceRelatedDataSetNames.contains(it.dataSet)
     }.map { SdrsCache.fromSdrsDataSetName(it.dataSet) }.toSet()
