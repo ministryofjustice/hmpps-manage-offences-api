@@ -50,6 +50,10 @@ abstract class IntegrationTestBase {
       hmppsAuthMockServer.stubGrantToken()
       prisonApiMockServer.start()
       sdrsApiMockServer.start()
+      sdrsApiMockServer.addMockServiceRequestListener { request, response ->
+        println("Request: ${request.bodyAsString}")
+        println("Response: ${response.bodyAsString}")
+      }
     }
 
     @AfterAll
