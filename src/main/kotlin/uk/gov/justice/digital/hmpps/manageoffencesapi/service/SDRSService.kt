@@ -76,6 +76,29 @@ class SDRSService(
     loadAllOffences()
   }
 
+  /*
+   * Runs at 03:05:05 every morning
+   * The SDRS cache doesnt always correctly report back updates during the delta sync that runs every 10 minutes
+   * so this job runs once every 24 hours to catch any updates that weren't picked up by the regular delta sync
+   */
+  @Scheduled(cron = "5 5 3 * * *")
+  @SchedulerLock(name = "nightlyDeltaSynchroniseWithSdrs")
+  @Transactional
+  fun nightlyDeltaSynchroniseWithSdrs() {
+    if (!adminService.isFeatureEnabled(DELTA_SYNC_SDRS)) {
+      log.info("Nightly DELTA Sync with SDRS not running - delta sync disabled or full sync is enabled")
+      return
+    }
+
+    // Reduce the 'last successful load date' by 24 hours to fix an edge case issue where some offence updates are not being returned by the SDRS cache when we only check the last 10 minutes
+    val sdrsLoadResults = sdrsLoadResultRepository.findAll()
+      .map { it.copy(lastSuccessfulLoadDate = it.lastSuccessfulLoadDate?.minusHours(24)) }
+
+    log.info("Nightly Delta sync: The 'Synchronise with SDRS' job is checking for any updates since the last load")
+    loadOffenceUpdates(sdrsLoadResults)
+    log.info("Nightly Delta sync finished")
+  }
+
   @Scheduled(cron = "0 */10 * * * *")
   @SchedulerLock(name = "deltaSynchroniseWithSdrsLock")
   @Transactional
@@ -87,7 +110,6 @@ class SDRSService(
 
     // Reduce the 'last successful load date' by 24 hours to fix an edge case issue where some offence updates are not being returned by the SDRS cache when we only check the last 10 minutes
     val sdrsLoadResults = sdrsLoadResultRepository.findAll()
-      .map { it.copy(lastSuccessfulLoadDate = it.lastSuccessfulLoadDate?.minusHours(24)) }
 
     log.info("The 'Synchronise with SDRS' job is checking for any updates since the last load")
     loadOffenceUpdates(sdrsLoadResults)

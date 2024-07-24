@@ -516,7 +516,63 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .withRequestBody(
           matchingJsonPath(
             "$.MessageBody.GatewayOperationType.GetControlTableRequest.ChangedDateTime",
-            matching("^2022-04-18.*"),
+            matching("^2022-04-19.*"),
+          ),
+        )
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              """{
+                            "MessageBody": {
+                                "GatewayOperationType": {
+                                    "GetControlTableResponse": {
+                                        "ReferenceDataSet": [
+                                            {
+                                                "DataSet": "offence_A",
+                                                "LastUpdate": "2022-04-05T09:17:19.823"
+                                            },
+                                            {
+                                                "DataSet": "offence_B",
+                                                "LastUpdate": "2022-04-05T09:16:58.595"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "MessageHeader": {
+                                "MessageID": {
+                                    "UUID": "7717d82c-9cc2-4983-acf1-0d42770e88bd",
+                                    "RelatesTo": "df2200e6-241c-4642-b391-3d53299185cd"
+                                },
+                                "TimeStamp": "2022-03-01T15:00:00Z",
+                                "MessageType": "GetControlTableResponse",
+                                "From": "SDRS_AZURE",
+                                "To": "CONSUMER_APPLICATION"
+                            },
+                            "MessageStatus": {
+                                "status": "SUCCESS",
+                                "code": " ",
+                                "reason": " ",
+                                "detail": " "
+                            }
+                        }
+              """.trimIndent(),
+            ),
+        ),
+    )
+  }
+
+  fun stubControlTableRequestForNightlySync() {
+    stubFor(
+      post("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.MessageType == 'GetControlTable')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.From == 'CONSUMER_APPLICATION')]"))
+        .withRequestBody(matchingJsonPath("$.MessageHeader[?(@.To == 'SDRS_AZURE')]"))
+        .withRequestBody(
+          matchingJsonPath(
+            "$.MessageBody.GatewayOperationType.GetControlTableRequest.ChangedDateTime",
+            matching("^2022-04-19.*"),
           ),
         )
         .willReturn(
