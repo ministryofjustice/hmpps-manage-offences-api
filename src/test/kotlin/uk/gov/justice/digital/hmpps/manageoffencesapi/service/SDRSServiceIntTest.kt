@@ -383,7 +383,70 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       "classpath:test_data/reset-all-data.sql",
       "classpath:test_data/set-success-all-load-results.sql",
     )
+    fun `Update any offences that have changed during nightly delta sync`() {
+      sdrsApiMockServer.resetAll()
+      sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
+      sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
+      sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
+      sdrsApiMockServer.stubGetChangedOffencesForA()
+      sdrsApiMockServer.stubControlTableRequestForNightlySync()
+      ('A'..'Z').forEach { alphaChar ->
+        prisonApiMockServer.stubFindByOffenceCodeStartsWithReturnsNothing(alphaChar)
+      }
+      prisonApiMockServer.stubCreateStatute()
+      prisonApiMockServer.stubCreateOffence()
+
+      sdrsService.deltaSynchroniseWithSdrs()
+
+      val offences = offenceRepository.findAll()
+      val statusRecords = sdrsLoadResultRepository.findAll()
+      val statusHistoryRecords = sdrsLoadResultHistoryRepository.findAll()
+
+      assertThat(offences)
+        .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+          "id",
+          "createdDate",
+          "lastUpdatedDate",
+          "changedDate",
+        )
+        .isEqualTo(
+          listOf(
+            Offence(
+              code = "XX99001",
+              description = "EMPTY TEMPLATE FOR USE WHERE A STANDARD OFFENCE WORDING IS NOT AVAILABLE",
+              cjsTitle = null,
+              revisionId = 99991,
+              startDate = LocalDate.of(2014, 1, 1),
+              endDate = null,
+              changedDate = LocalDateTime.now(),
+              sdrsCache = OFFENCES_A,
+              custodialIndicator = EITHER,
+            ),
+          ),
+        )
+
+      statusRecords
+        .filter { it.cache == OFFENCES_A || it.cache == OFFENCES_B }
+        .forEach {
+          assertThat(it.status).isEqualTo(SUCCESS)
+          assertThat(it.loadType).isEqualTo(UPDATE)
+        }
+
+      statusHistoryRecords
+        .filter { it.cache == OFFENCES_A || it.cache == OFFENCES_B }
+        .forEach {
+          assertThat(it.status).isEqualTo(SUCCESS)
+          assertThat(it.loadType).isEqualTo(UPDATE)
+        }
+    }
+
+    @Test
+    @Sql(
+      "classpath:test_data/reset-all-data.sql",
+      "classpath:test_data/set-success-all-load-results.sql",
+    )
     fun `Update any offences that have changed`() {
+      sdrsApiMockServer.resetAll()
       sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
       sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
       sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
@@ -445,6 +508,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       "classpath:test_data/set-success-all-load-results.sql",
     )
     fun `Handle unexpected exception from SDRS - Bad JSON is returned from SDRS thus causing a generic exception`() {
+      sdrsApiMockServer.resetAll()
       sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
       sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
       sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
@@ -468,6 +532,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       "classpath:test_data/set-success-all-load-results.sql",
     )
     fun `Perform delta load with offences that end in the future`() {
+      sdrsApiMockServer.resetAll()
       sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
       sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
       sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
@@ -504,6 +569,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       "classpath:test_data/insert-future-end-dated-offence-to-sync-with-nomis.sql",
     )
     fun `Perform delta load with offences that end in the future - but the offence has already been marked to be future end dated`() {
+      sdrsApiMockServer.resetAll()
       sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
       sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
       sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
@@ -541,6 +607,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       "classpath:test_data/insert-offence-data-with-ho-code.sql",
     )
     fun `Perform delta load where the ho-code is different to the one stored - ho code should not get updated, everything else should`() {
+      sdrsApiMockServer.resetAll()
       sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
       sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
       sdrsApiMockServer.stubGetMojRequestReturnEmptyArray()
@@ -595,6 +662,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       "classpath:test_data/insert-single-offence.sql",
     )
     fun `Perform delta load where the offence exists in multiple caches (primary and secondary)- only the later 'start date' one  is used (primary)`() {
+      sdrsApiMockServer.resetAll()
       sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
       sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
       sdrsApiMockServer.stubGetChangedOffencesForAWithSingleOffence()
@@ -641,6 +709,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       "classpath:test_data/insert-single-offence.sql",
     )
     fun `Perform delta load where the offence exists in multiple caches (primary and secondary)- only the later 'start date' one  is used (secondary)`() {
+      sdrsApiMockServer.resetAll()
       sdrsApiMockServer.stubGetAllOffencesReturnEmptyArray()
       sdrsApiMockServer.stubGetApplicationRequestReturnEmptyArray()
       sdrsApiMockServer.stubGetChangedOffencesForAWithSingleOffence()
