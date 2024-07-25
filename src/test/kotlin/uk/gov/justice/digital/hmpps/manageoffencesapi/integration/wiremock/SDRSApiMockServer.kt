@@ -572,7 +572,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .withRequestBody(
           matchingJsonPath(
             "$.MessageBody.GatewayOperationType.GetControlTableRequest.ChangedDateTime",
-            matching("^2022-04-19.*"),
+            matching("^2022-04-18.*"),
           ),
         )
         .willReturn(

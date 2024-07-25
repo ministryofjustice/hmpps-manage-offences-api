@@ -39,11 +39,18 @@ data class Offence(
   val childOffenceIds: List<Long>? = null,
   @Schema(description = "The legislation associated to this offence (from actsAndSections in the SDRS response)")
   val legislation: String? = null,
-  // The maxPeriodIsLife and maxPeriodOfIndictmentYears fields are populated via the schedule data supplied by the HMCTS NSD team
+  // The maxPeriodIsLife and maxPeriodOfIndictmentYears columns were originally populated via the schedule data supplied by the HMCTS NSD team
+  // The maxPeriodIsLife and maxPeriodOfIndictment* columns were then supplemented with a spreadsheet titled 'PNLD List 2003'
   @Schema(description = "Set to true if max period is life")
   val maxPeriodIsLife: Boolean? = null,
   @Schema(description = "Set to the max period of indictment in years")
   val maxPeriodOfIndictmentYears: Int? = null,
+  @Schema(description = "Set to the max period of indictment in months")
+  val maxPeriodOfIndictmentMonths: Int? = null,
+  @Schema(description = "Set to the max period of indictment in weeks")
+  val maxPeriodOfIndictmentWeeks: Int? = null,
+  @Schema(description = "Set to the max period of indictment in days")
+  val maxPeriodOfIndictmentDays: Int? = null,
   @Schema(description = "Yes if the offence caries a custodial sentence, Either if it does when tried as an indictment and No otherwise.")
   val custodialIndicator: CustodialIndicator? = null,
 )
@@ -79,11 +86,18 @@ data class OffenceToScheduleMapping(
   val childOffences: List<BasicOffence>? = null,
   @Schema(description = "The legislation associated to this offence (from actsAndSections in the SDRS response)")
   val legislation: String? = null,
-  // The maxPeriodIsLife and maxPeriodOfIndictmentYears fields are populated via the schedule data supplied by the HMCTS NSD team
+  // The maxPeriodIsLife and maxPeriodOfIndictmentYears columns were originally populated via the schedule data supplied by the HMCTS NSD team
+  // The maxPeriodIsLife and maxPeriodOfIndictment* columns were then supplemented with a spreadsheet titled 'PNLD List 2003'
   @Schema(description = "Set to true if max period is life")
   val maxPeriodIsLife: Boolean? = null,
   @Schema(description = "Set to the max period of indictment in years")
   val maxPeriodOfIndictmentYears: Int? = null,
+  @Schema(description = "Set to the max period of indictment in months")
+  val maxPeriodOfIndictmentMonths: Int? = null,
+  @Schema(description = "Set to the max period of indictment in weeks")
+  val maxPeriodOfIndictmentWeeks: Int? = null,
+  @Schema(description = "Set to the max period of indictment in days")
+  val maxPeriodOfIndictmentDays: Int? = null,
   @Schema(description = "The line reference for the associated schedule's legislation")
   val lineReference: String? = null,
   @Schema(description = "The legislation text for the associated schedule")

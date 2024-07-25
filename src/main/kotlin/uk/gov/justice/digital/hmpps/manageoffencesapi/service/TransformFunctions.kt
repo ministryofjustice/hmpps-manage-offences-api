@@ -52,6 +52,9 @@ fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): Mod
     legislation = offence.legislation,
     maxPeriodIsLife = offence.maxPeriodIsLife,
     maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
+    maxPeriodOfIndictmentMonths = offence.maxPeriodOfIndictmentMonths,
+    maxPeriodOfIndictmentWeeks = offence.maxPeriodOfIndictmentWeeks,
+    maxPeriodOfIndictmentDays = offence.maxPeriodOfIndictmentDays,
     childOffenceIds = childOffenceIds ?: emptyList(),
     custodialIndicator = offence.custodialIndicator,
   )
@@ -76,6 +79,9 @@ fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToSchedule
     paragraphNumber = offenceScheduleMapping.paragraphNumber,
     maxPeriodIsLife = offenceScheduleMapping.offence.maxPeriodIsLife,
     maxPeriodOfIndictmentYears = offenceScheduleMapping.offence.maxPeriodOfIndictmentYears,
+    maxPeriodOfIndictmentMonths = offenceScheduleMapping.offence.maxPeriodOfIndictmentMonths,
+    maxPeriodOfIndictmentWeeks = offenceScheduleMapping.offence.maxPeriodOfIndictmentWeeks,
+    maxPeriodOfIndictmentDays = offenceScheduleMapping.offence.maxPeriodOfIndictmentDays,
   )
 
 fun transform(offenceScheduleMappings: List<OffenceScheduleMapping>?): List<LinkedScheduleDetails>? =
@@ -230,6 +236,9 @@ fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMappi
     legislation = offence.legislation,
     maxPeriodIsLife = offence.maxPeriodIsLife,
     maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
+    maxPeriodOfIndictmentMonths = offence.maxPeriodOfIndictmentMonths,
+    maxPeriodOfIndictmentWeeks = offence.maxPeriodOfIndictmentWeeks,
+    maxPeriodOfIndictmentDays = offence.maxPeriodOfIndictmentDays,
     childOffences = children.map { transform(it) },
   )
 
