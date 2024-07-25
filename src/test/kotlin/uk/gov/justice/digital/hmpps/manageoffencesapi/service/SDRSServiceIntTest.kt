@@ -396,7 +396,7 @@ class SDRSServiceIntTest : IntegrationTestBase() {
       prisonApiMockServer.stubCreateStatute()
       prisonApiMockServer.stubCreateOffence()
 
-      sdrsService.deltaSynchroniseWithSdrs()
+      sdrsService.nightlyDeltaSynchroniseWithSdrs()
 
       val offences = offenceRepository.findAll()
       val statusRecords = sdrsLoadResultRepository.findAll()

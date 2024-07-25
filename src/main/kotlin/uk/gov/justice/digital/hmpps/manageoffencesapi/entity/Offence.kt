@@ -39,9 +39,13 @@ data class Offence(
   val changedDate: LocalDateTime,
   val createdDate: LocalDateTime = LocalDateTime.now(),
   val lastUpdatedDate: LocalDateTime = LocalDateTime.now(),
-  // The maxPeriodIsLife and maxPeriodOfIndictmentYears columns are populated via the schedule data supplied by the HMCTS NSD team
+  // The maxPeriodIsLife and maxPeriodOfIndictmentYears columns were originally populated via the schedule data supplied by the HMCTS NSD team
+  // The maxPeriodIsLife and maxPeriodOfIndictment* columns were then supplemented with a spreadsheet titled 'PNLD List 2003'
   val maxPeriodIsLife: Boolean? = false,
   val maxPeriodOfIndictmentYears: Int? = null,
+  val maxPeriodOfIndictmentMonths: Int? = null,
+  val maxPeriodOfIndictmentWeeks: Int? = null,
+  val maxPeriodOfIndictmentDays: Int? = null,
   @ManyToOne
   @JoinColumns(
     JoinColumn(name = "category", referencedColumnName = "category", insertable = false, updatable = false),
