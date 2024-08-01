@@ -2,6 +2,8 @@
 # Per environment values which override defaults in manage-offences-api/values.yaml
 
 generic-service:
+  replicaCount: 6
+
   ingress:
     host: manage-offences-api.hmpps.service.justice.gov.uk
 
