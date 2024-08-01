@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.HO_CODE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.OffenceService
@@ -94,6 +96,7 @@ class OffenceController(
     return offenceService.findOffenceByCodes(offenceCodes)
   }
 
+  @Cacheable(HO_CODE)
   @GetMapping(value = ["/ho-code/{offenceCode}"])
   @ResponseBody
   @Operation(

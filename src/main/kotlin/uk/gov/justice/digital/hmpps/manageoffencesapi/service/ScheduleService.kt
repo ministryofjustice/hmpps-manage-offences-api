@@ -276,7 +276,7 @@ class ScheduleService(
   }
 
   @Transactional(readOnly = true)
-  fun findPcscSchedules(offenceCodes: List<String>): List<OffencePcscMarkers> {
+  fun findPcscMarkers(offenceCodes: List<String>): List<OffencePcscMarkers> {
     log.info("Determining PCSC schedules for passed in offences")
     return getOffencePcscMarkers(offenceCodes)
   }

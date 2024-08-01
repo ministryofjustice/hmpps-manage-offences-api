@@ -245,7 +245,7 @@ class ScheduleServiceTest {
       whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_1.id)).thenReturn(emptyList())
       whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(emptyList())
 
-      val res = scheduleService.findPcscSchedules(listOf(BASE_OFFENCE.code))
+      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
 
       assertThat(res).isEqualTo(
         listOf(
@@ -278,7 +278,7 @@ class ScheduleServiceTest {
       )
       whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(emptyList())
 
-      val res = scheduleService.findPcscSchedules(listOf(BASE_OFFENCE.code))
+      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
 
       assertThat(res).isEqualTo(
         listOf(
@@ -311,7 +311,7 @@ class ScheduleServiceTest {
       )
       whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(emptyList())
 
-      val res = scheduleService.findPcscSchedules(listOf(BASE_OFFENCE.code))
+      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
 
       assertThat(res).isEqualTo(
         listOf(
