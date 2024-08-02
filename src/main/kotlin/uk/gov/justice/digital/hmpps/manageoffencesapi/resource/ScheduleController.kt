@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_LISTS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_MARKERS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSIONS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSION_LISTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
@@ -107,6 +109,7 @@ class ScheduleController(
     return scheduleService.findOffenceById(offenceId)
   }
 
+  @Cacheable(PCSC_MARKERS)
   @GetMapping(value = ["/pcsc-indicators"])
   @ResponseBody
   @Operation(
@@ -118,6 +121,7 @@ class ScheduleController(
     return scheduleService.findPcscMarkers(offenceCodes)
   }
 
+  @Cacheable(SDS_EARLY_RELEASE_EXCLUSIONS)
   @GetMapping(value = ["/sds-early-release-exclusions"])
   @ResponseBody
   @Operation(
