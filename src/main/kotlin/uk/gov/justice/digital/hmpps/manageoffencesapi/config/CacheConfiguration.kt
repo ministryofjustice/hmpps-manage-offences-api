@@ -24,20 +24,13 @@ class CacheConfiguration {
       PCSC_MARKERS,
       SDS_EARLY_RELEASE_EXCLUSION_LISTS,
       SDS_EARLY_RELEASE_EXCLUSIONS,
-      HO_CODE,
     )
   }
 
   @CacheEvict(allEntries = true, cacheNames = [PCSC_LISTS, PCSC_MARKERS, SDS_EARLY_RELEASE_EXCLUSION_LISTS, SDS_EARLY_RELEASE_EXCLUSIONS])
   @Scheduled(fixedDelay = 2, timeUnit = HOURS)
-  fun cacheEvictEveryTwoHours() {
+  fun cacheEvict() {
     log.info("Evicting caches: {}, {}, {}, {}", PCSC_LISTS, PCSC_MARKERS, SDS_EARLY_RELEASE_EXCLUSION_LISTS, SDS_EARLY_RELEASE_EXCLUSIONS)
-  }
-
-  @CacheEvict(allEntries = true, cacheNames = [HO_CODE])
-  @Scheduled(fixedDelay = 24, timeUnit = HOURS)
-  fun cacheEvictDaily() {
-    log.info("Evicting cache: {}", HO_CODE)
   }
 
   companion object {
@@ -46,6 +39,5 @@ class CacheConfiguration {
     const val PCSC_MARKERS: String = "pcscMarkers"
     const val SDS_EARLY_RELEASE_EXCLUSION_LISTS: String = "sdsEarlyReleaseExclusionLists"
     const val SDS_EARLY_RELEASE_EXCLUSIONS: String = "sdsEarlyReleaseExclusions"
-    const val HO_CODE: String = "hoCode"
   }
 }
