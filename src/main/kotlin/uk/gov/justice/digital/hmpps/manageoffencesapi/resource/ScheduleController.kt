@@ -109,7 +109,7 @@ class ScheduleController(
     return scheduleService.findOffenceById(offenceId)
   }
 
-  @Cacheable(PCSC_MARKERS)
+//  @Cacheable(PCSC_MARKERS) <- temporarily disable cache to test query optimisation
   @GetMapping(value = ["/pcsc-indicators"])
   @ResponseBody
   @Operation(
@@ -123,7 +123,7 @@ class ScheduleController(
     return scheduleService.findPcscMarkers(offenceCodes)
   }
 
-  @Cacheable(SDS_EARLY_RELEASE_EXCLUSIONS)
+//  @Cacheable(SDS_EARLY_RELEASE_EXCLUSIONS) <- temporarily disable cache to test query optimisation
   @GetMapping(value = ["/sds-early-release-exclusions"])
   @ResponseBody
   @Operation(

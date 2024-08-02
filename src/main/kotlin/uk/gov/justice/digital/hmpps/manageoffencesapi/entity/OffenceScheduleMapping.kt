@@ -5,10 +5,19 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.NamedAttributeNode
+import jakarta.persistence.NamedEntityGraph
 import jakarta.persistence.Table
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
 
+@NamedEntityGraph(
+  name = "OffenceScheduleMapping.detail",
+  attributeNodes = [
+    NamedAttributeNode("offence"),
+    NamedAttributeNode("schedulePart"),
+  ],
+)
 @Entity
 @Table
 data class OffenceScheduleMapping(

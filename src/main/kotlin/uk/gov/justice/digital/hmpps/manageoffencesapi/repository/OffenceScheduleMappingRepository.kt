@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.repository
 
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
@@ -10,6 +11,7 @@ interface OffenceScheduleMappingRepository : JpaRepository<OffenceScheduleMappin
   fun findByOffenceIdIn(offenceId: List<Long>): List<OffenceScheduleMapping>
   fun findByOffenceId(offenceId: Long): List<OffenceScheduleMapping>
   fun deleteBySchedulePartIdAndOffenceId(schedulePartId: Long, offenceId: Long): Long
-  fun findBySchedulePartId(partId: Long): List<OffenceScheduleMapping>
+
+  @EntityGraph(value = "OffenceScheduleMapping.detail", type = EntityGraph.EntityGraphType.LOAD)
   fun findBySchedulePartScheduleActAndSchedulePartScheduleCode(act: String, code: String): List<OffenceScheduleMapping>
 }
