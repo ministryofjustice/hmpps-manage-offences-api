@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.2"
   kotlin("plugin.spring") version "2.0.0"
   kotlin("plugin.jpa") version "2.0.0"
   id("se.patrikerdes.use-latest-versions") version "0.2.18"
@@ -12,7 +12,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
-    mavenBom("software.amazon.awssdk:bom:2.26.24")
+    mavenBom("software.amazon.awssdk:bom:2.26.28")
   }
 }
 
@@ -42,7 +42,7 @@ dependencies {
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.1")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
 
   // Schedule locking
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.14.0")
