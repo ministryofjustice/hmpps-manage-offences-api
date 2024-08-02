@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_LISTS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_MARKERS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSIONS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSION_LISTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion
@@ -104,19 +109,21 @@ class ScheduleController(
     return scheduleService.findOffenceById(offenceId)
   }
 
+  @Cacheable(PCSC_MARKERS)
   @GetMapping(value = ["/pcsc-indicators"])
   @ResponseBody
   @Operation(
     summary = "Determine if the passed in offence codes are related to any of the PCSC lists",
     description = "This endpoint will return a list of offences and whether they are im any of the PCSC lists",
   )
-  fun getPcscInformation(
+  fun getPcscMarkers(
     @RequestParam offenceCodes: List<String>,
   ): List<OffencePcscMarkers> {
     log.info("Request received to determine pcsc markers for ${offenceCodes.size} offence codes")
-    return scheduleService.findPcscSchedules(offenceCodes)
+    return scheduleService.findPcscMarkers(offenceCodes)
   }
 
+  @Cacheable(SDS_EARLY_RELEASE_EXCLUSIONS)
   @GetMapping(value = ["/sds-early-release-exclusions"])
   @ResponseBody
   @Operation(
@@ -130,6 +137,7 @@ class ScheduleController(
     return scheduleService.categoriseSdsExclusionsOffences(offenceCodes)
   }
 
+  @Cacheable(SDS_EARLY_RELEASE_EXCLUSION_LISTS)
   @GetMapping(value = ["/sds-early-release-exclusion-lists"])
   @ResponseBody
   @Operation(
@@ -141,6 +149,7 @@ class ScheduleController(
     return scheduleService.getSdsExclusionLists()
   }
 
+  @Cacheable(PCSC_LISTS)
   @GetMapping(value = ["/pcsc-lists"])
   @ResponseBody
   @Operation(
