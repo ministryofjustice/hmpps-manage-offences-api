@@ -107,21 +107,17 @@ class ScheduleController(
     return scheduleService.findOffenceById(offenceId)
   }
 
-//  @Cacheable(PCSC_MARKERS) <- temporarily disable cache to test query optimisation
   @GetMapping(value = ["/pcsc-indicators"])
   @ResponseBody
   @Operation(
     summary = "Determine if the passed in offence codes are related to any of the PCSC lists",
     description = "This endpoint will return a list of offences and whether they are im any of the PCSC lists",
   )
-  fun getPcscMarkers(
-    @RequestParam offenceCodes: List<String>,
-  ): List<OffencePcscMarkers> {
+  fun getPcscMarkers(@RequestParam offenceCodes: List<String>): List<OffencePcscMarkers> {
     log.info("Request received to determine pcsc markers for ${offenceCodes.size} offence codes")
     return scheduleService.findPcscMarkers(offenceCodes)
   }
 
-//  @Cacheable(SDS_EARLY_RELEASE_EXCLUSIONS) <- temporarily disable cache to test query optimisation
   @GetMapping(value = ["/sds-early-release-exclusions"])
   @ResponseBody
   @Operation(
