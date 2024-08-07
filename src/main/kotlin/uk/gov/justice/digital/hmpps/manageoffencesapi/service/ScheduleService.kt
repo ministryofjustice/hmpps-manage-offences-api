@@ -276,7 +276,7 @@ class ScheduleService(
   }
 
   @Transactional(readOnly = true)
-  fun findPcscSchedules(offenceCodes: List<String>): List<OffencePcscMarkers> {
+  fun findPcscMarkers(offenceCodes: List<String>): List<OffencePcscMarkers> {
     log.info("Determining PCSC schedules for passed in offences")
     return getOffencePcscMarkers(offenceCodes)
   }
@@ -390,29 +390,26 @@ class ScheduleService(
   }
 
   private fun getSchedule15Mappings(): Pair<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
-    val schedule15 = scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")
-      ?: throw EntityNotFoundException("Schedule 15 not found")
-    val parts = schedulePartRepository.findByScheduleId(schedule15.id)
-    val part1Mappings =
-      offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 1 }.id)
-    val part2Mappings =
-      offenceScheduleMappingRepository.findBySchedulePartId(parts.first { p -> p.partNumber == 2 }.id)
+    val mappings = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+      SCHEDULE_15.act,
+      SCHEDULE_15.code,
+    )
+    val part1Mappings = mappings.filter { it.schedulePart.partNumber == 1 }
+    val part2Mappings = mappings.filter { it.schedulePart.partNumber == 2 }
     return Pair(part1Mappings, part2Mappings)
   }
 
-  private fun getDomesticViolenceScheduleMappings(): List<OffenceScheduleMapping> {
-    val domesticViolenceSchedule =
-      scheduleRepository.findOneByActAndCode("Domestic Violence Excluded Offences", "DVEO")
-        ?: throw EntityNotFoundException("Domestic Violence Schedule Not Found")
-    return offenceScheduleMappingRepository.findBySchedulePartScheduleId(domesticViolenceSchedule.id)
-  }
+  private fun getDomesticViolenceScheduleMappings(): List<OffenceScheduleMapping> =
+    offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+      DOMESTIC_VIOLENCE_SCHEDULE.act,
+      DOMESTIC_VIOLENCE_SCHEDULE.code,
+    )
 
-  private fun getTerrorismScheduleMappings(): List<OffenceScheduleMapping> {
-    val terrorismSchedule =
-      scheduleRepository.findOneByActAndCode("Terrorism Excluded Offences", "TEO")
-        ?: throw EntityNotFoundException("Terrorism Schedule Not Found")
-    return offenceScheduleMappingRepository.findBySchedulePartScheduleId(terrorismSchedule.id)
-  }
+  private fun getTerrorismScheduleMappings(): List<OffenceScheduleMapping> =
+    offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+      TERRORISM_SCHEDULE.act,
+      TERRORISM_SCHEDULE.code,
+    )
 
   // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start on or after 28 June 2022)
   // NOMIS SCHEDULE_15_ATTRACTS_LIFE - SDS >7 years between 01 April 2020 and 28 June 2022
@@ -498,6 +495,18 @@ class ScheduleService(
     val SEXUAL_EXLUDED_OFFENCES_SCHEDULE = ScheduleInfo(
       act = "Sexual Excluded Offences",
       code = "SEO",
+    )
+    val SCHEDULE_15 = ScheduleInfo(
+      act = "Criminal Justice Act 2003",
+      code = "15",
+    )
+    val DOMESTIC_VIOLENCE_SCHEDULE = ScheduleInfo(
+      act = "Domestic Violence Excluded Offences",
+      code = "DVEO",
+    )
+    val TERRORISM_SCHEDULE = ScheduleInfo(
+      act = "Terrorism Excluded Offences",
+      code = "TEO",
     )
   }
 }

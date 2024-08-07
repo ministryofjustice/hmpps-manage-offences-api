@@ -67,20 +67,14 @@ class ScheduleServiceTest {
       whenever(nomisScheduleMappingRepository.findOneBySchedulePartId(SCHEDULE_PART_ID_92)).thenReturn(
         NOMIS_SCHEDULE_MAPPING,
       )
-      whenever(scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")).thenReturn(SCHEDULE_15)
-      whenever(schedulePartRepository.findByScheduleId(SCHEDULE_15.id)).thenReturn(
-        listOf(
-          SCHEDULE_15_PART_1,
-          SCHEDULE_15_PART_2,
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          "Criminal Justice Act 2003",
+          "15",
         ),
-      )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_1.id)).thenReturn(
+      ).thenReturn(
         listOf(
           OFFENCE_SCHEDULE_MAPPING_S15_P1_LIFE,
-        ),
-      )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(
-        listOf(
           OFFENCE_SCHEDULE_MAPPING_S15_P2_LIFE,
         ),
       )
@@ -164,13 +158,14 @@ class ScheduleServiceTest {
           SCHEDULE_15_PART_2,
         ),
       )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_1.id)).thenReturn(
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          "Criminal Justice Act 2003",
+          "15",
+        ),
+      ).thenReturn(
         listOf(
           OFFENCE_SCHEDULE_MAPPING_S15_P1_LIFE,
-        ),
-      )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(
-        listOf(
           OFFENCE_SCHEDULE_MAPPING_S15_P2_LIFE,
         ),
       )
@@ -235,17 +230,22 @@ class ScheduleServiceTest {
   inner class PcscTests {
     @Test
     fun `Determine PCSC offences when all indicators are false`() {
-      whenever(scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")).thenReturn(SCHEDULE_15)
       whenever(schedulePartRepository.findByScheduleId(SCHEDULE_15.id)).thenReturn(
         listOf(
           SCHEDULE_15_PART_1,
           SCHEDULE_15_PART_2,
         ),
       )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_1.id)).thenReturn(emptyList())
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(emptyList())
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          "Criminal Justice Act 2003",
+          "15",
+        ),
+      ).thenReturn(
+        emptyList(),
+      )
 
-      val res = scheduleService.findPcscSchedules(listOf(BASE_OFFENCE.code))
+      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
 
       assertThat(res).isEqualTo(
         listOf(
@@ -264,21 +264,25 @@ class ScheduleServiceTest {
 
     @Test
     fun `Determine PCSC offences when all indicators are true`() {
-      whenever(scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")).thenReturn(SCHEDULE_15)
       whenever(schedulePartRepository.findByScheduleId(SCHEDULE_15.id)).thenReturn(
         listOf(
           SCHEDULE_15_PART_1,
           SCHEDULE_15_PART_2,
         ),
       )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_1.id)).thenReturn(
+
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          "Criminal Justice Act 2003",
+          "15",
+        ),
+      ).thenReturn(
         listOf(
           OFFENCE_SCHEDULE_MAPPING_S15_P1_LIFE,
         ),
       )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(emptyList())
 
-      val res = scheduleService.findPcscSchedules(listOf(BASE_OFFENCE.code))
+      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
 
       assertThat(res).isEqualTo(
         listOf(
@@ -297,21 +301,24 @@ class ScheduleServiceTest {
 
     @Test
     fun `Determine PCSC offences with a mix of indicators true and false`() {
-      whenever(scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")).thenReturn(SCHEDULE_15)
       whenever(schedulePartRepository.findByScheduleId(SCHEDULE_15.id)).thenReturn(
         listOf(
           SCHEDULE_15_PART_1,
           SCHEDULE_15_PART_2,
         ),
       )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_1.id)).thenReturn(
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          "Criminal Justice Act 2003",
+          "15",
+        ),
+      ).thenReturn(
         listOf(
           OFFENCE_SCHEDULE_MAPPING_S15_P1_LIFE_AFTER_CUTOFF,
         ),
       )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(emptyList())
 
-      val res = scheduleService.findPcscSchedules(listOf(BASE_OFFENCE.code))
+      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
 
       assertThat(res).isEqualTo(
         listOf(
@@ -357,21 +364,14 @@ class ScheduleServiceTest {
       whenever(offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE)).thenReturn(
         listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS, POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS),
       )
-
-      whenever(scheduleRepository.findOneByActAndCode("Criminal Justice Act 2003", "15")).thenReturn(SCHEDULE_15)
-      whenever(schedulePartRepository.findByScheduleId(SCHEDULE_15.id)).thenReturn(
-        listOf(
-          SCHEDULE_15_PART_1,
-          SCHEDULE_15_PART_2,
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          "Criminal Justice Act 2003",
+          "15",
         ),
-      )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_1.id)).thenReturn(
+      ).thenReturn(
         listOf(
           OFFENCE_SCHEDULE_MAPPING_S15_P1_LIFE,
-        ),
-      )
-      whenever(offenceScheduleMappingRepository.findBySchedulePartId(SCHEDULE_15_PART_2.id)).thenReturn(
-        listOf(
           OFFENCE_SCHEDULE_MAPPING_S15_P2_LIFE,
         ),
       )
@@ -406,7 +406,12 @@ class ScheduleServiceTest {
           ),
         ),
       )
-      verify(offenceToSyncWithNomisRepository).deleteAllById(listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS.id, POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS.id))
+      verify(offenceToSyncWithNomisRepository).deleteAllById(
+        listOf(
+          S15_OFFENCE_TO_SYNC_WITH_NOMIS.id,
+          POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS.id,
+        ),
+      )
     }
   }
 
