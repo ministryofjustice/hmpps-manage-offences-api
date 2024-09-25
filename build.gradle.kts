@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.4"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.6"
   kotlin("plugin.spring") version "2.0.20"
   kotlin("plugin.jpa") version "2.0.20"
   id("se.patrikerdes.use-latest-versions") version "0.2.18"
@@ -11,8 +11,8 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1")
-    mavenBom("software.amazon.awssdk:bom:2.27.13")
+    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.2.0")
+    mavenBom("software.amazon.awssdk:bom:2.28.9")
   }
 }
 
@@ -24,7 +24,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.7.4")
 
   // AppInsights
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.7.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.8.0")
 
   // JWT
   implementation("io.jsonwebtoken:jjwt-api:0.12.6")
@@ -45,8 +45,8 @@ dependencies {
   implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
 
   // Schedule locking
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.15.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.15.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:5.16.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.16.0")
 
   // AWS
   // See comment below relating to the SQS lib, keep these AWS dependencies above the SQS dependency
@@ -58,7 +58,7 @@ dependencies {
   // During a upgrade PR a springboot/aws related issue occurred which implied there was a conflict with the hmpps-sqs library
   // Moving this SQS lib below the AWS libs solved the problem. Not exactly sure why! See the PR for more details
   // https://github.com/ministryofjustice/hmpps-manage-offences-api/pull/175
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:4.3.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:4.4.4")
 
   // Miscellaneous
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
@@ -67,7 +67,7 @@ dependencies {
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.22")
   testImplementation("com.h2database:h2")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.41.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.42.1")
 }
 
 kotlin {
