@@ -6,12 +6,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.AdminService
 
 @RestController
@@ -58,6 +60,17 @@ class AdminController(
   fun deactivateNomisOffence(@RequestBody offenceIds: List<Long>) {
     log.info("Request received to deactivate offences in nomis")
     return adminService.deactivateNomisOffence(offenceIds)
+  }
+
+  @PostMapping(value = ["/nomis/offences/encouragement/{offenceId}"])
+  @PreAuthorize("hasRole('ROLE_NOMIS_OFFENCE_ACTIVATOR')")
+  @Operation(
+    summary = "Create encouragement offence for parent offence",
+    description = "Encouragement offence creates a new record with existing parent offence value, but with 'E' suffix to the offence code",
+  )
+  fun createEncouragementOffence(@PathVariable offenceId: Long): Offence {
+    log.info("Create encouragement offence for parent offence")
+    return adminService.createEncouragementOffence(offenceId)
   }
 
   companion object {

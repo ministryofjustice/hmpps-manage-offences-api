@@ -24,8 +24,8 @@ export AWS_REGION=eu-west-1
 # Match with ports defined in docker-compose.yml
 # export HMPPS_AUTH_URL=http://localhost:9090/auth
 export HMPPS_AUTH_URL=https://sign-in-dev.hmpps.service.justice.gov.uk/auth
-export API_BASE_URL_PRISON_API=https://api-dev.prison.service.justice.gov.uk
-export API_BASE_URL_SDRS=https://crime-reference-data-api.staging.service.justice.gov.uk
+export API_BASE_URL_PRISON_API=https://prison-api-dev.prison.service.justice.gov.uk
+export API_BASE_URL_SDRS=https://sdrs.staging.apps.hmcts.net/
 
 # Make the connection without specifying the sslmode=verify-full requirement
 export SPRING_DATASOURCE_URL='jdbc:postgresql://${DB_SERVER}/${DB_NAME}'

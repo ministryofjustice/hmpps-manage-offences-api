@@ -9,6 +9,7 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.EventToRaiseRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
@@ -21,6 +22,7 @@ class AdminServiceTest {
   private val offenceReactivatedInNomisRepository = mock<OffenceReactivatedInNomisRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
+  private val eventToRaiseRepository = mock<EventToRaiseRepository>()
 
   private val adminService = AdminService(
     featureToggleRepository,
@@ -28,6 +30,7 @@ class AdminServiceTest {
     offenceReactivatedInNomisRepository,
     prisonApiClient,
     prisonApiUserClient,
+    eventToRaiseRepository,
   )
 
   @Test

@@ -8,8 +8,12 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.AuthAwareAuthenticationToken
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.EventToRaise
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.EventType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.EventToRaiseRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
@@ -22,7 +26,11 @@ class AdminService(
   private val offenceReactivatedInNomisRepository: OffenceReactivatedInNomisRepository,
   private val prisonApiClient: PrisonApiClient,
   private val prisonApiUserClient: PrisonApiUserClient,
+  private val eventToRaiseRepository: EventToRaiseRepository,
 ) {
+
+  private val encouragementOffenceEligibilityStartDate = LocalDate.parse("2008-02-15")
+
   @Transactional
   fun toggleFeature(featureToggles: List<FeatureToggle>) {
     featureToggles.forEach {
@@ -73,6 +81,60 @@ class AdminService(
         offenceReactivatedInNomisRepository.deleteById(offence.code)
       }
     }
+  }
+
+  @Transactional
+  fun createEncouragementOffence(parentOffenceId: Long): Offence {
+    val offence = offenceRepository.findById(parentOffenceId)
+      .orElseThrow { EntityNotFoundException("Offence not found with ID $parentOffenceId") }
+
+    if (offence.parentCode !== null && offence.parentCode == offence.code) {
+      throw ValidationException("Offence must be a valid parent")
+    }
+
+    if (offence.endDate !== null && offence.endDate < encouragementOffenceEligibilityStartDate) {
+      throw ValidationException("Offence must have an end date post $encouragementOffenceEligibilityStartDate")
+    }
+
+    val children = offenceRepository.findByParentOffenceId(parentOffenceId)
+    val encouragementCode = offence.code + 'E'
+
+    if (children.any { it.code == encouragementCode }) {
+      throw ValidationException("Encouragement offence already exists for offence code $encouragementCode")
+    }
+
+    val prisonRecord = prisonApiClient.findByOffenceCodeStartsWith(offence.code, 0)
+
+    if (prisonRecord.content.isEmpty()) {
+      throw ValidationException("No prison record was found for offence code ${offence.code}")
+    }
+
+    val encouragementOffence = offence.copy(
+      id = -1,
+      code = encouragementCode,
+      description = "Encouragement to ${offence.description}",
+      cjsTitle = "Encouragement to ${offence.cjsTitle}",
+    )
+
+    val newOffence = offenceRepository.save(encouragementOffence)
+
+    prisonApiClient.createOffences(
+      listOf(
+        prisonRecord.content.first().copy(
+          code = encouragementOffence.code,
+          description = encouragementOffence.description!!,
+        ),
+      ),
+    )
+
+    eventToRaiseRepository.save(
+      EventToRaise(
+        offenceCode = encouragementOffence.code,
+        eventType = EventType.OFFENCE_CHANGED,
+      ),
+    )
+
+    return transform(newOffence, childOffenceIds = listOf())
   }
 
   @Transactional(readOnly = true)
