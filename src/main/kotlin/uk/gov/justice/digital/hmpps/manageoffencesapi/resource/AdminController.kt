@@ -62,15 +62,15 @@ class AdminController(
     return adminService.deactivateNomisOffence(offenceIds)
   }
 
-  @PostMapping(value = ["/nomis/offences/encouragement/{offenceId}"])
+  @PostMapping(value = ["/nomis/offences/encouragement/{parentOffenceId}"])
   @PreAuthorize("hasRole('ROLE_NOMIS_OFFENCE_ACTIVATOR')")
   @Operation(
     summary = "Create encouragement offence for parent offence",
     description = "Encouragement offence creates a new record with existing parent offence value, but with 'E' suffix to the offence code",
   )
-  fun createEncouragementOffence(@PathVariable offenceId: Long): Offence {
+  fun createEncouragementOffence(@PathVariable parentOffenceId: Long): Offence {
     log.info("Create encouragement offence for parent offence")
-    return adminService.createEncouragementOffence(offenceId)
+    return adminService.createEncouragementOffence(parentOffenceId)
   }
 
   companion object {

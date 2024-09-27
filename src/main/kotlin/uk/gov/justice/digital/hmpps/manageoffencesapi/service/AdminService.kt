@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRe
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactivatedInNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class AdminService(
@@ -110,9 +111,14 @@ class AdminService(
       throw ValidationException("No prison record was found for offence code ${offence.code}")
     }
 
+    val now = LocalDateTime.now()
+
     val encouragementOffence = offence.copy(
       id = -1,
       code = encouragementCode,
+      createdDate = now,
+      lastUpdatedDate = now,
+      changedDate = now,
       description = "Encouragement to ${offence.description}",
       cjsTitle = "Encouragement to ${offence.cjsTitle}",
     )
