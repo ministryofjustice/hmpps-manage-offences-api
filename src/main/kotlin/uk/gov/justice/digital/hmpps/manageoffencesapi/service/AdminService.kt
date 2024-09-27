@@ -88,7 +88,8 @@ class AdminService(
     val offence = offenceRepository.findById(parentOffenceId)
       .orElseThrow { EntityNotFoundException("Offence not found with ID $parentOffenceId") }
 
-    if (offence.parentCode !== null && offence.parentCode == offence.code) {
+    // Parent offence should have no parentCode, or parentCode must be the same as the current Offence (indicating the parent)
+    if (offence.parentCode !== null && offence.parentCode !== offence.code) {
       throw ValidationException("Offence must be a valid parent")
     }
 
