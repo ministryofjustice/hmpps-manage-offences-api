@@ -48,10 +48,10 @@ Use the keytool command. if modifying cacerts pass in the option `-cacerts`, oth
 
 ### add cert
 The SDRS Staging api is publicly open api with root URL at  
-https://crime-reference-data-api.staging.service.justice.gov.uk  
+https://sdrs.staging.apps.hmcts.net/
 However, in order for it to work with java you have to add it to the truststore, locally this can be achieved by doing the following (using the default password of changeit):
-1. Download the cert from https://crime-reference-data-api.staging.service.justice.gov.uk using a browser or the following command:  
-`openssl s_client -servername crime-reference-data-api.staging.service.justice.gov.uk -connect crime-reference-data-api.staging.service.justice.gov.uk:443 </dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >sdrs-staging.pem`
+1. Download the cert from https://sdrs.staging.apps.hmcts.net/ using a browser or the following command:  
+`openssl s_client -servername sdrs.staging.apps.hmcts.net -connect crime-reference-data-api.staging.service.justice.gov.uk:443 </dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' >sdrs-staging.pem`
 2. Then add it to the tuststore using the following command:  
 `keytool -noprompt -storepass changeit -importcert -trustcacerts -cacerts -file sdrs-staging.pem -alias sdrs_staging_cert`
 
