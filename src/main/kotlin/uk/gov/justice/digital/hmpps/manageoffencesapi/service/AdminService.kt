@@ -115,6 +115,7 @@ class AdminService(
 
     val encouragementOffence = offence.copy(
       id = -1,
+      parentOffenceId = offence.id,
       code = encouragementCode,
       createdDate = now,
       lastUpdatedDate = now,
