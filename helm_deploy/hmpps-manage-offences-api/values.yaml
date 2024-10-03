@@ -42,8 +42,15 @@ generic-service:
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_HMPPSEVENTTOPIC_ARN: "topic_arn"
 
-  # Switches off the allowlist
-  allowlist: null
+  allowlist:
+    analytical-platform-1: 18.168.85.104/32
+    analytical-platform-2: 13.42.220.232/32
+    analytical-platform-3: 18.168.158.203/32
+    analytical-platform-4: 18.134.41.36/32
+    analytical-platform-5: 3.11.34.83/32
+    analytical-platform-6: 18.133.37.201/32
+    groups:
+      - internal
 
 generic-prometheus-alerts:
   targetApplication: hmpps-manage-offences-api
