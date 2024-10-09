@@ -50,6 +50,6 @@ class CacheConfiguration {
     const val PCSC_MARKERS: String = "pcscMarkers"
     const val SDS_EARLY_RELEASE_EXCLUSION_LISTS: String = "sdsEarlyReleaseExclusionLists"
     const val SDS_EARLY_RELEASE_EXCLUSIONS: String = "sdsEarlyReleaseExclusions"
-    const val TORERA_OFFENCE_CODES: String = "scheduleOffences"
+    const val TORERA_OFFENCE_CODES: String = "toreraOffenceCodes"
   }
 }
