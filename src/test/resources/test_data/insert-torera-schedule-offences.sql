@@ -1,7 +1,7 @@
 INSERT INTO schedule (code, act, url)
 VALUES ('19ZA', 'test', '');
 INSERT INTO schedule_part (schedule_id, part_number)
-VALUES (1, 1);
+VALUES ((select id from schedule order by id desc limit 1), 1);
 
 INSERT INTO offence (code, description, revision_id, cjs_title, start_date, end_date, changed_date, created_date,
                      last_updated_date, acts_and_sections)
@@ -19,6 +19,6 @@ VALUES ('AO06999', 'Brought before the court as being absent without leave from 
         'Torera related offence');
 INSERT INTO offence_schedule_mapping (schedule_part_id, paragraph_number, paragraph_title, line_reference,
                                       legislation_text, offence_id)
-VALUES (1, 'p1', 'p_title', 'l1', 'leg1', 2),
-       (1, 'p2', 'p_title_2', 'l2', 'leg2', 3);
+VALUES ((select id from schedule_part order by id desc limit 1), 'p1', 'p_title', 'l1', 'leg1', (select id from offence o where o.code = 'AO07000')),
+       ((select id from schedule_part order by id desc limit 1), 'p2', 'p_title_2', 'l2', 'leg2', (select id from offence o where o.code = 'AO07001'));
 

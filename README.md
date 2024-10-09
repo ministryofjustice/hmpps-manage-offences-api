@@ -19,12 +19,9 @@ Tools required:
 
 # Running the unit tests
 Unit tests mock all external dependencies and can be run with no dependent containers.  
-`$ ./gradlew test`
-
-# Running the integration tests
 Integration tests use Wiremock to stub any API calls required, and use a local H2 database
 that is seeded with data specific to each test suite.  
-`$ ./gradlew integrationTest`
+`$ ./gradlew test`
 
 # Linting  
 `$ ./gradlew ktlintcheck`
