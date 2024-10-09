@@ -287,6 +287,14 @@ class ScheduleService(
     return getSdsExclusionIndicators(offenceCodes)
   }
 
+  /**
+   * TORERA offences are currently present within Schedule 19ZA.
+   * If there are any changes in policy, the method must be updated to accept a different code, or
+   * support multiple Schedules
+   */
+  @Transactional(readOnly = true)
+  fun getToreraOffenceCodes() = scheduleRepository.getToreraOffenceCodes("19ZA")
+
   private fun getSdsExclusionIndicators(offenceCodes: List<String>): List<OffenceSdsExclusion> {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val domesticViolenceMappings = getDomesticViolenceScheduleMappings()

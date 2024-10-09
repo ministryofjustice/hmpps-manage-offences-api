@@ -282,6 +282,25 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     assertThat(scheduleAfterUnlinkingOffences?.scheduleParts?.first { it.partNumber == 1 }?.offences).isNull()
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-torera-schedule-offences.sql",
+  )
+  fun `Get TORERA related offence codes`() {
+    val result = webTestClient.get().uri("/schedule/torera-offence-codes")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .returnResult().responseBody
+
+    assertThat(result)
+      .isEqualTo(
+        listOf("AO07000", "AO07001"),
+      )
+  }
+
   private fun assertThatScheduleMatches(scheduleBefore: Schedule?, schedule: Schedule) {
     assertThat(scheduleBefore)
       .usingRecursiveComparison()
