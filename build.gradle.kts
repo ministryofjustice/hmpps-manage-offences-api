@@ -5,6 +5,10 @@ plugins {
   id("se.patrikerdes.use-latest-versions") version "0.2.18"
 }
 
+tasks.withType<Test> {
+  environment("AWS_REGION", "eu-west-1")
+}
+
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }

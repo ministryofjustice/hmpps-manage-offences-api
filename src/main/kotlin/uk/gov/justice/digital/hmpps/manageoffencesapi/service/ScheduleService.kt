@@ -287,6 +287,15 @@ class ScheduleService(
     return getSdsExclusionIndicators(offenceCodes)
   }
 
+  /**
+   * TORERA offences are currently present within Schedule 19ZA part 1 and 2
+   * Part 3 can include TORERA offences, but there are exceptions where a judge can
+   * assign Terrorism related offences to Offences within Part 3. Nomis does not currently support
+   * this use case.
+   */
+  @Transactional(readOnly = true)
+  fun getToreraOffenceCodes() = scheduleRepository.getToreraOffenceCodes()
+
   private fun getSdsExclusionIndicators(offenceCodes: List<String>): List<OffenceSdsExclusion> {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val domesticViolenceMappings = getDomesticViolenceScheduleMappings()

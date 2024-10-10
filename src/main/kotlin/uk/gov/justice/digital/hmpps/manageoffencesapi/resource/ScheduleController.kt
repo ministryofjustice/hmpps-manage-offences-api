@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_MARKERS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSIONS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSION_LISTS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.TORERA_OFFENCE_CODES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion
@@ -145,6 +146,13 @@ class ScheduleController(
   fun getSdsExclusionLists(): SdsExclusionLists {
     log.info("Request received to get list of sexual or violent offences")
     return scheduleService.getSdsExclusionLists()
+  }
+
+  @Cacheable(TORERA_OFFENCE_CODES)
+  @GetMapping(value = ["/torera-offence-codes"])
+  fun getToreraOffenceCodes(): List<String> {
+    log.info("Request received to get torera related offence codes")
+    return scheduleService.getToreraOffenceCodes()
   }
 
   @Cacheable(PCSC_LISTS)

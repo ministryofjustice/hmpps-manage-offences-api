@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.http.MediaType
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
@@ -280,6 +281,21 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     )
     val scheduleAfterUnlinkingOffences = getScheduleDetails(schedule15Id)
     assertThat(scheduleAfterUnlinkingOffences?.scheduleParts?.first { it.partNumber == 1 }?.offences).isNull()
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-torera-schedule-offences.sql",
+  )
+  fun `Get TORERA related offence codes`() {
+    webTestClient.get().uri("/schedule/torera-offence-codes")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON) // Assert that the content type is JSON
+      .expectBody()
+      .json("[\"AO07000\", \"AO07001\"]")
   }
 
   private fun assertThatScheduleMatches(scheduleBefore: Schedule?, schedule: Schedule) {
