@@ -15,8 +15,9 @@ interface ScheduleRepository : JpaRepository<Schedule, Long> {
         JOIN SchedulePart sp on sp.schedule = s 
         JOIN OffenceScheduleMapping osm on osm.schedulePart = sp 
         JOIN Offence o ON osm.offence = o 
-    WHERE s.code = :scheduleCode
+    WHERE s.code = "19ZA"
+        AND sp.partNumber IN (1, 2)
    """,
   )
-  fun getToreraOffenceCodes(scheduleCode: String): List<String>
+  fun getToreraOffenceCodes(): List<String>
 }

@@ -16,9 +16,29 @@ VALUES ('AO06999', 'Brought before the court as being absent without leave from 
        ('AO07001', 'Torera related offence', 770173,
         'Torera related offence', '2009-11-02', NULL,
         '2020-01-16 15:19:02.000', '2022-04-07 16:05:58.178', '2022-04-07 16:05:58.178',
-        'Torera related offence');
+        'Torera related offence'),
+       ('AO07002', 'Torera related offence', 770175,
+        'Node Torera related offence', '2009-11-02', NULL,
+        '2020-01-16 15:19:02.000', '2022-04-07 16:05:58.178', '2022-04-07 16:05:58.178',
+        'None Torera related offence');
+
 INSERT INTO offence_schedule_mapping (schedule_part_id, paragraph_number, paragraph_title, line_reference,
                                       legislation_text, offence_id)
-VALUES ((select id from schedule_part order by id desc limit 1), 'p1', 'p_title', 'l1', 'leg1', (select id from offence o where o.code = 'AO07000')),
-       ((select id from schedule_part order by id desc limit 1), 'p2', 'p_title_2', 'l2', 'leg2', (select id from offence o where o.code = 'AO07001'));
+VALUES ((select id from schedule_part order by id desc limit 1), 'p1', 'p_title', 'l1', 'leg1',
+        (select id from offence o where o.code = 'AO07000'));
 
+INSERT INTO schedule_part (schedule_id, part_number)
+VALUES ((select id from schedule order by id desc limit 1), 2);
+
+INSERT INTO offence_schedule_mapping (schedule_part_id, paragraph_number, paragraph_title, line_reference,
+                                      legislation_text, offence_id)
+VALUES ((select id from schedule_part order by id desc limit 1), 'p1', 'p_title', 'l1', 'leg1',
+        (select id from offence o where o.code = 'AO07001'));
+
+INSERT INTO schedule_part (schedule_id, part_number)
+VALUES ((select id from schedule order by id desc limit 1), 3);
+
+INSERT INTO offence_schedule_mapping (schedule_part_id, paragraph_number, paragraph_title, line_reference,
+                                      legislation_text, offence_id)
+VALUES ((select id from schedule_part order by id desc limit 1), 'p1', 'p_title', 'l1', 'leg1',
+        (select id from offence o where o.code = 'AO07002'));
