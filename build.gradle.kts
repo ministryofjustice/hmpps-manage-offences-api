@@ -1,7 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.6"
-  kotlin("plugin.spring") version "2.0.20"
-  kotlin("plugin.jpa") version "2.0.20"
+  kotlin("plugin.spring") version "2.0.21"
+  kotlin("plugin.jpa") version "2.0.21"
   id("se.patrikerdes.use-latest-versions") version "0.2.18"
 }
 
@@ -12,7 +12,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.2.0")
-    mavenBom("software.amazon.awssdk:bom:2.28.10")
+    mavenBom("software.amazon.awssdk:bom:2.28.19")
   }
 }
 
@@ -42,7 +42,7 @@ dependencies {
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.3")
 
   // Schedule locking
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.16.0")
@@ -61,7 +61,7 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.0.1")
 
   // Miscellaneous
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
 
   // Test dependencies
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.22")
