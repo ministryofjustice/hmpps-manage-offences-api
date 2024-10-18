@@ -1,7 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "6.0.6"
-  kotlin("plugin.spring") version "2.0.20"
-  kotlin("plugin.jpa") version "2.0.20"
+  kotlin("plugin.spring") version "2.0.21"
+  kotlin("plugin.jpa") version "2.0.21"
   id("se.patrikerdes.use-latest-versions") version "0.2.18"
 }
 
@@ -16,7 +16,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.2.0")
-    mavenBom("software.amazon.awssdk:bom:2.28.10")
+    mavenBom("software.amazon.awssdk:bom:2.28.26")
   }
 }
 
@@ -28,7 +28,7 @@ dependencies {
   runtimeOnly("org.postgresql:postgresql:42.7.4")
 
   // AppInsights
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.8.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.9.0")
 
   // JWT
   implementation("io.jsonwebtoken:jjwt-api:0.12.6")
@@ -46,7 +46,7 @@ dependencies {
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.3")
 
   // Schedule locking
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.16.0")
@@ -65,13 +65,13 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.0.1")
 
   // Miscellaneous
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
 
   // Test dependencies
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.22")
   testImplementation("com.h2database:h2")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.42.1")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.43.0")
 }
 
 kotlin {
