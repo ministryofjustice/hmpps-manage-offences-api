@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
+import java.util.concurrent.TimeUnit.DAYS
 import java.util.concurrent.TimeUnit.HOURS
 
 @Configuration
@@ -25,6 +26,7 @@ class CacheConfiguration {
       SDS_EARLY_RELEASE_EXCLUSION_LISTS,
       SDS_EARLY_RELEASE_EXCLUSIONS,
       TORERA_OFFENCE_CODES,
+      OFFENCE_CODE_TO_HOME_OFFICE_CODE,
     )
   }
 
@@ -44,6 +46,15 @@ class CacheConfiguration {
     )
   }
 
+  @CacheEvict(
+    allEntries = true,
+    cacheNames = [OFFENCE_CODE_TO_HOME_OFFICE_CODE],
+  )
+  @Scheduled(fixedDelay = 14, timeUnit = DAYS)
+  fun cacheEvictEveryFourteenDays() {
+    log.info("Evicting cache every 14 days: {}", OFFENCE_CODE_TO_HOME_OFFICE_CODE)
+  }
+
   companion object {
     val log: Logger = LoggerFactory.getLogger(CacheConfiguration::class.java)
     const val PCSC_LISTS: String = "pcscLists"
@@ -51,5 +62,6 @@ class CacheConfiguration {
     const val SDS_EARLY_RELEASE_EXCLUSION_LISTS: String = "sdsEarlyReleaseExclusionLists"
     const val SDS_EARLY_RELEASE_EXCLUSIONS: String = "sdsEarlyReleaseExclusions"
     const val TORERA_OFFENCE_CODES: String = "toreraOffenceCodes"
+    const val OFFENCE_CODE_TO_HOME_OFFICE_CODE: String = "offenceCodesToHomeOfficeCode"
   }
 }
