@@ -62,7 +62,7 @@ dependencies {
   // During a upgrade PR a springboot/aws related issue occurred which implied there was a conflict with the hmpps-sqs library
   // Moving this SQS lib below the AWS libs solved the problem. Not exactly sure why! See the PR for more details
   // https://github.com/ministryofjustice/hmpps-manage-offences-api/pull/175
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.0.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.1.1")
 
   // Miscellaneous
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
@@ -70,7 +70,7 @@ dependencies {
   // Test dependencies
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.22")
   testImplementation("com.h2database:h2")
-  testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
+  testImplementation("org.wiremock:wiremock-standalone:3.9.2")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.42.1")
 }
 
@@ -80,8 +80,8 @@ kotlin {
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "21"
+    compilerOptions {
+      jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
     }
   }
 }
