@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.LINK_SCHEDULES_NOMIS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.T3_OFFENCE_EXCLUSIONS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.UNLINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
@@ -25,6 +26,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleInfo
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
@@ -40,6 +42,7 @@ class ScheduleService(
   private val schedulePartRepository: SchedulePartRepository,
   private val offenceScheduleMappingRepository: OffenceScheduleMappingRepository,
   private val offenceRepository: OffenceRepository,
+  private val featureToggleRepository: FeatureToggleRepository,
   private val prisonApiUserClient: PrisonApiUserClient,
   private val prisonApiClient: PrisonApiClient,
   private val nomisScheduleMappingRepository: NomisScheduleMappingRepository,
@@ -304,17 +307,37 @@ class ScheduleService(
     val terrorismMapping = getTerrorismScheduleMappings()
     val sexScheduleMappings = getSexScheduleMappings()
 
+    val trancheThreeEnabled = trancheThreeEnabled()
+
     return offenceCodes.map { offenceCode ->
       val isSexual = part2Mappings.any { it.offence.code == offenceCode } ||
         hasSexualCodePrefix(offenceCode) ||
         sexualOffencesFromLegislation.any { it.code == offenceCode } ||
         sexScheduleMappings.any { it.offence.code == offenceCode }
+
+      val isSexualTranche3 = trancheThreeEnabled && isSexual && offenceCode in TRANCHE_THREE_SEXUAL_OFFENCE_CODES
+
       val isDomesticViolence = domesticViolenceMappings.any { it.offence.code == offenceCode }
+      val isDomesticViolenceTranche3 = trancheThreeEnabled && isDomesticViolence && offenceCode in TRANCHE_THREE_DOMESTIC_OFFENCE_CODES
+
       val isNationalSecurity = securityOffencesFromLegislation.any { it.code == offenceCode }
+
       val isViolent = part1Mappings.any { it.offence.code == offenceCode }
+
       val isTerrorism = terrorismMapping.any { it.offence.code == offenceCode }
 
-      val indicator = getSdsExclusionIndicator(isSexual, isDomesticViolence, isNationalSecurity, isTerrorism, isViolent)
+      val isMurderTranche3 = trancheThreeEnabled && offenceCode in TRANCHE_THREE_MURDER_OFFENCE_CODES
+
+      val indicator = getSdsExclusionIndicator(
+        isSexual,
+        isDomesticViolence,
+        isNationalSecurity,
+        isTerrorism,
+        isViolent,
+        isDomesticViolenceTranche3,
+        isSexualTranche3,
+        isMurderTranche3,
+      )
 
       OffenceSdsExclusion(
         offenceCode = offenceCode,
@@ -490,6 +513,8 @@ class ScheduleService(
     )
   }
 
+  private fun trancheThreeEnabled() = featureToggleRepository.findById(T3_OFFENCE_EXCLUSIONS).map { it.enabled }.orElse(false)
+
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     val SDS_LIST_A_CUT_OFF_DATE: LocalDate = LocalDate.of(2022, 6, 28)
@@ -504,6 +529,26 @@ class ScheduleService(
     val SEXUAL_EXLUDED_OFFENCES_SCHEDULE = ScheduleInfo(
       act = "Sexual Excluded Offences",
       code = "SEO",
+    )
+    val TRANCHE_THREE_SEXUAL_OFFENCE_CODES = listOf(
+      "CJ15005",
+      "CJ15013",
+      "SE20005",
+      "SE20006",
+      "SE20012",
+      "SE20012A",
+    )
+    val TRANCHE_THREE_DOMESTIC_OFFENCE_CODES = listOf(
+      "ST19001",
+      "PH97003",
+      "PH97005",
+      "PH97003A",
+      "PH97003B",
+      "PH97012",
+    )
+    val TRANCHE_THREE_MURDER_OFFENCE_CODES = listOf(
+      "COML025",
+      "COML026",
     )
     val SCHEDULE_15 = ScheduleInfo(
       act = "Criminal Justice Act 2003",

@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDR
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.LINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.PUBLISH_EVENTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SYNC_HOME_OFFICE_CODES
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.T3_OFFENCE_EXCLUSIONS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.UNLINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
@@ -46,6 +47,7 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(PUBLISH_EVENTS, true),
           FeatureToggle(UNLINK_SCHEDULES_NOMIS, true),
           FeatureToggle(LINK_SCHEDULES_NOMIS, true),
+          FeatureToggle(T3_OFFENCE_EXCLUSIONS, true),
         ),
       )
   }
@@ -77,6 +79,7 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(PUBLISH_EVENTS, true),
           FeatureToggle(UNLINK_SCHEDULES_NOMIS, true),
           FeatureToggle(LINK_SCHEDULES_NOMIS, true),
+          FeatureToggle(T3_OFFENCE_EXCLUSIONS, true),
         ),
       )
   }
