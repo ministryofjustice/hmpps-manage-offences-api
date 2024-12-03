@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
@@ -38,6 +39,7 @@ class ScheduleServiceTest {
   private val schedulePartRepository = mock<SchedulePartRepository>()
   private val offenceScheduleMappingRepository = mock<OffenceScheduleMappingRepository>()
   private val offenceRepository = mock<OffenceRepository>()
+  private val featureToggleRepository = mock<FeatureToggleRepository>()
   private val nomisScheduleMappingRepository = mock<NomisScheduleMappingRepository>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
   private val prisonApiClient = mock<PrisonApiClient>()
@@ -50,6 +52,7 @@ class ScheduleServiceTest {
       schedulePartRepository,
       offenceScheduleMappingRepository,
       offenceRepository,
+      featureToggleRepository,
       prisonApiUserClient,
       prisonApiClient,
       nomisScheduleMappingRepository,
