@@ -250,8 +250,7 @@ class ScheduleService(
     return pcscMappings
   }
 
-  private fun deleteOffenceScheduleMapping(schedulePartId: Long, offenceId: Long) =
-    offenceScheduleMappingRepository.deleteBySchedulePartIdAndOffenceId(schedulePartId, offenceId)
+  private fun deleteOffenceScheduleMapping(schedulePartId: Long, offenceId: Long) = offenceScheduleMappingRepository.deleteBySchedulePartIdAndOffenceId(schedulePartId, offenceId)
 
   @Transactional(readOnly = true)
   fun findScheduleById(scheduleId: Long): ModelSchedule {
@@ -301,13 +300,14 @@ class ScheduleService(
 
   private fun getSdsExclusionIndicators(offenceCodes: List<String>): List<OffenceSdsExclusion> {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
-    val domesticViolenceMappings = getDomesticViolenceScheduleMappings()
+    val (domesticViolenceMappings, trancheThreeViolenceMappings) = getDomesticViolenceScheduleMappings()
     val securityOffencesFromLegislation = getSecurityOffencesLegislation()
     val sexualOffencesFromLegislation = getSexOffencesLegislation()
     val terrorismMapping = getTerrorismScheduleMappings()
-    val sexScheduleMappings = getSexScheduleMappings()
+    val (sexScheduleMappings, trancheThreeSexScheduleMappings) = getSexScheduleMappings()
+    val tranceThreeMurderMappings = getTrancheThreeMurderScheduleMappings()
 
-    val trancheThreeEnabled = trancheThreeEnabled()
+    val includeTrancheThree = trancheThreeEnabled()
 
     return offenceCodes.map { offenceCode ->
       val isSexual = part2Mappings.any { it.offence.code == offenceCode } ||
@@ -315,18 +315,14 @@ class ScheduleService(
         sexualOffencesFromLegislation.any { it.code == offenceCode } ||
         sexScheduleMappings.any { it.offence.code == offenceCode }
 
-      val isSexualTranche3 = trancheThreeEnabled && isSexual && offenceCode in TRANCHE_THREE_SEXUAL_OFFENCE_CODES
+      val isSexualTranche3 = includeTrancheThree && trancheThreeSexScheduleMappings.any { it.offence.code == offenceCode }
+      val isDomesticViolenceTranche3 = includeTrancheThree && trancheThreeViolenceMappings.any { it.offence.code == offenceCode }
+      val isMurderTranche3 = includeTrancheThree && tranceThreeMurderMappings.any { it.offence.code == offenceCode }
 
       val isDomesticViolence = domesticViolenceMappings.any { it.offence.code == offenceCode }
-      val isDomesticViolenceTranche3 = trancheThreeEnabled && isDomesticViolence && offenceCode in TRANCHE_THREE_DOMESTIC_OFFENCE_CODES
-
       val isNationalSecurity = securityOffencesFromLegislation.any { it.code == offenceCode }
-
       val isViolent = part1Mappings.any { it.offence.code == offenceCode }
-
       val isTerrorism = terrorismMapping.any { it.offence.code == offenceCode }
-
-      val isMurderTranche3 = trancheThreeEnabled && offenceCode in TRANCHE_THREE_MURDER_OFFENCE_CODES
 
       val indicator = getSdsExclusionIndicator(
         isSexual,
@@ -346,15 +342,24 @@ class ScheduleService(
     }
   }
 
-  private fun getSexScheduleMappings() =
-    offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+  private fun getSexScheduleMappings(): Pair<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
+    val mappings = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
       SEXUAL_EXLUDED_OFFENCES_SCHEDULE.act,
       SEXUAL_EXLUDED_OFFENCES_SCHEDULE.code,
     )
+    val part1Mappings = mappings.filter { it.schedulePart.partNumber == 1 }
+    val t3Mappings = mappings.filter { it.schedulePart.partNumber == 2 }
+    return Pair(part1Mappings, t3Mappings)
+  }
+
+  private fun getTrancheThreeMurderScheduleMappings() = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+    TRANCHE_THREE_MURDER_SCHEDULE.act,
+    TRANCHE_THREE_MURDER_SCHEDULE.code,
+  )
 
   fun getSdsExclusionLists(): SdsExclusionLists {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
-    val domesticViolenceMappings = getDomesticViolenceScheduleMappings()
+    val (domesticViolenceMappings, trancheThreeDomesticViolenceMappings) = getDomesticViolenceScheduleMappings()
     val securityOffencesFromLegislation = getSecurityOffencesLegislation()
     val sexualOffencesFromLegislation = getSexOffencesLegislation()
     val sexOffencesByPrefix = offenceRepository.findByCodeStartsWithAnyIgnoreCase(
@@ -362,7 +367,8 @@ class ScheduleService(
       SEXUAL_CODES_FOR_EXCLUSION_LIST[1],
     )
     val terrorismMappings = getTerrorismScheduleMappings()
-    val sexScheduleMappings = getSexScheduleMappings()
+    val (sexScheduleMappings, trancheThreeSexScheduleMappings) = getSexScheduleMappings()
+    val tranceThreeMurderMappings = getTrancheThreeMurderScheduleMappings()
 
     val allSexualOffence = part2Mappings.asSequence().map { transform(it) }
       .plus(sexualOffencesFromLegislation.map { transform(it, emptyList<Offence>()) })
@@ -372,7 +378,12 @@ class ScheduleService(
       .sortedBy { it.code }
       .toSet()
 
+    val includeTrancheThree = trancheThreeEnabled()
+
     return SdsExclusionLists(
+      domesticAbuseTrancheThree = getTrancheThreeMappings(includeTrancheThree, trancheThreeDomesticViolenceMappings),
+      sexualTrancheThree = getTrancheThreeMappings(includeTrancheThree, trancheThreeSexScheduleMappings),
+      murderTrancheThree = getTrancheThreeMappings(includeTrancheThree, tranceThreeMurderMappings),
       sexual = allSexualOffence,
       domesticAbuse = domesticViolenceMappings.map { transform(it) }.sortedBy { it.code }.toSet(),
       nationalSecurity = securityOffencesFromLegislation.map { transform(it, emptyList<Offence>()) }
@@ -382,19 +393,24 @@ class ScheduleService(
     )
   }
 
-  private fun hasSexualCodePrefix(offenceCode: String): Boolean =
-    SEXUAL_CODES_FOR_EXCLUSION_LIST.any { offenceCode.startsWith(it) }
+  private fun getTrancheThreeMappings(includeTrancheThree: Boolean, mappings: List<OffenceScheduleMapping>): Set<OffenceToScheduleMapping> = if (includeTrancheThree) {
+    mappings.map { transform(it) }
+      .sortedBy { it.code }
+      .toSet()
+  } else {
+    emptySet()
+  }
 
-  private fun getSecurityOffencesLegislation(): List<Offence> =
-    offenceRepository.findByLegislationLikeIgnoreCase(
-      NATIONAL_SECURITY_LEGISLATION[0],
-      NATIONAL_SECURITY_LEGISLATION[1],
-      NATIONAL_SECURITY_LEGISLATION[2],
-      NATIONAL_SECURITY_LEGISLATION[3],
-    )
+  private fun hasSexualCodePrefix(offenceCode: String): Boolean = SEXUAL_CODES_FOR_EXCLUSION_LIST.any { offenceCode.startsWith(it) }
 
-  private fun getSexOffencesLegislation(): List<Offence> =
-    offenceRepository.findByLegislationLikeIgnoreCase(SEXUAL_OFFENCES_LEGISLATION)
+  private fun getSecurityOffencesLegislation(): List<Offence> = offenceRepository.findByLegislationLikeIgnoreCase(
+    NATIONAL_SECURITY_LEGISLATION[0],
+    NATIONAL_SECURITY_LEGISLATION[1],
+    NATIONAL_SECURITY_LEGISLATION[2],
+    NATIONAL_SECURITY_LEGISLATION[3],
+  )
+
+  private fun getSexOffencesLegislation(): List<Offence> = offenceRepository.findByLegislationLikeIgnoreCase(SEXUAL_OFFENCES_LEGISLATION)
 
   private fun getOffencePcscMarkers(offenceCodes: List<String>): List<OffencePcscMarkers> {
     val (part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings) = getSchedule15PcscMappings()
@@ -431,17 +447,20 @@ class ScheduleService(
     return Pair(part1Mappings, part2Mappings)
   }
 
-  private fun getDomesticViolenceScheduleMappings(): List<OffenceScheduleMapping> =
-    offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+  private fun getDomesticViolenceScheduleMappings(): Pair<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
+    val mappings = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
       DOMESTIC_VIOLENCE_SCHEDULE.act,
       DOMESTIC_VIOLENCE_SCHEDULE.code,
     )
+    val part1Mappings = mappings.filter { it.schedulePart.partNumber == 1 }
+    val t3Mappings = mappings.filter { it.schedulePart.partNumber == 2 }
+    return Pair(part1Mappings, t3Mappings)
+  }
 
-  private fun getTerrorismScheduleMappings(): List<OffenceScheduleMapping> =
-    offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
-      TERRORISM_SCHEDULE.act,
-      TERRORISM_SCHEDULE.code,
-    )
+  private fun getTerrorismScheduleMappings(): List<OffenceScheduleMapping> = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+    TERRORISM_SCHEDULE.act,
+    TERRORISM_SCHEDULE.code,
+  )
 
   // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start on or after 28 June 2022)
   // NOMIS SCHEDULE_15_ATTRACTS_LIFE - SDS >7 years between 01 April 2020 and 28 June 2022
@@ -449,11 +468,10 @@ class ScheduleService(
     part1LifeMappings: List<OffenceScheduleMapping>,
     part2LifeMappings: List<OffenceScheduleMapping>,
     offenceCode: String,
-  ): Boolean =
-    part1LifeMappings.any { p -> offenceCode == p.offence.code && p.offence.startDate < SDS_LIST_A_CUT_OFF_DATE } ||
-      part2LifeMappings.any { p ->
-        offenceCode == p.offence.code && p.offence.startDate < SDS_LIST_A_CUT_OFF_DATE
-      }
+  ): Boolean = part1LifeMappings.any { p -> offenceCode == p.offence.code && p.offence.startDate < SDS_LIST_A_CUT_OFF_DATE } ||
+    part2LifeMappings.any { p ->
+      offenceCode == p.offence.code && p.offence.startDate < SDS_LIST_A_CUT_OFF_DATE
+    }
 
   // List B: Schedule 15 Part 2 that attract life + serious violent offences (same as List C)
   // NOMIS - PCSC_SDS - SDS between 4 and 7 years
@@ -461,8 +479,7 @@ class ScheduleService(
     seriousViolentOffenceMappings: List<OffenceScheduleMapping>,
     part2LifeMappings: List<OffenceScheduleMapping>,
     offenceCode: String,
-  ) =
-    seriousViolentOffenceMappings.any { p -> offenceCode == p.offence.code } || part2LifeMappings.any { p -> offenceCode == p.offence.code }
+  ) = seriousViolentOffenceMappings.any { p -> offenceCode == p.offence.code } || part2LifeMappings.any { p -> offenceCode == p.offence.code }
 
   // List C: Schedule 15 Part 2 that attract life + serious violent offences (same as List B)
   // NOMIS - PCSC_SEC_250 - Sec250 >7 years
@@ -470,8 +487,7 @@ class ScheduleService(
     seriousViolentOffenceMappings: List<OffenceScheduleMapping>,
     part2LifeMappings: List<OffenceScheduleMapping>,
     offenceCode: String,
-  ) =
-    seriousViolentOffenceMappings.any { p -> offenceCode == p.offence.code } || part2LifeMappings.any { p -> offenceCode == p.offence.code }
+  ) = seriousViolentOffenceMappings.any { p -> offenceCode == p.offence.code } || part2LifeMappings.any { p -> offenceCode == p.offence.code }
 
   // List D: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life
   // NOMIS - PCSC_SDS_PLUS
@@ -479,8 +495,7 @@ class ScheduleService(
     part1LifeMappings: List<OffenceScheduleMapping>,
     part2LifeMappings: List<OffenceScheduleMapping>,
     offenceCode: String,
-  ) =
-    part1LifeMappings.any { p -> offenceCode == p.offence.code } || part2LifeMappings.any { p -> offenceCode == p.offence.code }
+  ) = part1LifeMappings.any { p -> offenceCode == p.offence.code } || part2LifeMappings.any { p -> offenceCode == p.offence.code }
 
   fun findOffenceById(offenceId: Long): OffenceToScheduleMapping {
     val offence = offenceRepository.findById(offenceId)
@@ -530,26 +545,6 @@ class ScheduleService(
       act = "Sexual Excluded Offences",
       code = "SEO",
     )
-    val TRANCHE_THREE_SEXUAL_OFFENCE_CODES = listOf(
-      "CJ15005",
-      "CJ15013",
-      "SE20005",
-      "SE20006",
-      "SE20012",
-      "SE20012A",
-    )
-    val TRANCHE_THREE_DOMESTIC_OFFENCE_CODES = listOf(
-      "ST19001",
-      "PH97003",
-      "PH97005",
-      "PH97003A",
-      "PH97003B",
-      "PH97012",
-    )
-    val TRANCHE_THREE_MURDER_OFFENCE_CODES = listOf(
-      "COML025",
-      "COML026",
-    )
     val SCHEDULE_15 = ScheduleInfo(
       act = "Criminal Justice Act 2003",
       code = "15",
@@ -557,6 +552,10 @@ class ScheduleService(
     val DOMESTIC_VIOLENCE_SCHEDULE = ScheduleInfo(
       act = "Domestic Violence Excluded Offences",
       code = "DVEO",
+    )
+    val TRANCHE_THREE_MURDER_SCHEDULE = ScheduleInfo(
+      act = "Tranche Three Murder Excluded Offences",
+      code = "MURD",
     )
     val TERRORISM_SCHEDULE = ScheduleInfo(
       act = "Terrorism Excluded Offences",
