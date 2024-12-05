@@ -175,19 +175,18 @@ class AdminServiceTest {
   private fun createPrisonApiOffencesResponse(
     totalPages: Int,
     content: List<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence>,
-  ): RestResponsePage<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence> =
-    RestResponsePage(
-      content = content,
-      number = 1,
-      size = 1,
-      totalElements = 0L,
-      pageable = JacksonUtil.toJsonNode("{}"),
-      last = true,
-      totalPages = totalPages,
-      sort = JacksonUtil.toJsonNode("{}"),
-      first = true,
-      numberOfElements = 0,
-    )
+  ): RestResponsePage<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence> = RestResponsePage(
+    content = content,
+    number = 1,
+    size = 1,
+    totalElements = 0L,
+    pageable = JacksonUtil.toJsonNode("{}"),
+    last = true,
+    totalPages = totalPages,
+    sort = JacksonUtil.toJsonNode("{}"),
+    first = true,
+    numberOfElements = 0,
+  )
 
   companion object {
     private val PARENT_OFFENCE = Offence(
