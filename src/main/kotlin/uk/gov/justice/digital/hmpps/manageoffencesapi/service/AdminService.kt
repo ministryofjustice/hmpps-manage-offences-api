@@ -114,7 +114,7 @@ class AdminService(
     val now = LocalDateTime.now()
 
     val encouragementOffence = offence.copy(
-      id = -1,
+      id = 0,
       parentOffenceId = offence.id,
       code = encouragementCode,
       createdDate = now,

@@ -11,7 +11,7 @@ import jakarta.persistence.Table
 data class NomisScheduleMapping(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long = -1,
+  val id: Long = 0,
   val schedulePartId: Long,
   val nomisScheduleName: String,
 )

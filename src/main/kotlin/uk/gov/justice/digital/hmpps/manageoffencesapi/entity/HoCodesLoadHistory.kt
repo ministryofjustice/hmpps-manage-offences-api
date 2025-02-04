@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 data class HoCodesLoadHistory(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long = -1,
+  val id: Long = 0,
   val loadedFile: String,
   val loadDate: LocalDateTime = LocalDateTime.now(),
 )

@@ -149,7 +149,7 @@ class OffenceServiceTest {
         .isEqualTo(
           listOf(
             NomisChangeHistory(
-              id = -1,
+              id = 0,
               code = NOMIS_STATUTE_B123.code,
               description = "Statute description B123",
               changeType = INSERT,
@@ -164,7 +164,7 @@ class OffenceServiceTest {
         .isEqualTo(
           listOf(
             NomisChangeHistory(
-              id = -1,
+              id = 0,
               code = OFFENCE_B123AA6.code,
               description = OFFENCE_B123AA6.description!!,
               changeType = INSERT,
@@ -223,7 +223,7 @@ class OffenceServiceTest {
         .isEqualTo(
           listOf(
             NomisChangeHistory(
-              id = -1,
+              id = 0,
               code = NOMIS_OFFENCE_A123AA6.code,
               description = NOMIS_OFFENCE_A123AA6.description,
               changeType = INSERT,
@@ -238,7 +238,7 @@ class OffenceServiceTest {
         .isEqualTo(
           listOf(
             NomisChangeHistory(
-              id = -1,
+              id = 0,
               code = NOMIS_OFFENCE_A1234AAA_UPDATED.code,
               description = NOMIS_OFFENCE_A1234AAA_UPDATED.description,
               changeType = UPDATE,
