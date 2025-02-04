@@ -32,7 +32,7 @@ class ChangeHistoryControllerIntTest : IntegrationTestBase() {
       .isEqualTo(
         listOf(
           NomisChangeHistory(
-            id = -1,
+            id = 0,
             code = "BL21014",
             description = "Master of vessel navigated whilst unfit through drink or drugs - Windermere Navigation Byelaws 2008",
             changeType = INSERT,
@@ -40,7 +40,7 @@ class ChangeHistoryControllerIntTest : IntegrationTestBase() {
             sentToNomisDate = LocalDateTime.of(2022, 11, 16, 10, 46, 6),
           ),
           NomisChangeHistory(
-            id = -1,
+            id = 0,
             code = "BL22",
             description = "Contrary to byelaws 63(1), 65 and 69 of the Tyne Tunnel Byelaws 2021.",
             changeType = INSERT,
@@ -48,7 +48,7 @@ class ChangeHistoryControllerIntTest : IntegrationTestBase() {
             sentToNomisDate = LocalDateTime.of(2022, 11, 16, 10, 46, 5),
           ),
           NomisChangeHistory(
-            id = -1,
+            id = 0,
             code = "AP04003",
             description = "Knowingly furnish false/misleading info to person acting in execution of these Reg's",
             changeType = UPDATE,

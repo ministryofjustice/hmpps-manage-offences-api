@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 data class OffenceToSyncWithNomis(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long = -1,
+  val id: Long = 0,
   val offenceCode: String,
   @Enumerated(EnumType.STRING)
   val nomisSyncType: NomisSyncType,

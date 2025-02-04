@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.EventType
 data class EventToRaise(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long = -1,
+  val id: Long = 0,
   @Enumerated(EnumType.STRING)
   val eventType: EventType,
   val offenceCode: String,

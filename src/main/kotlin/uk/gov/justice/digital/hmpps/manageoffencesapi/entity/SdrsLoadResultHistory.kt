@@ -17,7 +17,7 @@ import java.time.LocalDateTime
 data class SdrsLoadResultHistory(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long = -1,
+  val id: Long = 0,
   @Enumerated(EnumType.STRING)
   val cache: SdrsCache,
   @Enumerated(EnumType.STRING)

@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 data class Offence(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long = -1,
+  val id: Long = 0,
   val code: String,
   val description: String? = null,
   val cjsTitle: String? = null,

@@ -14,7 +14,7 @@ import org.hibernate.annotations.FetchMode
 data class SchedulePart(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long = -1,
+  val id: Long = 0,
   @ManyToOne
   @Fetch(FetchMode.JOIN)
   val schedule: Schedule,
