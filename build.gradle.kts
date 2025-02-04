@@ -49,8 +49,8 @@ dependencies {
   implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
 
   // Schedule locking
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.16.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.16.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:6.2.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.2.0")
 
   // AWS
   // See comment below relating to the SQS lib, keep these AWS dependencies above the SQS dependency
