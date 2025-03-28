@@ -479,4 +479,57 @@ class ScheduleServiceTest {
       nomisSyncType = NomisSyncType.UNLINK_SCHEDULE_FROM_OFFENCE,
     )
   }
+
+  @Nested
+  inner class LinkOffenceToParentSchedulesTests {
+
+    @Test
+    fun `link offences to parent schedules when parent offence has children`() {
+      val baseOffenceWithParent = BASE_OFFENCE.copy(parentOffenceId = 123)
+      val parentOffence = OFFENCE_1.copy(id = 123)
+
+      whenever(baseOffenceWithParent.parentOffenceId?.let { offenceRepository.findByParentOffenceId(it) }).thenReturn(
+          listOf(parentOffence),
+      )
+      whenever(offenceScheduleMappingRepository.findByOffenceId(parentOffence.id)).thenReturn(
+        listOf(
+          OffenceScheduleMapping(
+            offence = parentOffence,
+            schedulePart = SCHEDULE_15_PART_1,
+          ),
+        ),
+      )
+      whenever(nomisScheduleMappingRepository.findOneBySchedulePartId(SCHEDULE_15_PART_1.id)).thenReturn(
+        NOMIS_SCHEDULE_MAPPING,
+      )
+
+      scheduleService.linkOffenceToParentSchedules(baseOffenceWithParent)
+
+      verify(offenceScheduleMappingRepository).saveAll(
+          listOf(
+              OffenceScheduleMapping(
+                  offence = baseOffenceWithParent,
+                  schedulePart = SCHEDULE_15_PART_1,
+              ),
+          ),
+      )
+      verify(prisonApiUserClient).linkToSchedule(
+        listOf(
+          OffenceToScheduleMappingDto(
+            offenceCode = baseOffenceWithParent.code,
+            schedule = NOMIS_SCHEDULE_MAPPING.nomisScheduleName,
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `do nothing when parent offenceId is null`() {
+      val offenceWithoutParent = BASE_OFFENCE.copy(parentOffenceId = null)
+
+      scheduleService.linkOffenceToParentSchedules(offenceWithoutParent)
+
+      verifyNoInteractions(offenceScheduleMappingRepository, prisonApiUserClient)
+    }
+  }
 }

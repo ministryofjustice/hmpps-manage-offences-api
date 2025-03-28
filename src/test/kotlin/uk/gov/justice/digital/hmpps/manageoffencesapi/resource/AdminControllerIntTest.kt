@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.resource
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
@@ -145,6 +146,26 @@ class AdminControllerIntTest : IntegrationTestBase() {
       .expectStatus().isOk
 
     assertThat(offenceReactivatedInNomisRepository.findById(offence.code).isPresent).isFalse
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-schedule-and-offence-data.sql",
+  )
+  fun `Add encouragement offence and ensure schedule is updated`() {
+    prisonApiMockServer.stubFindByOffenceCode("XX99001")
+    //Retrieve the offence to grab the generated ID of what will be the parent
+    val parentOffence = offenceRepository.findOneByCode("XX99001").get()
+
+    webTestClient.post().uri("/admin/nomis/offences/encouragement/${parentOffence.id}")
+      .headers(setAuthorisation(roles = listOf("ROLE_NOMIS_OFFENCE_ACTIVATOR")))
+      .bodyValue(listOf(parentOffence.id))
+      .exchange()
+      .expectStatus().isOk
+
+    val encouragementOffence = offenceRepository.findOneByCode("XX99001E").get()
+    assertThat(encouragementOffence.parentOffenceId).isEqualTo(parentOffence.id)
   }
 
   private fun getFeatureToggles(): MutableList<FeatureToggle>? =

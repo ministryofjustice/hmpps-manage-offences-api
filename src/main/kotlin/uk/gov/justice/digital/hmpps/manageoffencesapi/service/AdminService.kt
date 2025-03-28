@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,6 +29,8 @@ class AdminService(
   private val prisonApiClient: PrisonApiClient,
   private val prisonApiUserClient: PrisonApiUserClient,
   private val eventToRaiseRepository: EventToRaiseRepository,
+  @Lazy
+  private val scheduleService: ScheduleService,
 ) {
 
   private val encouragementOffenceEligibilityStartDate = LocalDate.parse("2008-02-15")
@@ -125,6 +128,9 @@ class AdminService(
     )
 
     val newOffence = offenceRepository.save(encouragementOffence)
+
+    // Make sure that the encouragement offence inherits any of its parents schedule links
+    scheduleService.linkOffenceToParentSchedules(encouragementOffence)
 
     prisonApiClient.createOffences(
       listOf(
