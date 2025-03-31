@@ -97,7 +97,7 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubLinkOffence(): StubMapping = stubForLinkOffence(linkOffenceRequest)
+  fun stubLinkOffence(linkRequest: String = linkOffenceRequest): StubMapping = stubForLinkOffence(linkRequest)
   fun stubUnlinkOffence(): StubMapping = stubForUnlinkOffence(unlinkOffenceRequest)
 
   fun stubLinkPcscOffence(): StubMapping = stubForLinkOffence(linkPcscOffenceRequest)
