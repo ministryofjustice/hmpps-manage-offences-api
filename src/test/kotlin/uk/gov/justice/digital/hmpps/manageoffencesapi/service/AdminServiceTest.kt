@@ -36,6 +36,7 @@ class AdminServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
   private val eventToRaiseRepository = mock<EventToRaiseRepository>()
+  private val scheduleService = mock<ScheduleService>()
 
   private val adminService = AdminService(
     featureToggleRepository,
@@ -44,6 +45,7 @@ class AdminServiceTest {
     prisonApiClient,
     prisonApiUserClient,
     eventToRaiseRepository,
+    scheduleService,
   )
 
   @Test
