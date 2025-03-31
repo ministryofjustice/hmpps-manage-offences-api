@@ -207,13 +207,11 @@ class ScheduleService(
     }
   }
 
-
   /**
    * Copies the parents schedule mappings to the child offence
    * Additionally create the nomis linking for the child offence to match that of the parent offences.
    */
   fun linkOffenceToParentSchedules(offence: Offence) {
-
     val scheduleMappingsToCreate = offence.parentOffenceId?.let<Long, List<OffenceScheduleMapping>> {
       offenceScheduleMappingRepository.findByOffenceId(
         it,
@@ -242,7 +240,6 @@ class ScheduleService(
       prisonApiUserClient.linkToSchedule(it)
     }
   }
-
 
   private fun determinePcscMappingsForNomis(offenceCodes: List<String>): List<OffenceToScheduleMappingDto> {
     val pcscSchedules = getOffencePcscMarkers(offenceCodes)

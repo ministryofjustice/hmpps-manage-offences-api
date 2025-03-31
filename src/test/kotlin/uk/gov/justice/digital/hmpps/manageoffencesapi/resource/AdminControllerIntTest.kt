@@ -27,10 +27,10 @@ class AdminControllerIntTest : IntegrationTestBase() {
   lateinit var offenceRepository: OffenceRepository
 
   @Autowired
-  lateinit var nomisScheduleMappingRepository : NomisScheduleMappingRepository
+  lateinit var nomisScheduleMappingRepository: NomisScheduleMappingRepository
 
   @Autowired
-  lateinit var offenceScheduleMappingRepository : OffenceScheduleMappingRepository
+  lateinit var offenceScheduleMappingRepository: OffenceScheduleMappingRepository
 
   @Autowired
   lateinit var offenceReactivatedInNomisRepository: OffenceReactivatedInNomisRepository
@@ -163,12 +163,12 @@ class AdminControllerIntTest : IntegrationTestBase() {
   fun `Add encouragement offence and ensure schedule is updated`() {
     prisonApiMockServer.stubFindByOffenceCode("XX99001")
 
-    //Mocks the correct schedule linking request for newly created XX99001E, if the request isn't correct the test will
-    //fail.
+    // Mocks the correct schedule linking request for newly created XX99001E, if the request isn't correct the test will
+    // fail.
     prisonApiMockServer.stubLinkOffence(linkOffenceRequest)
     prisonApiMockServer.stubCreateOffence()
 
-    //Retrieve the offence to grab the generated ID of what will be the parent
+    // Retrieve the offence to grab the generated ID of what will be the parent
     val parentOffence = offenceRepository.findOneByCode("XX99001").get()
 
     webTestClient.post().uri("/admin/nomis/offences/encouragement/${parentOffence.id}")
@@ -187,7 +187,6 @@ class AdminControllerIntTest : IntegrationTestBase() {
       .usingRecursiveComparison()
       .ignoringCollectionOrder()
       .isEqualTo(parentScheduleMappings.map { it.schedulePart })
-
   }
 
   private fun getFeatureToggles(): MutableList<FeatureToggle>? =

@@ -489,7 +489,7 @@ class ScheduleServiceTest {
       val parentOffence = OFFENCE_1.copy(id = 123)
 
       whenever(baseOffenceWithParent.parentOffenceId?.let { offenceRepository.findByParentOffenceId(it) }).thenReturn(
-          listOf(parentOffence),
+        listOf(parentOffence),
       )
       whenever(offenceScheduleMappingRepository.findByOffenceId(parentOffence.id)).thenReturn(
         listOf(
@@ -506,12 +506,12 @@ class ScheduleServiceTest {
       scheduleService.linkOffenceToParentSchedules(baseOffenceWithParent)
 
       verify(offenceScheduleMappingRepository).saveAll(
-          listOf(
-              OffenceScheduleMapping(
-                  offence = baseOffenceWithParent,
-                  schedulePart = SCHEDULE_15_PART_1,
-              ),
+        listOf(
+          OffenceScheduleMapping(
+            offence = baseOffenceWithParent,
+            schedulePart = SCHEDULE_15_PART_1,
           ),
+        ),
       )
       verify(prisonApiUserClient).linkToSchedule(
         listOf(
