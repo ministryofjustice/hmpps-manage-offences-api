@@ -62,6 +62,7 @@ class SDRSService(
   private val offenceToSyncWithNomisRepository: OffenceToSyncWithNomisRepository,
   private val eventToRaiseRepository: EventToRaiseRepository,
   private val adminService: AdminService,
+  private val scheduleService: ScheduleService,
 ) {
 
   @Scheduled(cron = "0 0 */1 * * *")
@@ -147,6 +148,7 @@ class SDRSService(
       .forEach { child ->
         offenceRepository.findOneByCode(child.parentCode!!).ifPresent { parent ->
           offenceRepository.save(child.copy(parentOffenceId = parent.id))
+          scheduleService.linkOffenceToParentSchedules(child)
         }
       }
   }
