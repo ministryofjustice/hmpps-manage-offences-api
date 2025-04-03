@@ -58,7 +58,7 @@ class SDRSServiceTest {
     offenceToSyncWithNomisRepository,
     eventToRaiseRepository,
     adminService,
-    scheduleService
+    scheduleService,
   )
 
   @BeforeEach
