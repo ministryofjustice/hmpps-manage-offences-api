@@ -46,6 +46,7 @@ class SDRSServiceTest {
   private val eventToRaiseRepository = mock<EventToRaiseRepository>()
   private val adminService = mock<AdminService>()
   private val sdrsApiClient = mock<SDRSApiClient>()
+  private val scheduleService = mock<ScheduleService>()
 
   private val sdrsService = SDRSService(
     sdrsApiClient,
@@ -57,6 +58,7 @@ class SDRSServiceTest {
     offenceToSyncWithNomisRepository,
     eventToRaiseRepository,
     adminService,
+    scheduleService,
   )
 
   @BeforeEach
@@ -120,6 +122,7 @@ class SDRSServiceTest {
     sdrsService.deltaSynchroniseWithSdrs()
 
     verify(offenceRepository, times(1)).save(OFFENCE_B123AA6A.copy(parentOffenceId = OFFENCE_B123AA6.id))
+    verify(scheduleService, times(1)).linkOffenceToParentSchedules(OFFENCE_B123AA6A)
   }
 
   @Test
