@@ -148,8 +148,9 @@ class SDRSService(
       .forEach { child ->
         offenceRepository.findOneByCode(child.parentCode!!).ifPresent { parent ->
           offenceRepository.save(child.copy(parentOffenceId = parent.id))
-          scheduleService.linkOffenceToParentSchedules(child)
+          offenceRepository.flush()
         }
+        scheduleService.linkOffenceToParentSchedules(child)
       }
   }
 

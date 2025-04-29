@@ -224,8 +224,10 @@ class ScheduleService(
     }
 
     scheduleMappingsToCreate?.let {
-      offenceScheduleMappingRepository.saveAll(it)
-      log.info("Linked offence ${offence.code} to parent offence ${offence.parentCode}")
+      if (it.isNotEmpty()) {
+        offenceScheduleMappingRepository.saveAll(it)
+        log.info("Linked offence ${offence.code} to parent offence ${offence.parentCode}")
+      }
     }
 
     scheduleMappingsToCreate?.map { parentMapping ->
@@ -237,7 +239,9 @@ class ScheduleService(
         offenceCode = offence.code,
       )
     }?.let {
-      prisonApiUserClient.linkToSchedule(it)
+      if (it.isNotEmpty()) {
+        prisonApiUserClient.linkToSchedule(it)
+      }
     }
   }
 
