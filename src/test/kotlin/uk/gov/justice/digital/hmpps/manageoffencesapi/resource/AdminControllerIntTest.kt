@@ -189,13 +189,12 @@ class AdminControllerIntTest : IntegrationTestBase() {
       .isEqualTo(parentScheduleMappings.map { it.schedulePart })
   }
 
-  private fun getFeatureToggles(): MutableList<FeatureToggle>? =
-    webTestClient.get().uri("/admin/feature-toggles")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus().isOk
-      .expectBodyList(FeatureToggle::class.java)
-      .returnResult().responseBody
+  private fun getFeatureToggles(): MutableList<FeatureToggle>? = webTestClient.get().uri("/admin/feature-toggles")
+    .headers(setAuthorisation())
+    .exchange()
+    .expectStatus().isOk
+    .expectBodyList(FeatureToggle::class.java)
+    .returnResult().responseBody
 
   companion object {
     private val linkOffenceRequest = """ [ {                         

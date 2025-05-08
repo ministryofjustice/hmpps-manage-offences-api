@@ -207,8 +207,7 @@ class SDRSService(
   }
 
   // All ho code to offence mappings are saved to a legacy table - the correct mappings come from the analytical platform S3 load
-  private fun saveHoCodesToLegacyTable(offences: List<Offence>) =
-    legacySdrsHoCodeMappingRepository.saveAll(offences.map { transform(it) })
+  private fun saveHoCodesToLegacyTable(offences: List<Offence>) = legacySdrsHoCodeMappingRepository.saveAll(offences.map { transform(it) })
 
   private fun fullLoadSecondaryCache(cache: SdrsCache, loadDate: LocalDateTime?) {
     try {
@@ -366,8 +365,7 @@ class SDRSService(
   // In the edge case we can get an offence in two different caches (A 'primaryCache' and a 'secondaryCache')
   // Because each cache is loaded independently, we only want to take the record with the latest start date
   // In the edge case this only happened in a case where the newer record had a more recent start date and is the correct one
-  private fun offenceRequiresUpdate(it: Offence, offenceToUpdate: EntityOffence, cache: SdrsCache) =
-    offenceToUpdate.sdrsCache == cache || it.offenceStartDate.isAfter(offenceToUpdate.startDate)
+  private fun offenceRequiresUpdate(it: Offence, offenceToUpdate: EntityOffence, cache: SdrsCache) = offenceToUpdate.sdrsCache == cache || it.offenceStartDate.isAfter(offenceToUpdate.startDate)
 
   private fun scheduleOffenceChangedEvent(it: Offence) {
     eventToRaiseRepository.save(
@@ -426,22 +424,21 @@ class SDRSService(
     )
   }
 
-  private fun createSDRSRequest(gatewayOperationTypeRequest: GatewayOperationTypeRequest, messageType: MessageType) =
-    SDRSRequest(
-      messageHeader = MessageHeader(
-        messageID = MessageID(
-          uuid = UUID.randomUUID(),
-          relatesTo = "",
-        ),
-        timeStamp = ZonedDateTime.now(),
-        messageType = messageType,
-        from = "CONSUMER_APPLICATION",
-        to = "SDRS_AZURE",
+  private fun createSDRSRequest(gatewayOperationTypeRequest: GatewayOperationTypeRequest, messageType: MessageType) = SDRSRequest(
+    messageHeader = MessageHeader(
+      messageID = MessageID(
+        uuid = UUID.randomUUID(),
+        relatesTo = "",
       ),
-      messageBody = MessageBodyRequest(
-        gatewayOperationTypeRequest,
-      ),
-    )
+      timeStamp = ZonedDateTime.now(),
+      messageType = messageType,
+      from = "CONSUMER_APPLICATION",
+      to = "SDRS_AZURE",
+    ),
+    messageBody = MessageBodyRequest(
+      gatewayOperationTypeRequest,
+    ),
+  )
 
   private fun createOffenceRequest(
     offenceCode: String? = null,

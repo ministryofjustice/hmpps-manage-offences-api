@@ -34,70 +34,67 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs.Offenc
 /*
 ** Functions which transform JPA entity objects into their API model equivalents and vice-versa.
 */
-fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): ModelOffence =
-  ModelOffence(
-    id = offence.id,
-    code = offence.code,
-    description = offence.cjsTitle,
-    offenceType = offence.offenceType,
-    revisionId = offence.revisionId,
-    startDate = offence.startDate,
-    endDate = offence.endDate,
-    homeOfficeStatsCode = offence.homeOfficeStatsCode,
-    homeOfficeDescription = offence.homeOfficeCode?.description,
-    changedDate = offence.changedDate,
-    loadDate = offence.lastUpdatedDate,
-    isChild = offence.parentCode != null,
-    parentOffenceId = offence.parentOffenceId,
-    legislation = offence.legislation,
-    maxPeriodIsLife = offence.maxPeriodIsLife,
-    maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
-    maxPeriodOfIndictmentMonths = offence.maxPeriodOfIndictmentMonths,
-    maxPeriodOfIndictmentWeeks = offence.maxPeriodOfIndictmentWeeks,
-    maxPeriodOfIndictmentDays = offence.maxPeriodOfIndictmentDays,
-    childOffenceIds = childOffenceIds ?: emptyList(),
-    custodialIndicator = offence.custodialIndicator,
-  )
+fun transform(offence: Offence, childOffenceIds: List<Long>? = emptyList()): ModelOffence = ModelOffence(
+  id = offence.id,
+  code = offence.code,
+  description = offence.cjsTitle,
+  offenceType = offence.offenceType,
+  revisionId = offence.revisionId,
+  startDate = offence.startDate,
+  endDate = offence.endDate,
+  homeOfficeStatsCode = offence.homeOfficeStatsCode,
+  homeOfficeDescription = offence.homeOfficeCode?.description,
+  changedDate = offence.changedDate,
+  loadDate = offence.lastUpdatedDate,
+  isChild = offence.parentCode != null,
+  parentOffenceId = offence.parentOffenceId,
+  legislation = offence.legislation,
+  maxPeriodIsLife = offence.maxPeriodIsLife,
+  maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
+  maxPeriodOfIndictmentMonths = offence.maxPeriodOfIndictmentMonths,
+  maxPeriodOfIndictmentWeeks = offence.maxPeriodOfIndictmentWeeks,
+  maxPeriodOfIndictmentDays = offence.maxPeriodOfIndictmentDays,
+  childOffenceIds = childOffenceIds ?: emptyList(),
+  custodialIndicator = offence.custodialIndicator,
+)
 
-fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToScheduleMapping =
-  OffenceToScheduleMapping(
-    id = offenceScheduleMapping.offence.id,
-    code = offenceScheduleMapping.offence.code,
-    description = offenceScheduleMapping.offence.cjsTitle,
-    offenceType = offenceScheduleMapping.offence.offenceType,
-    revisionId = offenceScheduleMapping.offence.revisionId,
-    startDate = offenceScheduleMapping.offence.startDate,
-    endDate = offenceScheduleMapping.offence.endDate,
-    homeOfficeStatsCode = offenceScheduleMapping.offence.homeOfficeStatsCode,
-    changedDate = offenceScheduleMapping.offence.changedDate,
-    loadDate = offenceScheduleMapping.offence.lastUpdatedDate,
-    isChild = offenceScheduleMapping.offence.parentCode != null,
-    parentOffenceId = offenceScheduleMapping.offence.parentOffenceId,
-    lineReference = offenceScheduleMapping.lineReference,
-    legislationText = offenceScheduleMapping.legislationText,
-    paragraphTitle = offenceScheduleMapping.paragraphTitle,
-    paragraphNumber = offenceScheduleMapping.paragraphNumber,
-    maxPeriodIsLife = offenceScheduleMapping.offence.maxPeriodIsLife,
-    maxPeriodOfIndictmentYears = offenceScheduleMapping.offence.maxPeriodOfIndictmentYears,
-    maxPeriodOfIndictmentMonths = offenceScheduleMapping.offence.maxPeriodOfIndictmentMonths,
-    maxPeriodOfIndictmentWeeks = offenceScheduleMapping.offence.maxPeriodOfIndictmentWeeks,
-    maxPeriodOfIndictmentDays = offenceScheduleMapping.offence.maxPeriodOfIndictmentDays,
-  )
+fun transform(offenceScheduleMapping: OffenceScheduleMapping): OffenceToScheduleMapping = OffenceToScheduleMapping(
+  id = offenceScheduleMapping.offence.id,
+  code = offenceScheduleMapping.offence.code,
+  description = offenceScheduleMapping.offence.cjsTitle,
+  offenceType = offenceScheduleMapping.offence.offenceType,
+  revisionId = offenceScheduleMapping.offence.revisionId,
+  startDate = offenceScheduleMapping.offence.startDate,
+  endDate = offenceScheduleMapping.offence.endDate,
+  homeOfficeStatsCode = offenceScheduleMapping.offence.homeOfficeStatsCode,
+  changedDate = offenceScheduleMapping.offence.changedDate,
+  loadDate = offenceScheduleMapping.offence.lastUpdatedDate,
+  isChild = offenceScheduleMapping.offence.parentCode != null,
+  parentOffenceId = offenceScheduleMapping.offence.parentOffenceId,
+  lineReference = offenceScheduleMapping.lineReference,
+  legislationText = offenceScheduleMapping.legislationText,
+  paragraphTitle = offenceScheduleMapping.paragraphTitle,
+  paragraphNumber = offenceScheduleMapping.paragraphNumber,
+  maxPeriodIsLife = offenceScheduleMapping.offence.maxPeriodIsLife,
+  maxPeriodOfIndictmentYears = offenceScheduleMapping.offence.maxPeriodOfIndictmentYears,
+  maxPeriodOfIndictmentMonths = offenceScheduleMapping.offence.maxPeriodOfIndictmentMonths,
+  maxPeriodOfIndictmentWeeks = offenceScheduleMapping.offence.maxPeriodOfIndictmentWeeks,
+  maxPeriodOfIndictmentDays = offenceScheduleMapping.offence.maxPeriodOfIndictmentDays,
+)
 
-fun transform(offenceScheduleMappings: List<OffenceScheduleMapping>?): List<LinkedScheduleDetails>? =
-  offenceScheduleMappings?.map {
-    LinkedScheduleDetails(
-      id = it.schedulePart.schedule.id,
-      act = it.schedulePart.schedule.act,
-      code = it.schedulePart.schedule.code,
-      url = it.schedulePart.schedule.url,
-      partNumber = it.schedulePart.partNumber,
-      paragraphNumber = it.paragraphNumber,
-      paragraphTitle = it.paragraphTitle,
-      lineReference = it.lineReference,
-      legislationText = it.legislationText,
-    )
-  }
+fun transform(offenceScheduleMappings: List<OffenceScheduleMapping>?): List<LinkedScheduleDetails>? = offenceScheduleMappings?.map {
+  LinkedScheduleDetails(
+    id = it.schedulePart.schedule.id,
+    act = it.schedulePart.schedule.act,
+    code = it.schedulePart.schedule.code,
+    url = it.schedulePart.schedule.url,
+    partNumber = it.schedulePart.partNumber,
+    paragraphNumber = it.paragraphNumber,
+    paragraphTitle = it.paragraphTitle,
+    lineReference = it.lineReference,
+    legislationText = it.legislationText,
+  )
+}
 
 fun transform(sdrsOffence: SdrsOffence, cache: SdrsCache): Offence = Offence(
   code = sdrsOffence.code,
@@ -113,44 +110,40 @@ fun transform(sdrsOffence: SdrsOffence, cache: SdrsCache): Offence = Offence(
   custodialIndicator = sdrsOffence.custodialIndicator,
 )
 
-fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache): Offence =
-  offence.copy(
-    description = sdrsOffence.description,
-    cjsTitle = sdrsOffence.cjsTitle,
-    revisionId = sdrsOffence.offenceRevisionId,
-    startDate = sdrsOffence.offenceStartDate,
-    endDate = sdrsOffence.offenceEndDate,
-    changedDate = sdrsOffence.changedDate,
-    legislation = sdrsOffence.offenceActsAndSections,
-    offenceType = sdrsOffence.offenceType,
-    sdrsCache = sdrsCache,
-    lastUpdatedDate = LocalDateTime.now(),
-    custodialIndicator = sdrsOffence.custodialIndicator,
-  )
+fun transform(sdrsOffence: SdrsOffence, offence: Offence, sdrsCache: SdrsCache): Offence = offence.copy(
+  description = sdrsOffence.description,
+  cjsTitle = sdrsOffence.cjsTitle,
+  revisionId = sdrsOffence.offenceRevisionId,
+  startDate = sdrsOffence.offenceStartDate,
+  endDate = sdrsOffence.offenceEndDate,
+  changedDate = sdrsOffence.changedDate,
+  legislation = sdrsOffence.offenceActsAndSections,
+  offenceType = sdrsOffence.offenceType,
+  sdrsCache = sdrsCache,
+  lastUpdatedDate = LocalDateTime.now(),
+  custodialIndicator = sdrsOffence.custodialIndicator,
+)
 
-fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult =
-  MostRecentLoadResult(
-    sdrsCache = loadResult.cache,
-    status = loadResult.status,
-    type = loadResult.loadType,
-    loadDate = loadResult.loadDate,
-    lastSuccessfulLoadDate = loadResult.lastSuccessfulLoadDate,
-  )
+fun transform(loadResult: SdrsLoadResult): MostRecentLoadResult = MostRecentLoadResult(
+  sdrsCache = loadResult.cache,
+  status = loadResult.status,
+  type = loadResult.loadType,
+  loadDate = loadResult.loadDate,
+  lastSuccessfulLoadDate = loadResult.lastSuccessfulLoadDate,
+)
 
 fun transform(it: FeatureToggle) = ModelFeatureToggle(feature = it.feature, enabled = it.enabled)
 
-fun transform(schedulePart: ModelSchedulePart, entitySchedule: EntitySchedule) =
-  EntitySchedulePart(
-    schedule = entitySchedule,
-    partNumber = schedulePart.partNumber,
-  )
+fun transform(schedulePart: ModelSchedulePart, entitySchedule: EntitySchedule) = EntitySchedulePart(
+  schedule = entitySchedule,
+  partNumber = schedulePart.partNumber,
+)
 
-fun transform(schedule: ModelSchedule) =
-  EntitySchedule(
-    act = schedule.act,
-    code = schedule.code,
-    url = schedule.url,
-  )
+fun transform(schedule: ModelSchedule) = EntitySchedule(
+  act = schedule.act,
+  code = schedule.code,
+  url = schedule.url,
+)
 
 fun transform(
   it: EntitySchedulePart,
@@ -180,67 +173,62 @@ fun transform(it: EntitySchedule) = ModelSchedule(
   scheduleParts = null,
 )
 
-fun transform(offence: PrisonApiOffence, changeType: ChangeType) =
-  NomisChangeHistory(
-    code = offence.code,
-    description = offence.description,
-    changeType = changeType,
-    nomisChangeType = OFFENCE,
-  )
+fun transform(offence: PrisonApiOffence, changeType: ChangeType) = NomisChangeHistory(
+  code = offence.code,
+  description = offence.description,
+  changeType = changeType,
+  nomisChangeType = OFFENCE,
+)
 
-fun transform(statute: PrisonApiStatute, changeType: ChangeType) =
-  NomisChangeHistory(
-    code = statute.code,
-    description = statute.description,
-    changeType = changeType,
-    nomisChangeType = STATUTE,
-  )
+fun transform(statute: PrisonApiStatute, changeType: ChangeType) = NomisChangeHistory(
+  code = statute.code,
+  description = statute.description,
+  changeType = changeType,
+  nomisChangeType = STATUTE,
+)
 
-fun transform(it: EntityNomisChangeHistory): ModelNomisChangeHistory =
-  ModelNomisChangeHistory(
-    id = it.id,
-    code = it.code,
-    description = it.description,
-    changeType = it.changeType,
-    nomisChangeType = it.nomisChangeType,
-    sentToNomisDate = it.sentToNomisDate,
-  )
+fun transform(it: EntityNomisChangeHistory): ModelNomisChangeHistory = ModelNomisChangeHistory(
+  id = it.id,
+  code = it.code,
+  description = it.description,
+  changeType = it.changeType,
+  nomisChangeType = it.nomisChangeType,
+  sentToNomisDate = it.sentToNomisDate,
+)
 
 fun transform(
   offence: Offence,
   it: OffenceScheduleMapping,
-) =
-  OffenceScheduleMapping(
-    offence = offence,
-    schedulePart = it.schedulePart,
-    paragraphNumber = it.paragraphNumber,
-    paragraphTitle = it.paragraphTitle,
-    legislationText = it.legislationText,
-    lineReference = it.lineReference,
-  )
+) = OffenceScheduleMapping(
+  offence = offence,
+  schedulePart = it.schedulePart,
+  paragraphNumber = it.paragraphNumber,
+  paragraphTitle = it.paragraphTitle,
+  legislationText = it.legislationText,
+  lineReference = it.lineReference,
+)
 
-fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMapping =
-  OffenceToScheduleMapping(
-    id = offence.id,
-    code = offence.code,
-    description = offence.cjsTitle,
-    offenceType = offence.offenceType,
-    revisionId = offence.revisionId,
-    startDate = offence.startDate,
-    endDate = offence.endDate,
-    homeOfficeStatsCode = offence.homeOfficeStatsCode,
-    changedDate = offence.changedDate,
-    loadDate = offence.lastUpdatedDate,
-    isChild = offence.parentCode != null,
-    parentOffenceId = offence.parentOffenceId,
-    legislation = offence.legislation,
-    maxPeriodIsLife = offence.maxPeriodIsLife,
-    maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
-    maxPeriodOfIndictmentMonths = offence.maxPeriodOfIndictmentMonths,
-    maxPeriodOfIndictmentWeeks = offence.maxPeriodOfIndictmentWeeks,
-    maxPeriodOfIndictmentDays = offence.maxPeriodOfIndictmentDays,
-    childOffences = children.map { transform(it) },
-  )
+fun transform(offence: Offence, children: List<Offence>): OffenceToScheduleMapping = OffenceToScheduleMapping(
+  id = offence.id,
+  code = offence.code,
+  description = offence.cjsTitle,
+  offenceType = offence.offenceType,
+  revisionId = offence.revisionId,
+  startDate = offence.startDate,
+  endDate = offence.endDate,
+  homeOfficeStatsCode = offence.homeOfficeStatsCode,
+  changedDate = offence.changedDate,
+  loadDate = offence.lastUpdatedDate,
+  isChild = offence.parentCode != null,
+  parentOffenceId = offence.parentOffenceId,
+  legislation = offence.legislation,
+  maxPeriodIsLife = offence.maxPeriodIsLife,
+  maxPeriodOfIndictmentYears = offence.maxPeriodOfIndictmentYears,
+  maxPeriodOfIndictmentMonths = offence.maxPeriodOfIndictmentMonths,
+  maxPeriodOfIndictmentWeeks = offence.maxPeriodOfIndictmentWeeks,
+  maxPeriodOfIndictmentDays = offence.maxPeriodOfIndictmentDays,
+  childOffences = children.map { transform(it) },
+)
 
 fun transform(it: Offence): BasicOffence = BasicOffence(
   id = it.id,
@@ -268,16 +256,14 @@ fun transform(offence: Offence, username: String) = OffenceReactivatedInNomis(
   reactivatedByUsername = username,
 )
 
-fun transform(offence: Offence, activationFlag: Boolean) =
-  OffenceActivationDto(
-    offenceCode = offence.code,
-    statuteCode = offence.statuteCode,
-    activationFlag = activationFlag,
-  )
+fun transform(offence: Offence, activationFlag: Boolean) = OffenceActivationDto(
+  offenceCode = offence.code,
+  statuteCode = offence.statuteCode,
+  activationFlag = activationFlag,
+)
 
-fun transform(offence: SdrsOffence): LegacySdrsHoCodeMapping =
-  LegacySdrsHoCodeMapping(
-    offenceCode = offence.code,
-    category = offence.category,
-    subCategory = offence.subCategory,
-  )
+fun transform(offence: SdrsOffence): LegacySdrsHoCodeMapping = LegacySdrsHoCodeMapping(
+  offenceCode = offence.code,
+  category = offence.category,
+  subCategory = offence.subCategory,
+)

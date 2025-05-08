@@ -67,20 +67,18 @@ class HoCodeServiceIntTest : IntegrationTestBase() {
       )
   }
 
-  private fun getSubDirectoriesRequest(apTable: AnalyticalPlatformTableName): ListObjectsV2Request? =
-    ListObjectsV2Request.builder()
-      .bucket(BUCKET)
-      .prefix(apTable.s3BasePath)
-      .delimiter("/")
-      .build()
+  private fun getSubDirectoriesRequest(apTable: AnalyticalPlatformTableName): ListObjectsV2Request? = ListObjectsV2Request.builder()
+    .bucket(BUCKET)
+    .prefix(apTable.s3BasePath)
+    .delimiter("/")
+    .build()
 
-  fun getKeysInPathRequest(path: String): ListObjectsV2Request =
-    ListObjectsV2Request.builder()
-      .bucket(AwsS3Service.BUCKET)
-      .prefix(path)
-      .delimiter("/")
-      .startAfter(path)
-      .build()
+  fun getKeysInPathRequest(path: String): ListObjectsV2Request = ListObjectsV2Request.builder()
+    .bucket(AwsS3Service.BUCKET)
+    .prefix(path)
+    .delimiter("/")
+    .startAfter(path)
+    .build()
 
   companion object {
     private const val BUCKET = "mojap-manage-offences"
