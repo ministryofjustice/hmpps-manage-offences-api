@@ -19,16 +19,14 @@ import java.util.concurrent.TimeUnit.HOURS
 class CacheConfiguration {
 
   @Bean
-  fun cacheManager(): CacheManager {
-    return ConcurrentMapCacheManager(
-      PCSC_LISTS,
-      PCSC_MARKERS,
-      SDS_EARLY_RELEASE_EXCLUSION_LISTS,
-      SDS_EARLY_RELEASE_EXCLUSIONS,
-      TORERA_OFFENCE_CODES,
-      OFFENCE_CODE_TO_HOME_OFFICE_CODE,
-    )
-  }
+  fun cacheManager(): CacheManager = ConcurrentMapCacheManager(
+    PCSC_LISTS,
+    PCSC_MARKERS,
+    SDS_EARLY_RELEASE_EXCLUSION_LISTS,
+    SDS_EARLY_RELEASE_EXCLUSIONS,
+    TORERA_OFFENCE_CODES,
+    OFFENCE_CODE_TO_HOME_OFFICE_CODE,
+  )
 
   @CacheEvict(
     allEntries = true,

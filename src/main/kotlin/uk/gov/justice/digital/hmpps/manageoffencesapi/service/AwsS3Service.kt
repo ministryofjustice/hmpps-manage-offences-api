@@ -54,18 +54,16 @@ class AwsS3Service(
     return data.toString()
   }
 
-  fun getKeysInPath(path: String): Set<String> {
-    return s3Client.listObjectsV2(
-      ListObjectsV2Request.builder()
-        .bucket(BUCKET)
-        .prefix(path)
-        .delimiter("/")
-        .startAfter(path)
-        .build(),
-    ).contents()
-      .map { it.key() }
-      .toSet()
-  }
+  fun getKeysInPath(path: String): Set<String> = s3Client.listObjectsV2(
+    ListObjectsV2Request.builder()
+      .bucket(BUCKET)
+      .prefix(path)
+      .delimiter("/")
+      .startAfter(path)
+      .build(),
+  ).contents()
+    .map { it.key() }
+    .toSet()
 
   private fun queryS3(
     key: String,
@@ -88,15 +86,13 @@ class AwsS3Service(
     return s3AsyncClient.selectObjectContent(select, handler)
   }
 
-  fun getSubDirectories(path: String): List<CommonPrefix> {
-    return s3Client.listObjectsV2(
-      ListObjectsV2Request.builder()
-        .bucket(BUCKET)
-        .prefix(path)
-        .delimiter("/")
-        .build(),
-    ).commonPrefixes()
-  }
+  fun getSubDirectories(path: String): List<CommonPrefix> = s3Client.listObjectsV2(
+    ListObjectsV2Request.builder()
+      .bucket(BUCKET)
+      .prefix(path)
+      .delimiter("/")
+      .build(),
+  ).commonPrefixes()
 
   private class SelectObjectHandler : SelectObjectContentResponseHandler {
     val receivedEvents: MutableList<SelectObjectContentEventStream> = ArrayList()

@@ -43,9 +43,8 @@ class AdminService(
     }
   }
 
-  fun getCurrentAuthentication(): AuthAwareAuthenticationToken =
-    SecurityContextHolder.getContext().authentication as AuthAwareAuthenticationToken?
-      ?: throw IllegalStateException("User is not authenticated")
+  fun getCurrentAuthentication(): AuthAwareAuthenticationToken = SecurityContextHolder.getContext().authentication as AuthAwareAuthenticationToken?
+    ?: throw IllegalStateException("User is not authenticated")
 
   @Transactional
   fun reactivateNomisOffence(offenceIds: List<Long>) {
@@ -152,11 +151,9 @@ class AdminService(
   }
 
   @Transactional(readOnly = true)
-  fun getAllToggles(): List<FeatureToggle> =
-    featureToggleRepository.findAll().map { transform(it) }
+  fun getAllToggles(): List<FeatureToggle> = featureToggleRepository.findAll().map { transform(it) }
 
-  fun isFeatureEnabled(feature: Feature): Boolean =
-    featureToggleRepository.findById(feature).map { it.enabled }.orElse(false)
+  fun isFeatureEnabled(feature: Feature): Boolean = featureToggleRepository.findById(feature).map { it.enabled }.orElse(false)
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

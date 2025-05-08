@@ -12,12 +12,10 @@ class SDRSApiClient(@Qualifier("standingDataReferenceServiceApiWebClient") priva
   private inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
 
   // This one endpoint in the SDRS API serves all variations of offence lookup
-  fun callSDRS(sdrsRequest: SDRSRequest): SDRSResponse {
-    return webClient.post()
-      .uri("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
-      .bodyValue(sdrsRequest)
-      .retrieve()
-      .bodyToMono(typeReference<SDRSResponse>())
-      .block()!!
-  }
+  fun callSDRS(sdrsRequest: SDRSRequest): SDRSResponse = webClient.post()
+    .uri("/cld_StandingDataReferenceService/service/sdrs/sdrs/sdrsApi")
+    .bodyValue(sdrsRequest)
+    .retrieve()
+    .bodyToMono(typeReference<SDRSResponse>())
+    .block()!!
 }

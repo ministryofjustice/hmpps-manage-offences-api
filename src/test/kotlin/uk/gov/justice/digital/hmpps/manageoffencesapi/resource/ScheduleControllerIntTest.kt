@@ -305,13 +305,12 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .isEqualTo(schedule)
   }
 
-  private fun getScheduleDetails(createdScheduleId: Long?) =
-    webTestClient.get().uri("/schedule/by-id/$createdScheduleId")
-      .headers(setAuthorisation())
-      .exchange()
-      .expectStatus().isOk
-      .expectBody(Schedule::class.java)
-      .returnResult().responseBody
+  private fun getScheduleDetails(createdScheduleId: Long?) = webTestClient.get().uri("/schedule/by-id/$createdScheduleId")
+    .headers(setAuthorisation())
+    .exchange()
+    .expectStatus().isOk
+    .expectBody(Schedule::class.java)
+    .returnResult().responseBody
 
   private fun getAllSchedules() = webTestClient.get().uri("/schedule/all")
     .headers(setAuthorisation())
@@ -326,12 +325,11 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     .exchange()
     .expectStatus().isOk
 
-  private fun unlinkOffencesToSchedulePart(schedulePartIdAndOffenceIds: List<SchedulePartIdAndOffenceId>) =
-    webTestClient.post().uri("/schedule/unlink-offences")
-      .headers(setAuthorisation(roles = listOf("ROLE_UPDATE_OFFENCE_SCHEDULES")))
-      .bodyValue(schedulePartIdAndOffenceIds)
-      .exchange()
-      .expectStatus().isOk
+  private fun unlinkOffencesToSchedulePart(schedulePartIdAndOffenceIds: List<SchedulePartIdAndOffenceId>) = webTestClient.post().uri("/schedule/unlink-offences")
+    .headers(setAuthorisation(roles = listOf("ROLE_UPDATE_OFFENCE_SCHEDULES")))
+    .bodyValue(schedulePartIdAndOffenceIds)
+    .exchange()
+    .expectStatus().isOk
 
   private fun getOffences(offenceCode: String) = webTestClient.get().uri("/offences/code/$offenceCode")
     .headers(setAuthorisation())

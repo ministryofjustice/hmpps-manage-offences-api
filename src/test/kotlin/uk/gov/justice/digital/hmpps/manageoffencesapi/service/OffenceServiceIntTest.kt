@@ -141,17 +141,15 @@ class OffenceServiceIntTest : IntegrationTestBase() {
     }
   }
 
-  private fun verifyPutOffenceToPrisonApi(json: String) =
-    prisonApiMockServer.verify(
-      WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
-        .withRequestBody(WireMock.equalToJson(json, true, true)),
-    )
+  private fun verifyPutOffenceToPrisonApi(json: String) = prisonApiMockServer.verify(
+    WireMock.putRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+      .withRequestBody(WireMock.equalToJson(json, true, true)),
+  )
 
-  private fun verifyPostOffenceToPrisonApi(json: String) =
-    prisonApiMockServer.verify(
-      WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
-        .withRequestBody(WireMock.equalToJson(json, true, true)),
-    )
+  private fun verifyPostOffenceToPrisonApi(json: String) = prisonApiMockServer.verify(
+    WireMock.postRequestedFor(WireMock.urlEqualTo("/api/offences/offence"))
+      .withRequestBody(WireMock.equalToJson(json, true, true)),
+  )
 
   companion object {
 

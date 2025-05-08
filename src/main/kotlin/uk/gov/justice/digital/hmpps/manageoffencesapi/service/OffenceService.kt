@@ -241,16 +241,15 @@ class OffenceService(
   private fun determineNewHoCodesToCreate(
     allOffences: List<EntityOffence>,
     nomisOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence>,
-  ): Set<HoCode> =
-    allOffences
-      .filter { !it.homeOfficeStatsCode.isNullOrBlank() && nomisOffences.none { o -> o.hoCode?.code == it.homeOfficeStatsCode } }
-      .map {
-        HoCode(
-          code = it.homeOfficeStatsCode!!,
-          description = it.homeOfficeStatsCode!!,
-          activeFlag = "Y",
-        )
-      }.toSet()
+  ): Set<HoCode> = allOffences
+    .filter { !it.homeOfficeStatsCode.isNullOrBlank() && nomisOffences.none { o -> o.hoCode?.code == it.homeOfficeStatsCode } }
+    .map {
+      HoCode(
+        code = it.homeOfficeStatsCode!!,
+        description = it.homeOfficeStatsCode!!,
+        activeFlag = "Y",
+      )
+    }.toSet()
 
   private fun createNomisStatutes(nomisStatutesToCreate: Set<Statute>) {
     nomisStatutesToCreate.chunked(MAX_RECORDS_IN_POST_PAYLOAD).forEach {
@@ -290,12 +289,11 @@ class OffenceService(
     offence: EntityOffence,
   ) = nomisOffences.any { o -> o.statuteCode.code == offence.statuteCode }
 
-  private fun offenceDetailsSame(offence: EntityOffence, nomisOffence: PrisonApiOffence): Boolean =
-    nomisOffence.hoCode?.code == offence.homeOfficeStatsCode &&
-      nomisOffence.description == offence.derivedDescription.trim() &&
-      nomisOffence.activeFlag == offence.activeFlag &&
-      nomisOffence.expiryDate == offence.expiryDate &&
-      nomisOffence.severityRanking == offence.severityRanking
+  private fun offenceDetailsSame(offence: EntityOffence, nomisOffence: PrisonApiOffence): Boolean = nomisOffence.hoCode?.code == offence.homeOfficeStatsCode &&
+    nomisOffence.description == offence.derivedDescription.trim() &&
+    nomisOffence.activeFlag == offence.activeFlag &&
+    nomisOffence.expiryDate == offence.expiryDate &&
+    nomisOffence.severityRanking == offence.severityRanking
 
   private fun copyOffenceToUpdate(
     offence: uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence,

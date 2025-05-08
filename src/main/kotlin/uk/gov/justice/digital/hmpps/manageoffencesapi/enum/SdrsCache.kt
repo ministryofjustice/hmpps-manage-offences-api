@@ -41,7 +41,6 @@ enum class SdrsCache(
   ;
 
   companion object {
-    fun fromSdrsDataSetName(sdrsDataSetName: String): SdrsCache =
-      values().first { it.sdrsDataSetName == sdrsDataSetName }
+    fun fromSdrsDataSetName(sdrsDataSetName: String): SdrsCache = values().first { it.sdrsDataSetName == sdrsDataSetName }
   }
 }

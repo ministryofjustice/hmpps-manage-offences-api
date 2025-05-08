@@ -21,45 +21,41 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
     )
   }
 
-  fun stubCreateHomeOfficeCode(): StubMapping =
-    stubFor(
-      WireMock.post("/api/offences/ho-code")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
+  fun stubCreateHomeOfficeCode(): StubMapping = stubFor(
+    WireMock.post("/api/offences/ho-code")
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+  )
 
-  fun stubCreateStatute(): StubMapping =
-    stubFor(
-      WireMock.post("/api/offences/statute")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
+  fun stubCreateStatute(): StubMapping = stubFor(
+    WireMock.post("/api/offences/statute")
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+  )
 
-  fun stubCreateOffence(): StubMapping =
-    stubFor(
-      WireMock.post("/api/offences/offence")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
+  fun stubCreateOffence(): StubMapping = stubFor(
+    WireMock.post("/api/offences/offence")
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+  )
 
-  fun stubUpdateOffence(): StubMapping =
-    stubFor(
-      WireMock.put("/api/offences/offence")
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
+  fun stubUpdateOffence(): StubMapping = stubFor(
+    WireMock.put("/api/offences/offence")
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+  )
 
   fun stubFindByOffenceCodeStartsWithReturnsNothing(offenceCode: Char) {
     stubFor(
@@ -123,27 +119,25 @@ class PrisonApiMockServer : WireMockServer(WIREMOCK_PORT) {
       ),
   )
 
-  fun stubActivateOffence(): StubMapping =
-    stubFor(
-      WireMock.put("/api/offences/update-active-flag")
-        .withRequestBody(WireMock.equalToJson(activationDto))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
+  fun stubActivateOffence(): StubMapping = stubFor(
+    WireMock.put("/api/offences/update-active-flag")
+      .withRequestBody(WireMock.equalToJson(activationDto))
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+  )
 
-  fun stubDeactivateOffence(): StubMapping =
-    stubFor(
-      WireMock.put("/api/offences/update-active-flag")
-        .withRequestBody(WireMock.equalToJson(deactivationDto))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
+  fun stubDeactivateOffence(): StubMapping = stubFor(
+    WireMock.put("/api/offences/update-active-flag")
+      .withRequestBody(WireMock.equalToJson(deactivationDto))
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(200),
+      ),
+  )
 
   companion object {
     private const val WIREMOCK_PORT = 8333

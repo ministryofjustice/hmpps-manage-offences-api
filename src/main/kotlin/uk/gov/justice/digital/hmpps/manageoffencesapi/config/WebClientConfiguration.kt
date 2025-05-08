@@ -24,11 +24,9 @@ class WebClientConfiguration(
   @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
 ) {
   @Bean
-  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient {
-    return builder.baseUrl(standingDataReferenceServiceApiUrl)
-      .defaultHeaders { headers -> headers.addAll(createHeaders()) }
-      .build()
-  }
+  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(standingDataReferenceServiceApiUrl)
+    .defaultHeaders { headers -> headers.addAll(createHeaders()) }
+    .build()
 
   @Bean
   fun prisonApiWebClient(
@@ -45,20 +43,16 @@ class WebClientConfiguration(
 
   // To be used when passing through the users token - rather than using system credentials
   @Bean
-  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient {
-    return builder
-      .baseUrl(prisonApiUrl)
-      .filter(addAuthHeaderFilterFunction())
-      .build()
-  }
+  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient = builder
+    .baseUrl(prisonApiUrl)
+    .filter(addAuthHeaderFilterFunction())
+    .build()
 
-  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction {
-    return ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
-      val filtered = ClientRequest.from(request)
-        .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
-        .build()
-      next.exchange(filtered)
-    }
+  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction = ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
+    val filtered = ClientRequest.from(request)
+      .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
+      .build()
+    next.exchange(filtered)
   }
 
   @Bean
