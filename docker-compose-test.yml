@@ -9,8 +9,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=manage-offences
-      - POSTGRES_USER=manage-offences
+      - POSTGRES_PASSWORD=manage_offences
+      - POSTGRES_USER=manage_offences
       - POSTGRES_DB=manage_offences
 
   hmpps-auth:
