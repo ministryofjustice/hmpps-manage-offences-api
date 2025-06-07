@@ -16,7 +16,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.3.1")
-    mavenBom("software.amazon.awssdk:bom:2.31.54")
+    mavenBom("software.amazon.awssdk:bom:2.31.59")
   }
 }
 
@@ -46,7 +46,7 @@ dependencies {
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.10")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.11")
 
   // Schedule locking
   implementation("net.javacrumbs.shedlock:shedlock-spring:6.8.0")
@@ -70,7 +70,7 @@ dependencies {
   // Test dependencies
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.29")
   testImplementation("org.wiremock:wiremock-standalone:3.13.0")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.50.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.51.0")
   testImplementation("org.testcontainers:postgresql:1.21.1")
 }
 
