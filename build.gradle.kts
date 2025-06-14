@@ -15,8 +15,8 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.3.1")
-    mavenBom("software.amazon.awssdk:bom:2.31.54")
+    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.0")
+    mavenBom("software.amazon.awssdk:bom:2.31.63")
   }
 }
 
@@ -25,7 +25,7 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.6")
+  runtimeOnly("org.postgresql:postgresql:42.7.7")
 
   // AppInsights
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.16.0")
@@ -44,13 +44,13 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.10")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.10.1")
 
   // Schedule locking
-  implementation("net.javacrumbs.shedlock:shedlock-spring:6.8.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.8.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:6.9.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.9.0")
 
   // AWS
   // See comment below relating to the SQS lib, keep these AWS dependencies above the SQS dependency
@@ -65,12 +65,12 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.5")
 
   // Miscellaneous
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.1")
 
   // Test dependencies
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.29")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.0")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.50.0")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.1")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.51.0")
   testImplementation("org.testcontainers:postgresql:1.21.1")
 }
 
