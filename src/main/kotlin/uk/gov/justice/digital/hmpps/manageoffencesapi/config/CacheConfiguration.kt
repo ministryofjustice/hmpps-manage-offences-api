@@ -25,6 +25,7 @@ class CacheConfiguration {
     SDS_EARLY_RELEASE_EXCLUSION_LISTS,
     SDS_EARLY_RELEASE_EXCLUSIONS,
     TORERA_OFFENCE_CODES,
+    SCHEDULE_19ZA_OFFENCES,
     OFFENCE_CODE_TO_HOME_OFFICE_CODE,
   )
 
@@ -35,12 +36,13 @@ class CacheConfiguration {
   @Scheduled(fixedDelay = 2, timeUnit = HOURS)
   fun cacheEvict() {
     log.info(
-      "Evicting caches: {}, {}, {}, {}, {}",
+      "Evicting caches: {}, {}, {}, {}, {}, {}",
       PCSC_LISTS,
       PCSC_MARKERS,
       SDS_EARLY_RELEASE_EXCLUSION_LISTS,
       SDS_EARLY_RELEASE_EXCLUSIONS,
       TORERA_OFFENCE_CODES,
+      SCHEDULE_19ZA_OFFENCES,
     )
   }
 
@@ -60,6 +62,7 @@ class CacheConfiguration {
     const val SDS_EARLY_RELEASE_EXCLUSION_LISTS: String = "sdsEarlyReleaseExclusionLists"
     const val SDS_EARLY_RELEASE_EXCLUSIONS: String = "sdsEarlyReleaseExclusions"
     const val TORERA_OFFENCE_CODES: String = "toreraOffenceCodes"
+    const val SCHEDULE_19ZA_OFFENCES: String = "schedule19ZaOffences"
     const val OFFENCE_CODE_TO_HOME_OFFICE_CODE: String = "offenceCodesToHomeOfficeCode"
   }
 }

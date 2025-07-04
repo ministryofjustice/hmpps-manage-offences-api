@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_LISTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_MARKERS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SCHEDULE_19ZA_OFFENCES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSIONS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSION_LISTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.TORERA_OFFENCE_CODES
@@ -28,6 +29,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ToreraSchedulePartCodes
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService
 
 @RestController
@@ -153,6 +155,17 @@ class ScheduleController(
   fun getToreraOffenceCodes(): List<String> {
     log.info("Request received to get torera related offence codes")
     return scheduleService.getToreraOffenceCodes()
+  }
+
+  @Cacheable(SCHEDULE_19ZA_OFFENCES)
+  @GetMapping(value = ["/torera-offence-codes-by-schedule-part"])
+  @Operation(
+    summary = "Retrieve all schedule 19ZA offence codes by part number",
+    description = "Returns list of offence codes broken down by schedule part, commonly used for TORERA offences",
+  )
+  fun getToreraScheduleParts(): ToreraSchedulePartCodes {
+    log.info("Request received to get torera schedule part codes")
+    return scheduleService.getToreraOffenceCodesByPart()
   }
 
   @Cacheable(PCSC_LISTS)

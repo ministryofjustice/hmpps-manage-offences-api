@@ -5,11 +5,11 @@ import org.junit.jupiter.api.BeforeAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.S3Client
@@ -30,10 +30,10 @@ abstract class IntegrationTestBase {
   @Autowired
   lateinit var jwtAuthHelper: JwtAuthHelper
 
-  @MockBean
+  @MockitoBean
   lateinit var s3Client: S3Client
 
-  @MockBean
+  @MockitoBean
   lateinit var s3AsyncClient: S3AsyncClient
 
   companion object {

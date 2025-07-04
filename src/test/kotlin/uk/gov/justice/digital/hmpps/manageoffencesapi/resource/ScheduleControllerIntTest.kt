@@ -296,6 +296,14 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON) // Assert that the content type is JSON
       .expectBody()
       .json("[\"AO07000\", \"AO07001\"]")
+
+    webTestClient.get().uri("/schedule/torera-offence-codes-by-schedule-part")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("""{"parts":{"1":["AO07000"],"2":["AO07001"]}}""")
   }
 
   private fun assertThatScheduleMatches(scheduleBefore: Schedule?, schedule: Schedule) {
