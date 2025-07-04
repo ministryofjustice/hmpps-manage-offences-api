@@ -296,14 +296,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .expectHeader().contentType(MediaType.APPLICATION_JSON) // Assert that the content type is JSON
       .expectBody()
       .json("[\"AO07000\", \"AO07001\"]")
-  }
 
-  @Test
-  @Sql(
-    "classpath:test_data/reset-all-data.sql",
-    "classpath:test_data/insert-torera-schedule-offences.sql",
-  )
-  fun `Get TORERA related offence codes by schedule part`() {
     webTestClient.get().uri("/schedule/torera-offence-codes-by-schedule-part")
       .headers(setAuthorisation())
       .exchange()
