@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @Configuration
 @EnableWebSecurity
@@ -30,16 +29,17 @@ class ResourceServerConfiguration {
         }
       }
       authorizeHttpRequests {
-        authorize(AntPathRequestMatcher("/webjars/**", HttpMethod.GET.name()), permitAll)
-        authorize(AntPathRequestMatcher("favicon.ico", HttpMethod.GET.name()), permitAll)
-        authorize(AntPathRequestMatcher("/health/**", HttpMethod.GET.name()), permitAll)
-        authorize(AntPathRequestMatcher("/info", HttpMethod.GET.name()), permitAll)
-        authorize(AntPathRequestMatcher("/swagger-resources/**", HttpMethod.GET.name()), permitAll)
-        authorize(AntPathRequestMatcher("/v3/api-docs/**", HttpMethod.GET.name()), permitAll)
-        authorize(AntPathRequestMatcher("/swagger-ui/**", HttpMethod.GET.name()), permitAll)
-        authorize(AntPathRequestMatcher("/swagger-ui.html", HttpMethod.GET.name()), permitAll)
-        authorize(AntPathRequestMatcher("/h2-console/**", HttpMethod.POST.name()), permitAll)
-        authorize(AntPathRequestMatcher("/some-url-not-found", HttpMethod.GET.name()), permitAll)
+        authorize("/webjars/**", HttpMethod.GET.name(), permitAll)
+        authorize("/favicon.ico", HttpMethod.GET.name(), permitAll)
+        authorize("/health/**", HttpMethod.GET.name(), permitAll)
+        authorize("/info", HttpMethod.GET.name(), permitAll)
+        authorize("/swagger-resources/**", HttpMethod.GET.name(), permitAll)
+        authorize("/v3/api-docs/**", HttpMethod.GET.name(), permitAll)
+        authorize("/swagger-ui/**", HttpMethod.GET.name(), permitAll)
+        authorize("/swagger-ui.html", HttpMethod.GET.name(), permitAll)
+        authorize("/h2-console/**", HttpMethod.POST.name(), permitAll)
+        authorize("/some-url-not-found", HttpMethod.GET.name(), permitAll)
+        authorize("/schedule/**", HttpMethod.GET.name(), permitAll)
         authorize(anyRequest, authenticated)
       }
       oauth2ResourceServer {

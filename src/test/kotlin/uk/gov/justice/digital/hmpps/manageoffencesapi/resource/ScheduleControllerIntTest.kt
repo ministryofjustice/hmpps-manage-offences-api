@@ -298,6 +298,21 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .json("[\"AO07000\", \"AO07001\"]")
   }
 
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-torera-schedule-offences.sql",
+  )
+  fun `Get TORERA related offence codes by schedule part`() {
+    webTestClient.get().uri("/schedule/torera-offence-codes-by-schedule-part")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .json("""{"parts":{"1":["AO07000"],"2":["AO07001"]}}""")
+  }
+
   private fun assertThatScheduleMatches(scheduleBefore: Schedule?, schedule: Schedule) {
     assertThat(scheduleBefore)
       .usingRecursiveComparison()

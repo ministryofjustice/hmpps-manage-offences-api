@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleInfo
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ToreraSchedulePartCodes
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
@@ -335,6 +336,11 @@ class ScheduleService(
    */
   @Transactional(readOnly = true)
   fun getToreraOffenceCodes() = scheduleRepository.getToreraOffenceCodes()
+
+  fun getToreraOffenceCodesByPart(): ToreraSchedulePartCodes {
+    val groupedByParts = scheduleRepository.getToreraOffenceCodesByPart().groupBy({ it.first }, { it.second })
+    return ToreraSchedulePartCodes(parts = groupedByParts)
+  }
 
   private fun getSdsExclusionIndicators(offenceCodes: List<String>): List<OffenceSdsExclusion> {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()

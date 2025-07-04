@@ -20,4 +20,16 @@ interface ScheduleRepository : JpaRepository<Schedule, Long> {
    """,
   )
   fun getToreraOffenceCodes(): List<String>
+
+  @Query(
+    """
+    SELECT sp.partNumber, o.code FROM Schedule s 
+        JOIN SchedulePart sp on sp.schedule = s 
+        JOIN OffenceScheduleMapping osm on osm.schedulePart = sp 
+        JOIN Offence o ON osm.offence = o 
+    WHERE s.code = "19ZA"
+        AND sp.partNumber IN (1, 2)
+   """,
+  )
+  fun getToreraOffenceCodesByPart(): List<Pair<Int, String>>
 }
