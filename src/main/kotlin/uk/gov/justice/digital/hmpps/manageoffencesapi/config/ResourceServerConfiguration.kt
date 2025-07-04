@@ -29,17 +29,17 @@ class ResourceServerConfiguration {
         }
       }
       authorizeHttpRequests {
-        authorize("/webjars/**", HttpMethod.GET.name(), permitAll)
-        authorize("/favicon.ico", HttpMethod.GET.name(), permitAll)
-        authorize("/health/**", HttpMethod.GET.name(), permitAll)
-        authorize("/info", HttpMethod.GET.name(), permitAll)
-        authorize("/swagger-resources/**", HttpMethod.GET.name(), permitAll)
-        authorize("/v3/api-docs/**", HttpMethod.GET.name(), permitAll)
-        authorize("/swagger-ui/**", HttpMethod.GET.name(), permitAll)
-        authorize("/swagger-ui.html", HttpMethod.GET.name(), permitAll)
-        authorize("/h2-console/**", HttpMethod.POST.name(), permitAll)
-        authorize("/some-url-not-found", HttpMethod.GET.name(), permitAll)
-        authorize("/schedule/**", HttpMethod.GET.name(), permitAll)
+        authorize(HttpMethod.GET, "/webjars/**", permitAll)
+        authorize(HttpMethod.GET, "/favicon.ico", permitAll)
+        authorize(HttpMethod.GET, "/health/**", permitAll)
+        authorize(HttpMethod.GET, "/info", permitAll)
+        authorize(HttpMethod.GET, "/swagger-resources/**", permitAll)
+        authorize(HttpMethod.GET, "/v3/api-docs/**", permitAll)
+        authorize(HttpMethod.GET, "/swagger-ui/**", permitAll)
+        authorize(HttpMethod.GET, "/swagger-ui.html", permitAll)
+        authorize(HttpMethod.POST, "/h2-console/**", permitAll)
+        authorize(HttpMethod.GET, "/some-url-not-found", permitAll)
+        authorize(HttpMethod.GET, "/schedule/**", permitAll)
         authorize(anyRequest, authenticated)
       }
       oauth2ResourceServer {
