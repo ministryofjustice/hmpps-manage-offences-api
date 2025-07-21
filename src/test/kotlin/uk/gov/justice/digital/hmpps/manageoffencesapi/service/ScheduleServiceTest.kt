@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
@@ -18,8 +18,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
@@ -45,6 +43,7 @@ class ScheduleServiceTest {
   private val prisonApiClient = mock<PrisonApiClient>()
   private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
   private val adminService = mock<AdminService>()
+  private val cacheConfiguration = mock<CacheConfiguration>()
 
   private val scheduleService =
     ScheduleService(
@@ -58,6 +57,7 @@ class ScheduleServiceTest {
       nomisScheduleMappingRepository,
       offenceToSyncWithNomisRepository,
       adminService,
+      cacheConfiguration,
     )
 
   @Nested
@@ -120,6 +120,7 @@ class ScheduleServiceTest {
           ),
         ),
       )
+      verify(cacheConfiguration).cacheEvict()
     }
 
     @Test
@@ -140,6 +141,7 @@ class ScheduleServiceTest {
         ),
       )
       verifyNoInteractions(prisonApiUserClient)
+      verify(cacheConfiguration).cacheEvict()
     }
   }
 
@@ -209,6 +211,7 @@ class ScheduleServiceTest {
           ),
         ),
       )
+      verify(cacheConfiguration).cacheEvict()
     }
 
     @Test
@@ -226,116 +229,7 @@ class ScheduleServiceTest {
       )
 
       verifyNoInteractions(prisonApiUserClient)
-    }
-  }
-
-  @Nested
-  inner class PcscTests {
-    @Test
-    fun `Determine PCSC offences when all indicators are false`() {
-      whenever(schedulePartRepository.findByScheduleId(SCHEDULE_15.id)).thenReturn(
-        listOf(
-          SCHEDULE_15_PART_1,
-          SCHEDULE_15_PART_2,
-        ),
-      )
-      whenever(
-        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
-          "Criminal Justice Act 2003",
-          "15",
-        ),
-      ).thenReturn(
-        emptyList(),
-      )
-
-      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
-
-      assertThat(res).isEqualTo(
-        listOf(
-          OffencePcscMarkers(
-            offenceCode = BASE_OFFENCE.code,
-            PcscMarkers(
-              inListA = false,
-              inListB = false,
-              inListC = false,
-              inListD = false,
-            ),
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `Determine PCSC offences when all indicators are true`() {
-      whenever(schedulePartRepository.findByScheduleId(SCHEDULE_15.id)).thenReturn(
-        listOf(
-          SCHEDULE_15_PART_1,
-          SCHEDULE_15_PART_2,
-        ),
-      )
-
-      whenever(
-        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
-          "Criminal Justice Act 2003",
-          "15",
-        ),
-      ).thenReturn(
-        listOf(
-          OFFENCE_SCHEDULE_MAPPING_S15_P1_LIFE,
-        ),
-      )
-
-      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
-
-      assertThat(res).isEqualTo(
-        listOf(
-          OffencePcscMarkers(
-            offenceCode = BASE_OFFENCE.code,
-            PcscMarkers(
-              inListA = true,
-              inListB = true,
-              inListC = true,
-              inListD = true,
-            ),
-          ),
-        ),
-      )
-    }
-
-    @Test
-    fun `Determine PCSC offences with a mix of indicators true and false`() {
-      whenever(schedulePartRepository.findByScheduleId(SCHEDULE_15.id)).thenReturn(
-        listOf(
-          SCHEDULE_15_PART_1,
-          SCHEDULE_15_PART_2,
-        ),
-      )
-      whenever(
-        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
-          "Criminal Justice Act 2003",
-          "15",
-        ),
-      ).thenReturn(
-        listOf(
-          OFFENCE_SCHEDULE_MAPPING_S15_P1_LIFE_AFTER_CUTOFF,
-        ),
-      )
-
-      val res = scheduleService.findPcscMarkers(listOf(BASE_OFFENCE.code))
-
-      assertThat(res).isEqualTo(
-        listOf(
-          OffencePcscMarkers(
-            offenceCode = BASE_OFFENCE.code,
-            PcscMarkers(
-              inListA = false,
-              inListB = true,
-              inListC = true,
-              inListD = true,
-            ),
-          ),
-        ),
-      )
+      verify(cacheConfiguration).cacheEvict()
     }
   }
 
@@ -359,6 +253,7 @@ class ScheduleServiceTest {
         ),
       )
       verify(offenceToSyncWithNomisRepository).deleteAllById(listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS.id))
+      verify(cacheConfiguration).cacheEvict()
     }
 
     @Test
@@ -415,6 +310,7 @@ class ScheduleServiceTest {
           POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS.id,
         ),
       )
+      verify(cacheConfiguration).cacheEvict()
     }
   }
 

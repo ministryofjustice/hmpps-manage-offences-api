@@ -21,28 +21,26 @@ class CacheConfiguration {
   @Bean
   fun cacheManager(): CacheManager = ConcurrentMapCacheManager(
     PCSC_LISTS,
-    PCSC_MARKERS,
     SDS_EARLY_RELEASE_EXCLUSION_LISTS,
-    SDS_EARLY_RELEASE_EXCLUSIONS,
     TORERA_OFFENCE_CODES,
     SCHEDULE_19ZA_OFFENCES,
     OFFENCE_CODE_TO_HOME_OFFICE_CODE,
+    SCHEDULE_DATA,
   )
 
   @CacheEvict(
     allEntries = true,
-    cacheNames = [PCSC_LISTS, PCSC_MARKERS, SDS_EARLY_RELEASE_EXCLUSION_LISTS, SDS_EARLY_RELEASE_EXCLUSIONS, TORERA_OFFENCE_CODES],
+    cacheNames = [PCSC_LISTS, SDS_EARLY_RELEASE_EXCLUSION_LISTS, TORERA_OFFENCE_CODES, SCHEDULE_DATA],
   )
   @Scheduled(fixedDelay = 2, timeUnit = HOURS)
   fun cacheEvict() {
     log.info(
-      "Evicting caches: {}, {}, {}, {}, {}, {}",
+      "Evicting caches: {}, {}, {}, {}, {}",
       PCSC_LISTS,
-      PCSC_MARKERS,
       SDS_EARLY_RELEASE_EXCLUSION_LISTS,
-      SDS_EARLY_RELEASE_EXCLUSIONS,
       TORERA_OFFENCE_CODES,
       SCHEDULE_19ZA_OFFENCES,
+      SCHEDULE_DATA,
     )
   }
 
@@ -58,11 +56,10 @@ class CacheConfiguration {
   companion object {
     val log: Logger = LoggerFactory.getLogger(CacheConfiguration::class.java)
     const val PCSC_LISTS: String = "pcscLists"
-    const val PCSC_MARKERS: String = "pcscMarkers"
     const val SDS_EARLY_RELEASE_EXCLUSION_LISTS: String = "sdsEarlyReleaseExclusionLists"
-    const val SDS_EARLY_RELEASE_EXCLUSIONS: String = "sdsEarlyReleaseExclusions"
     const val TORERA_OFFENCE_CODES: String = "toreraOffenceCodes"
     const val SCHEDULE_19ZA_OFFENCES: String = "schedule19ZaOffences"
     const val OFFENCE_CODE_TO_HOME_OFFICE_CODE: String = "offenceCodesToHomeOfficeCode"
+    const val SCHEDULE_DATA: String = "scheduleData"
   }
 }

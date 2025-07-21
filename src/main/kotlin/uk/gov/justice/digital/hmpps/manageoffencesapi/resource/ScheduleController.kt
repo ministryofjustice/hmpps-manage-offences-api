@@ -16,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_LISTS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_MARKERS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SCHEDULE_19ZA_OFFENCES
-import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSIONS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSION_LISTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.TORERA_OFFENCE_CODES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
@@ -30,12 +28,14 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ToreraSchedulePartCodes
+import uk.gov.justice.digital.hmpps.manageoffencesapi.service.IsOffenceInScheduleService
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService
 
 @RestController
 @RequestMapping("/schedule", produces = [MediaType.APPLICATION_JSON_VALUE])
 class ScheduleController(
   private val scheduleService: ScheduleService,
+  private val isOffenceInScheduleService: IsOffenceInScheduleService,
 ) {
   @PostMapping(value = ["/create"])
   @PreAuthorize("hasRole('ROLE_UPDATE_OFFENCE_SCHEDULES')")
@@ -112,7 +112,6 @@ class ScheduleController(
     return scheduleService.findOffenceById(offenceId)
   }
 
-  @Cacheable(PCSC_MARKERS)
   @GetMapping(value = ["/pcsc-indicators"])
   @ResponseBody
   @Operation(
@@ -121,10 +120,9 @@ class ScheduleController(
   )
   fun getPcscMarkers(@RequestParam offenceCodes: List<String>): List<OffencePcscMarkers> {
     log.info("Request received to determine pcsc markers for ${offenceCodes.size} offence codes")
-    return scheduleService.findPcscMarkers(offenceCodes)
+    return isOffenceInScheduleService.findPcscMarkers(offenceCodes)
   }
 
-  @Cacheable(SDS_EARLY_RELEASE_EXCLUSIONS)
   @GetMapping(value = ["/sds-early-release-exclusions"])
   @ResponseBody
   @Operation(
@@ -135,7 +133,7 @@ class ScheduleController(
     @RequestParam offenceCodes: List<String>,
   ): List<OffenceSdsExclusion> {
     log.info("Request received to determine sexual or violent status for ${offenceCodes.size} offence codes")
-    return scheduleService.categoriseSdsExclusionsOffences(offenceCodes)
+    return isOffenceInScheduleService.categoriseSdsExclusionsOffences(offenceCodes)
   }
 
   @Cacheable(SDS_EARLY_RELEASE_EXCLUSION_LISTS)

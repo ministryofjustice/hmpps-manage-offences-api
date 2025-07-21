@@ -13,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.S3Client
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration
 import uk.gov.justice.digital.hmpps.manageoffencesapi.helpers.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.container.PostgresContainer
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.wiremock.HmppsAuthMockServer
@@ -28,6 +29,9 @@ abstract class IntegrationTestBase {
   lateinit var webTestClient: WebTestClient
 
   @Autowired
+  lateinit var cacheConfiguration: CacheConfiguration
+
+  @Autowired
   lateinit var jwtAuthHelper: JwtAuthHelper
 
   @MockitoBean
@@ -35,6 +39,10 @@ abstract class IntegrationTestBase {
 
   @MockitoBean
   lateinit var s3AsyncClient: S3AsyncClient
+
+  protected fun resetCache() {
+    cacheConfiguration.cacheEvict()
+  }
 
   companion object {
     @JvmField
