@@ -69,6 +69,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     "classpath:test_data/insert-offence-data-pcsc.sql",
   )
   fun `Get PCSC indicators for multiple offences by offence codes`() {
+    resetCache()
     val result = webTestClient.get().uri("/schedule/pcsc-indicators?offenceCodes=AB14001,AB14002")
       .headers(setAuthorisation())
       .exchange()
@@ -108,6 +109,7 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     "classpath:test_data/insert-offence-data-sds-exclusions.sql",
   )
   fun `Get early release exclusion indicators for multiple offences by offence codes`() {
+    resetCache()
     val result = webTestClient.get()
       .uri("/schedule/sds-early-release-exclusions?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST,SXLEGIS,DV00001,NSLEGIS,TR00001")
       .headers(setAuthorisation())
