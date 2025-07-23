@@ -7,4 +7,5 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
 @Repository
 interface SchedulePartRepository : JpaRepository<SchedulePart, Long> {
   fun findByScheduleId(scheduleId: Long): List<SchedulePart>
+  fun findByScheduleIdAndPartNumber(scheduleId: Long, code: Int): SchedulePart?
 }

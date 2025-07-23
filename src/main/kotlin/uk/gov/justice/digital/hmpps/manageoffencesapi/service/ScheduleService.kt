@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMap
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleInfo
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ToreraSchedulePartCodes
@@ -129,8 +130,17 @@ class ScheduleService(
     cacheConfiguration.cacheEvict()
   }
 
+  @Transactional
+  fun createSchedulePart(scheduleId: Long, schedulePart: SchedulePart) {
+    val schedule = scheduleRepository.findById(scheduleId).orElseThrow { EntityNotFoundException() }
+    schedulePartRepository.findByScheduleIdAndPartNumber(scheduleId, schedulePart.partNumber)?.let {
+      throw EntityExistsException("Schedule part $schedulePart already exists for scheduleId $scheduleId")
+    }
+    schedulePartRepository.save(transform(schedulePart, schedule))
+  }
+
   /*
-    If the associated offence  has any children (inchoate offences) they are linked automatically
+    If the associated offence has any children (inchoate offences) they are linked automatically
    */
   @Transactional
   fun linkOffences(linkOffence: LinkOffence) {
