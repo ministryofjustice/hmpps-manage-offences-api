@@ -35,6 +35,10 @@ class OffenceImportServiceTest {
       "CT12345,Test offence One,MO,123,2020-01-01,2030-01-01,leg,false,5,6,7,8,NO", // valid line
       "CT12346,Test offence One,MO,123,20-01-01,23-01-01,leg,false,5,6,7,8,NO", // invalid dates
       ",Test offence One,MO,123,2020-01-01,2030-01-01,leg,false,5,6,7,8,NO", // missing offence code
+      "CT12347,,MO,123,2023-01-01,2023-01-01,leg,false,5,6,7,8,NO", // missing description
+      "CT12348,Test offence One,MO,123,2020-01-01,2030-01-01,leg,false123,5,6,7,8,NO", // invalid boolean
+      "CT12345,Test offence One,MO,123,2020-01-01,2030-01-01,leg,false,5,6,7,8,NO", // duplicate line
+      "CT12349,Test offence One,MO,123,2020-01-01,2030-01-01,leg,false,a,b,c,d,NO", // invalid integers
     )
 
     whenever(bufferedReader.readLine()).thenReturn(
@@ -55,6 +59,13 @@ class OffenceImportServiceTest {
           "Line 3 [startDate] Expected date (yyyy-MM-dd)",
           "Line 3 [endDate] Expected date (yyyy-MM-dd)",
           "Line 4 [code] must be provided",
+          "Line 5 [description] must be provided",
+          "Line 6 [maxPeriodIsLife] Expected boolean (true/false)",
+          "Line 7 offence code CT12345 has been specified more than once.",
+          "Line 8 [maxPeriodOfIndictmentYears] Expected integer",
+          "Line 8 [maxPeriodOfIndictmentMonths] Expected integer",
+          "Line 8 [maxPeriodOfIndictmentWeeks] Expected integer",
+          "Line 8 [maxPeriodOfIndictmentDays] Expected integer",
         ),
       ),
     )
