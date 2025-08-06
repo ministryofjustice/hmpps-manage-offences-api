@@ -70,6 +70,6 @@ interface OffenceRepository : JpaRepository<Offence, Long> {
   @Query("SELECT o FROM Offence o WHERE LOWER(o.legislation) LIKE LOWER(CONCAT('%', :legislationText, '%'))")
   fun findByLegislationLikeIgnoreCase(@Param("legislationText") legislationText: String): List<Offence>
 
-  @Query("SELECT o.code FROM Offence o WHERE o.code IN (:codes)")
-  fun returnCodesThatExist(@Param("codes") codes: List<String>): List<String>
+  @Query("SELECT o FROM Offence o WHERE o.code IN (:codes)")
+  fun findByCodeIn(@Param("codes") codes: List<String>): List<Offence>
 }
