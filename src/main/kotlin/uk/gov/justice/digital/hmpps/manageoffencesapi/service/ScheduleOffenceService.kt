@@ -32,17 +32,21 @@ class ScheduleOffenceService(
     val newMappings = parseCsv(reader).distinctBy { it.code }
 
     if (newMappings.isEmpty()) {
-      return ImportCsvResult(success = false, message = "No offences found in the CSV", errors = listOf("Empty CSV"))
+      return ImportCsvResult(success = false, message = "No valid offences found within CSV", errors = listOf("Invalid CSV"))
     }
 
-    val offences = offenceRepository.findByCodeIn(newMappings.map { it.code.trim() })
-    val mappings = newMappings.mapNotNull {
-      val currentOffence = offences.find { offence -> offence.code == it.code }
-      if (currentOffence == null) {
-        log.warn("No offence found for code {}", it.code)
-        return@mapNotNull null
-      }
+    val newOffencesCodes = newMappings.map { it.code }
 
+    val currentScheduleOffences = offenceRepository.findOffenceCodesBySchedulePart(schedulePart)
+    val newParentOffences = offenceRepository.findRootOffencesByCodeIn(newOffencesCodes)
+    val newChildOffences = offenceRepository.findChildOffences(newParentOffences.map { it.id })
+
+    val newScheduleOffences = offenceRepository
+      .findRootOffencesByCodeIn(newMappings.map { it.code })
+      .filter { it.code !in currentScheduleOffences }
+
+    val parentMappings = newMappings.mapNotNull {
+      val currentOffence = newScheduleOffences.find { offence -> offence.code == it.code } ?: return@mapNotNull null
       OffenceScheduleMapping(
         schedulePart = schedulePart,
         offence = currentOffence,
@@ -53,15 +57,32 @@ class ScheduleOffenceService(
       )
     }
 
-    if (mappings.isEmpty()) {
+    val childMappings = parentMappings.flatMap { parent ->
+      newChildOffences
+        .filter { it.parentOffenceId == parent.offence.id }
+        .map { child ->
+          OffenceScheduleMapping(
+            schedulePart = schedulePart,
+            offence = child,
+            lineReference = parent.lineReference,
+            legislationText = parent.legislationText,
+            paragraphNumber = parent.paragraphNumber,
+            paragraphTitle = parent.paragraphTitle,
+          )
+        }
+    }
+
+    if (parentMappings.isEmpty()) {
       return ImportCsvResult(
         success = false,
-        message = "No offences valid offences",
-        errors = listOf("No offences codes found within the CSV match any actual offences"),
+        message = "No valid offences",
+        errors = listOf("No offences codes found or are already included within the schedule"),
       )
     }
 
-    return scheduleOffenceUpdateService.importSchedulePartOffences(mappings, schedulePart)
+    val parentChildMappings = parentMappings.plus(childMappings)
+
+    return scheduleOffenceUpdateService.importSchedulePartOffences(parentChildMappings, schedulePart)
   }
 
   fun parseCsv(reader: BufferedReader): List<CsvLine> {
@@ -77,14 +98,17 @@ class ScheduleOffenceService(
           return@mapNotNull null
         }
 
-        val code = values[0]
-        val lineReference = values[1].ifEmpty { null }
-        val legislationText = values[2].ifEmpty { null }
-        val paragraphNumber = values[3].ifEmpty { null }
-        val paragraphTitle = values[4].ifEmpty { null }
+        val code = values[0].trim()
+        val lineReference = values[1].trim().ifEmpty { null }
+        val legislationText = values[2].trim().ifEmpty { null }
+        val paragraphNumber = values[3].trim().ifEmpty { null }
+        val paragraphTitle = values[4].trim().ifEmpty { null }
 
         if (code.isEmpty()) {
           log.info("Skipping empty line {} with no code", index + 2)
+          return@mapNotNull null
+        } else if (code.length > 7) {
+          log.info("Skipping empty line {} with code greater than 7 characters", index + 2)
           return@mapNotNull null
         }
 

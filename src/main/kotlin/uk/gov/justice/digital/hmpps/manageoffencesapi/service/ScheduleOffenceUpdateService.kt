@@ -18,13 +18,13 @@ class ScheduleOffenceUpdateService(
     offenceScheduleMappingRepository.saveAll(scheduleMappings)
     ImportCsvResult(
       success = true,
-      message = "Imported ${scheduleMappings.size} offences to Schedule ${schedulePart.schedule.act} part ${schedulePart.partNumber}",
+      message = "Imported ${scheduleMappings.size} offence${if (scheduleMappings.size == 1) "" else "s"} to Schedule ${schedulePart.schedule.act} part ${schedulePart.partNumber}",
       errors = emptyList(),
     )
   } catch (e: Exception) {
     ImportCsvResult(
       success = false,
-      message = "Failed to import schedule offences: ${e.localizedMessage}",
+      message = "Failed to import schedule offence${if (scheduleMappings.size == 1) "" else "s"}: ${e.localizedMessage}",
       errors = listOf("Database error"),
     )
   }

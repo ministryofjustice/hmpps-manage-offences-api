@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import java.util.Optional
 
@@ -70,6 +71,12 @@ interface OffenceRepository : JpaRepository<Offence, Long> {
   @Query("SELECT o FROM Offence o WHERE LOWER(o.legislation) LIKE LOWER(CONCAT('%', :legislationText, '%'))")
   fun findByLegislationLikeIgnoreCase(@Param("legislationText") legislationText: String): List<Offence>
 
-  @Query("SELECT o FROM Offence o WHERE o.code IN (:codes)")
-  fun findByCodeIn(@Param("codes") codes: List<String>): List<Offence>
+  @Query("SELECT o FROM Offence o WHERE o.code IN (:codes) AND o.parentOffenceId IS NULL")
+  fun findRootOffencesByCodeIn(@Param("codes") codes: List<String>): List<Offence>
+
+  @Query("SELECT o FROM Offence o WHERE o.parentOffenceId IN (:offenceIds)")
+  fun findChildOffences(offenceIds: List<Long>): List<Offence>
+
+  @Query("SELECT osm.offence.code FROM OffenceScheduleMapping osm WHERE osm.schedulePart = :schedulePart")
+  fun findOffenceCodesBySchedulePart(schedulePart: SchedulePart): List<String>
 }

@@ -48,7 +48,7 @@ class ScheduleOffenceServiceTest {
       null,
     )
 
-    whenever(offenceRepository.findByCodeIn(any())).thenReturn(emptyList())
+    whenever(offenceRepository.findRootOffencesByCodeIn(any())).thenReturn(emptyList())
 
     val schedulePart = SchedulePart(
       id = -1,
@@ -66,9 +66,9 @@ class ScheduleOffenceServiceTest {
     assertThat(result).isEqualTo(
       ImportCsvResult(
         success = false,
-        message = "No offences valid offences",
+        message = "No valid offences",
         errors = listOf(
-          "No offences codes found within the CSV match any actual offences",
+          "No offences codes found or are already included within the schedule",
         ),
       ),
     )
@@ -108,7 +108,7 @@ class ScheduleOffenceServiceTest {
       changedDate = LocalDateTime.now(),
     )
 
-    whenever(offenceRepository.findByCodeIn(any())).thenReturn(
+    whenever(offenceRepository.findRootOffencesByCodeIn(any())).thenReturn(
       listOf(offence1, offence2),
     )
 
@@ -182,7 +182,7 @@ class ScheduleOffenceServiceTest {
       changedDate = LocalDateTime.now(),
     )
 
-    whenever(offenceRepository.findByCodeIn(any())).thenReturn(
+    whenever(offenceRepository.findRootOffencesByCodeIn(any())).thenReturn(
       listOf(offence),
     )
 
@@ -214,7 +214,7 @@ class ScheduleOffenceServiceTest {
     assertThat(result).isEqualTo(
       ImportCsvResult(
         success = true,
-        message = "Imported 1 offences to Schedule Act1 part 1",
+        message = "Imported 1 offence to Schedule Act1 part 1",
         errors = emptyList(),
       ),
     )
@@ -236,7 +236,7 @@ class ScheduleOffenceServiceTest {
       null,
     )
 
-    whenever(offenceRepository.findByCodeIn(any())).thenReturn(
+    whenever(offenceRepository.findRootOffencesByCodeIn(any())).thenReturn(
       listOf(
         Offence(
           id = 2,
@@ -267,7 +267,114 @@ class ScheduleOffenceServiceTest {
     assertThat(result).isEqualTo(
       ImportCsvResult(
         success = true,
-        message = "Imported 1 offences to Schedule Act1 part 1",
+        message = "Imported 1 offence to Schedule Act1 part 1",
+        errors = emptyList(),
+      ),
+    )
+  }
+
+  @Test
+  fun `Persist should update DB where child offences exists`() {
+    val bufferedReader = Mockito.mock<BufferedReader>()
+
+    val csvLines = listOf(
+      "code, lineReference, legislationText, paragraphNumber, paragraphTitle",
+      "CT1234, line1, leg1, para1, title1",
+      "CT1235, line2, leg2, para2, title2",
+    )
+
+    whenever(bufferedReader.readLine()).thenReturn(
+      csvLines[0],
+      *csvLines.drop(1).toTypedArray(),
+      null,
+    )
+
+    val parentOffence = Offence(
+      id = 2,
+      code = "CT1235",
+      revisionId = 222,
+      startDate = LocalDate.of(2021, 1, 1),
+      sdrsCache = SdrsCache.OFFENCES_C,
+      changedDate = LocalDateTime.now(),
+    )
+
+    whenever(offenceRepository.findRootOffencesByCodeIn(any())).thenReturn(
+      listOf(parentOffence),
+    )
+
+    val childOffence1 = Offence(
+      id = 111,
+      parentOffenceId = 2,
+      code = "Child1",
+      revisionId = 555,
+      startDate = LocalDate.of(2021, 1, 1),
+      sdrsCache = SdrsCache.OFFENCES_C,
+      changedDate = LocalDateTime.now(),
+    )
+
+    val childOffence2 = Offence(
+      id = 222,
+      parentOffenceId = 2,
+      code = "Child2",
+      revisionId = 444,
+      startDate = LocalDate.of(2021, 1, 1),
+      sdrsCache = SdrsCache.OFFENCES_C,
+      changedDate = LocalDateTime.now(),
+    )
+
+    whenever(offenceRepository.findChildOffences(any())).thenReturn(
+      listOf(childOffence1, childOffence2),
+    )
+
+    whenever(offenceScheduleMappingRepository.saveAll<OffenceScheduleMapping>(any())).thenReturn(emptyList())
+
+    val schedulePart = SchedulePart(
+      id = -1,
+      schedule = Schedule(
+        id = 1,
+        code = "ABC",
+        act = "Act1",
+        url = null,
+      ),
+      partNumber = 1,
+    )
+
+    val result = scheduleOffenceService.import(bufferedReader, schedulePart)
+
+    verify(offenceScheduleMappingRepository, times(1)).saveAll<OffenceScheduleMapping>(any())
+    verify(offenceScheduleMappingRepository).saveAll(
+      listOf(
+        OffenceScheduleMapping(
+          schedulePart = schedulePart,
+          offence = parentOffence,
+          lineReference = "line2",
+          legislationText = "leg2",
+          paragraphNumber = "para2",
+          paragraphTitle = "title2",
+        ),
+        OffenceScheduleMapping(
+          schedulePart = schedulePart,
+          offence = childOffence1,
+          lineReference = "line2",
+          legislationText = "leg2",
+          paragraphNumber = "para2",
+          paragraphTitle = "title2",
+        ),
+        OffenceScheduleMapping(
+          schedulePart = schedulePart,
+          offence = childOffence2,
+          lineReference = "line2",
+          legislationText = "leg2",
+          paragraphNumber = "para2",
+          paragraphTitle = "title2",
+        ),
+      ),
+    )
+
+    assertThat(result).isEqualTo(
+      ImportCsvResult(
+        success = true,
+        message = "Imported 3 offences to Schedule Act1 part 1",
         errors = emptyList(),
       ),
     )

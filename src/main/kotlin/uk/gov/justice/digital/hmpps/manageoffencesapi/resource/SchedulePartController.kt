@@ -40,7 +40,7 @@ class SchedulePartController(
     scheduleService.createSchedulePart(scheduleId, schedulePart)
   }
 
-  @GetMapping("/{schedulePartId}/offences/import")
+  @GetMapping("/offences/import")
   @ResponseBody
   fun getImportCsv(): ResponseEntity<InputStreamResource> {
     val csvContent = ScheduleOffenceService.csvHeaders.joinToString(",") + "\n"
