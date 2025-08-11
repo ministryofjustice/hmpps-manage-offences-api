@@ -263,7 +263,7 @@ class ScheduleOffenceServiceTest {
 
     val result = scheduleOffenceService.import(bufferedReader, schedulePart)
 
-    //verify(offenceScheduleMappingRepository, times(1)).saveAll<OffenceScheduleMapping>(any())
+    verify(offenceScheduleMappingRepository, times(1)).saveAll<OffenceScheduleMapping>(any())
     verify(offenceScheduleMappingRepository).saveAll(
       listOf(
         OffenceScheduleMapping(
