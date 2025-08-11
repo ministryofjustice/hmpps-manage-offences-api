@@ -221,6 +221,72 @@ class ScheduleOffenceServiceTest {
   }
 
   @Test
+  fun `Persist should update DB where string value is greater than field constraints`() {
+    val bufferedReader = Mockito.mock<BufferedReader>()
+
+    val csvLines = listOf(
+      "code, lineReference, legislationText, paragraphNumber, paragraphTitle",
+      "CT1234,${"A".repeat(257)},${"B".repeat(1025)},${"C".repeat(21)},${"D".repeat(257)}",
+    )
+
+    whenever(bufferedReader.readLine()).thenReturn(
+      csvLines[0],
+      *csvLines.drop(1).toTypedArray(),
+      null,
+    )
+
+    val offence = Offence(
+      id = 1,
+      code = "CT1234",
+      revisionId = 111,
+      startDate = LocalDate.of(2021, 1, 1),
+      sdrsCache = SdrsCache.OFFENCES_C,
+      changedDate = LocalDateTime.now(),
+    )
+
+    whenever(offenceRepository.findRootOffencesByCodeIn(any())).thenReturn(
+      listOf(offence),
+    )
+
+    whenever(offenceScheduleMappingRepository.saveAll<OffenceScheduleMapping>(any())).thenReturn(emptyList())
+
+    val schedulePart = SchedulePart(
+      id = -1,
+      schedule = Schedule(
+        id = 1,
+        code = "ABC",
+        act = "Act1",
+        url = null,
+      ),
+      partNumber = 1,
+    )
+
+    val result = scheduleOffenceService.import(bufferedReader, schedulePart)
+
+    //verify(offenceScheduleMappingRepository, times(1)).saveAll<OffenceScheduleMapping>(any())
+    verify(offenceScheduleMappingRepository).saveAll(
+      listOf(
+        OffenceScheduleMapping(
+          schedulePart = schedulePart,
+          offence = offence,
+          lineReference = "A".repeat(256),
+          legislationText = "B".repeat(1024),
+          paragraphNumber = "C".repeat(20),
+          paragraphTitle = "D".repeat(256),
+        ),
+      ),
+    )
+
+    assertThat(result).isEqualTo(
+      ImportCsvResult(
+        success = true,
+        message = "Imported 1 offence to Schedule Act1 part 1",
+        errors = emptyList(),
+      ),
+    )
+  }
+
+  @Test
   fun `Persist should update DB where valid offence exists`() {
     val bufferedReader = Mockito.mock<BufferedReader>()
 

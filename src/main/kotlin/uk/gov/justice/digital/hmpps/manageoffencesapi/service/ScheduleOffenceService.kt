@@ -99,10 +99,10 @@ class ScheduleOffenceService(
         }
 
         val code = values[0].trim()
-        val lineReference = values[1].trim().ifEmpty { null }
-        val legislationText = values[2].trim().ifEmpty { null }
-        val paragraphNumber = values[3].trim().ifEmpty { null }
-        val paragraphTitle = values[4].trim().ifEmpty { null }
+        val lineReference = values[1].trim().take(256).ifEmpty { null }
+        val legislationText = values[2].trim().take(1024).ifEmpty { null }
+        val paragraphNumber = values[3].trim().take(20).ifEmpty { null }
+        val paragraphTitle = values[4].trim().take(256).ifEmpty { null }
 
         if (code.isEmpty()) {
           log.info("Skipping empty line {} with no code", index + 2)
