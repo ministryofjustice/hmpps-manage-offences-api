@@ -73,6 +73,7 @@ dependencies {
   testImplementation("org.wiremock:wiremock-standalone:3.13.0")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.50.0")
   testImplementation("org.testcontainers:postgresql:1.21.1")
+  testImplementation(kotlin("test"))
 }
 
 kotlin {
