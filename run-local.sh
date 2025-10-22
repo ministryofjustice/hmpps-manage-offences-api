@@ -14,8 +14,8 @@ export SERVER_PORT=8089
 # Match with the credentials set in docker-compose.yml
 export DB_SERVER=localhost
 export DB_NAME=manage_offences
-export DB_USER=manage-offences
-export DB_PASS=manage-offences
+export DB_USER=manage_offences
+export DB_PASS=manage_offences
 export SYSTEM_CLIENT_ID=XXX_ENTER_SYSTEM_CLIENT_ID
 export SYSTEM_CLIENT_SECRET="XXX_ENTER_SYSTEM_CLIENT_SECRET"
 export AWS_REGION=eu-west-1
