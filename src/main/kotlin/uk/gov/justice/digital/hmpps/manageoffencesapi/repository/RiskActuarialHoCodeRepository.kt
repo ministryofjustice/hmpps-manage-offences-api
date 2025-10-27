@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCode
 
 @Repository
-interface RiskActuarialHoCodeRepository : JpaRepository<RiskActuarialHoCode, Long>
+interface RiskActuarialHoCodeRepository : JpaRepository<RiskActuarialHoCode, Long> {
+  fun findByCategoryAndSubCategory(category: Int, subCategory: Int): RiskActuarialHoCode
+}

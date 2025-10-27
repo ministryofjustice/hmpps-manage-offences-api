@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCodeWeightings
 
 @Repository
-interface RiskActuarialHoCodeWeightingsRepository : JpaRepository<RiskActuarialHoCodeWeightings, Long>
+interface RiskActuarialHoCodeWeightingsRepository : JpaRepository<RiskActuarialHoCodeWeightings, Long> {
+  fun findByWeightingValue(weightingValue: Double): List<RiskActuarialHoCodeWeightings>
+}

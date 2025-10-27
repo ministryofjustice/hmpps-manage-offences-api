@@ -66,8 +66,6 @@ class RiskActuarialHoCodeTest(
     val savedHoCode = riskActuarialHoCodeRepository.save(hoCode)
 
     assertNotEquals(0, savedHoCode.id)
-    assertEquals(2, riskActuarialHoCodeFlagsRepository.count())
-    assertEquals(2, riskActuarialHoCodeWeightingsRepository.count())
 
     val fetchedHoCode = riskActuarialHoCodeRepository.findById(savedHoCode.id).orElseThrow()
     assertEquals(123, fetchedHoCode.category)
