@@ -17,6 +17,9 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeDTO
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeFlagsDTO
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeWeightingsDTO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
@@ -24,6 +27,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactiva
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.RiskActuarialHoCodeRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence as EntityOffence
@@ -38,6 +42,7 @@ class OffenceService(
   private val nomisChangeHistoryRepository: NomisChangeHistoryRepository,
   private val reactivatedInNomisRepository: OffenceReactivatedInNomisRepository,
   private val offenceToSyncWithNomisRepository: OffenceToSyncWithNomisRepository,
+  private val riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository,
   private val prisonApiClient: PrisonApiClient,
   private val adminService: AdminService,
 ) {
@@ -430,6 +435,27 @@ class OffenceService(
   private fun searchByHoCode(searchString: String): List<Offence> {
     val (category, subCategory) = searchString.split("/").map { it.toInt() }.let { Pair(it[0], it[1]) }
     return populateOffenceModel(offenceRepository.findByCategoryAndSubCategory(category, subCategory))
+  }
+
+  fun findAllRiskActuarialOffenceCodesToDto(): List<RiskActuarialHoCodeDTO> {
+    log.info("Fetching risk actuarial offence code mappings")
+    return riskActuarialHoCodeRepository.findAll().map { hoCode ->
+      RiskActuarialHoCodeDTO(
+        category = hoCode.category,
+        subCategory = hoCode.subCategory,
+        flags = hoCode.riskActuarialHoCodeFlags.map { flag ->
+          RiskActuarialHoCodeFlagsDTO(flag.flagName, flag.flagValue)
+        },
+        weightings = hoCode.riskActuarialHoCodeWeightings.map { weighting ->
+          RiskActuarialHoCodeWeightingsDTO(
+            weighting.weightingName,
+            weighting.weightingValue,
+            weighting.weightingDesc,
+            weighting.errorCode,
+          )
+        },
+      )
+    }
   }
 
   companion object {
