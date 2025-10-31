@@ -2,9 +2,11 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import io.hypersistence.utils.hibernate.type.json.internal.JacksonUtil
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -18,6 +20,9 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCode
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCodeFlags
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCodeWeightings
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
@@ -39,6 +44,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceReactiva
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
+import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.RiskActuarialHoCodeRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultHistoryRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SdrsLoadResultRepository
 import java.time.LocalDate
@@ -54,6 +60,7 @@ class OffenceServiceTest {
   private val nomisChangeHistoryRepository = mock<NomisChangeHistoryRepository>()
   private val reactivatedInNomisRepository = mock<OffenceReactivatedInNomisRepository>()
   private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
+  private val riskActuarialHoCodeRepository = mock<RiskActuarialHoCodeRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val adminService = mock<AdminService>()
 
@@ -66,6 +73,7 @@ class OffenceServiceTest {
       nomisChangeHistoryRepository,
       reactivatedInNomisRepository,
       offenceToSyncWithNomisRepository,
+      riskActuarialHoCodeRepository,
       prisonApiClient,
       adminService,
     )
@@ -649,6 +657,30 @@ class OffenceServiceTest {
     }
   }
 
+  @Test
+  fun `findAllRiskActuarialOffenceCodesToDto should map entities to DTOs`() {
+    whenever(riskActuarialHoCodeRepository.findAll()).thenReturn(listOf(RISK_ACTUARIAL_HO_CODE))
+
+    val result = offenceService.findAllRiskActuarialOffenceCodesToDto()
+
+    assertEquals(1, result.size)
+    val dto = result.first()
+    assertEquals(1, dto.category)
+    assertEquals(2, dto.subCategory)
+
+    assertEquals(1, dto.flags.size)
+    val flag = dto.flags.first()
+    assertEquals("testFlag", flag.name)
+    assertEquals(true, flag.value)
+
+    assertEquals(1, dto.weightings.size)
+    val weighting = dto.weightings.first()
+    assertEquals("TestWeighting", weighting.name)
+    assertEquals(0.75, weighting.value)
+    assertEquals("Description", weighting.description)
+    assertNull(weighting.errorCode)
+  }
+
   companion object {
     private val BASE_OFFENCE = Offence(
       code = "AABB011",
@@ -827,6 +859,27 @@ class OffenceServiceTest {
       parentOffenceId = 996,
       legislation = "Statute 997",
       maxPeriodIsLife = false,
+    )
+
+    val RISK_ACTUARIAL_HO_CODE_FLAG = RiskActuarialHoCodeFlags(
+      flagName = "testFlag",
+      flagValue = true,
+      riskActuarialHoCode = null,
+    )
+
+    val RISK_ACTUARIAL_HO_CODE_WEIGHTING = RiskActuarialHoCodeWeightings(
+      weightingName = "TestWeighting",
+      weightingValue = 0.75,
+      weightingDesc = "Description",
+      errorCode = null,
+      riskActuarialHoCode = null,
+    )
+
+    val RISK_ACTUARIAL_HO_CODE = RiskActuarialHoCode(
+      category = 1,
+      subCategory = 2,
+      riskActuarialHoCodeFlags = mutableListOf(RISK_ACTUARIAL_HO_CODE_FLAG),
+      riskActuarialHoCodeWeightings = mutableListOf(RISK_ACTUARIAL_HO_CODE_WEIGHTING),
     )
 
     private fun createPrisonApiOffencesResponse(

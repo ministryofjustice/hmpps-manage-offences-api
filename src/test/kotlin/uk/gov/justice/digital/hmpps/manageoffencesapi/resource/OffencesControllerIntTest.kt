@@ -471,4 +471,24 @@ class OffencesControllerIntTest : IntegrationTestBase() {
         ),
       )
   }
+
+  @Test
+  fun `Get risk actuarial offence code mappings 200 ok`() {
+    val testData = this::class.java.getResource("/risk-actuarial-ho-code-test-data.json")?.readText()
+    if (testData != null) {
+      webTestClient.get().uri("/offences/actuarial-mapping")
+        .headers(setAuthorisation())
+        .exchange()
+        .expectStatus().isOk
+        .expectBody().json(testData)
+    }
+  }
+
+  @Test
+  fun `Get risk actuarial offence code mappings 401 Unauthorized when no auth header`() {
+    webTestClient.get().uri("/offences/actuarial-mapping")
+      .exchange()
+      .expectStatus()
+      .isUnauthorized
+  }
 }
