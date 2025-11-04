@@ -33,8 +33,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.7334,
-          "snsvStaticWeighting" to 0.3048963,
-          "snsvDynamicWeighting" to 0.271350568,
+          "snsvStaticWeighting" to 0.304896300301182,
+          "snsvDynamicWeighting" to 0.271350568105055,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -53,8 +53,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.0,
-          "snsvStaticWeighting" to 0.326858081,
-          "snsvDynamicWeighting" to 0.194487132,
+          "snsvStaticWeighting" to 0.326858080852591,
+          "snsvDynamicWeighting" to 0.194487131847261,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -73,8 +73,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to -0.1239,
-          "snsvStaticWeighting" to 0.151649693,
-          "snsvDynamicWeighting" to -0.226808217,
+          "snsvStaticWeighting" to 0.151649692548355,
+          "snsvDynamicWeighting" to -0.226808217378264,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -93,8 +93,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.2406,
-          "snsvStaticWeighting" to -0.194200416,
-          "snsvDynamicWeighting" to -0.22599054,
+          "snsvStaticWeighting" to -0.194200416367268,
+          "snsvDynamicWeighting" to -0.225990540250696,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -113,8 +113,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.205,
-          "snsvStaticWeighting" to 0.186977546,
-          "snsvDynamicWeighting" to 0.007780288,
+          "snsvStaticWeighting" to 0.186977546333514,
+          "snsvDynamicWeighting" to 0.00778028771796321,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -133,8 +133,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         6,
         mapOf(
           "ogrs3Weighting" to -0.1214,
-          "snsvStaticWeighting" to -0.212258595,
-          "snsvDynamicWeighting" to 0.156493599,
+          "snsvStaticWeighting" to -0.212258595209629,
+          "snsvDynamicWeighting" to 0.156493599418026,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -153,8 +153,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         61,
         mapOf(
           "ogrs3Weighting" to -0.7956,
-          "snsvStaticWeighting" to 0.081898246,
-          "snsvDynamicWeighting" to -0.088394525,
+          "snsvStaticWeighting" to 0.0818982459627011,
+          "snsvDynamicWeighting" to -0.0883945245425247,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -173,8 +173,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         50,
         mapOf(
           "ogrs3Weighting" to 0.0772,
-          "snsvStaticWeighting" to 0.069450782,
-          "snsvDynamicWeighting" to 0.081753217,
+          "snsvStaticWeighting" to 0.0694507822486554,
+          "snsvDynamicWeighting" to 0.081753216630546,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -193,8 +193,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         43,
         mapOf(
           "ogrs3Weighting" to -0.0607,
-          "snsvStaticWeighting" to 0.084178964,
-          "snsvDynamicWeighting" to 0.081954557,
+          "snsvStaticWeighting" to 0.0841789642942883,
+          "snsvDynamicWeighting" to 0.0819545573517356,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -213,8 +213,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.1599,
-          "snsvStaticWeighting" to -0.136811424,
-          "snsvDynamicWeighting" to -0.210828726,
+          "snsvStaticWeighting" to -0.136811424047985,
+          "snsvDynamicWeighting" to -0.210828726274969,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -233,8 +233,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.3519,
-          "snsvStaticWeighting" to -0.224505821,
-          "snsvDynamicWeighting" to 0.092376574,
+          "snsvStaticWeighting" to -0.2245058213129,
+          "snsvDynamicWeighting" to 0.0923765737156082,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -253,8 +253,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         4,
         mapOf(
           "ogrs3Weighting" to 0.2622,
-          "snsvStaticWeighting" to -0.028644236,
-          "snsvDynamicWeighting" to 0.130461601,
+          "snsvStaticWeighting" to -0.0286442357674878,
+          "snsvDynamicWeighting" to 0.130461601097636,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -273,8 +273,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         32,
         mapOf(
           "ogrs3Weighting" to -0.0607,
-          "snsvStaticWeighting" to -0.215779995,
-          "snsvDynamicWeighting" to 0.123617391,
+          "snsvStaticWeighting" to -0.215779995107354,
+          "snsvDynamicWeighting" to 0.123617390798186,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -293,8 +293,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.1819,
-          "snsvStaticWeighting" to 0.044613202,
-          "snsvDynamicWeighting" to 0.020639683,
+          "snsvStaticWeighting" to 0.0446132016665715,
+          "snsvDynamicWeighting" to 0.0206396832377319,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -313,8 +313,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         12,
         mapOf(
           "ogrs3Weighting" to -0.6534,
-          "snsvStaticWeighting" to -0.442179128,
-          "snsvDynamicWeighting" to -0.40700568,
+          "snsvStaticWeighting" to -0.442179128494551,
+          "snsvDynamicWeighting" to -0.407005679932105,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -333,8 +333,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.0328,
-          "snsvStaticWeighting" to -0.045522889,
-          "snsvDynamicWeighting" to -0.21117235,
+          "snsvStaticWeighting" to -0.0455228893277184,
+          "snsvDynamicWeighting" to -0.211172350332101,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -353,8 +353,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.6612,
-          "snsvStaticWeighting" to 0.020240798,
-          "snsvDynamicWeighting" to 0.018761194,
+          "snsvStaticWeighting" to 0.0202407984946185,
+          "snsvDynamicWeighting" to 0.0187611938936452,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -373,8 +373,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.3801,
-          "snsvStaticWeighting" to 0.226781313,
-          "snsvDynamicWeighting" to 0.26444584,
+          "snsvStaticWeighting" to 0.226781312933932,
+          "snsvDynamicWeighting" to 0.264445840395185,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -393,10 +393,10 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         0,
         mapOf(
           "ogrs3Weighting" to 0.0,
-          "snsvStaticWeighting" to 0.019270382,
-          "snsvDynamicWeighting" to -0.006538498,
-          "snsvVatpStaticWeighting" to 0.238802611,
-          "snsvVatpDynamicWeighting" to 0.204895024,
+          "snsvStaticWeighting" to 0.01927038224,
+          "snsvDynamicWeighting" to -0.006538498404,
+          "snsvVatpStaticWeighting" to 0.238802610774108,
+          "snsvVatpDynamicWeighting" to 0.204895023669854,
         ),
         listOf(
           "Violence",
@@ -413,8 +413,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         33,
         mapOf(
           "ogrs3Weighting" to 0.1599,
-          "snsvStaticWeighting" to -0.016912802,
-          "snsvDynamicWeighting" to -0.067383107,
+          "snsvStaticWeighting" to -0.0169128022430282,
+          "snsvDynamicWeighting" to -0.0673831070937991,
           "snsvVatpStaticWeighting" to 0.0,
           "snsvVatpDynamicWeighting" to 0.0,
         ),
@@ -463,10 +463,15 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         "snsvVatpStaticWeighting",
       )
 
-    val allMatch = expectedWeightings.all { (key, value) ->
-      hoCodeWeightings.any { it.weightingName == key && it.weightingValue == value }
+    // Verify weighting values
+    expectedWeightings.forEach { (key, expectedValue) ->
+      val actual = hoCodeWeightings.find { it.weightingName == key }
+      assertEquals(
+        expectedValue,
+        actual?.weightingValue,
+        "Mismatch for weighting '$key'",
+      )
     }
-    assert(allMatch)
 
     // Verify weighting descriptions
     assertThat(hoCodeWeightings.map { it.weightingDesc })
