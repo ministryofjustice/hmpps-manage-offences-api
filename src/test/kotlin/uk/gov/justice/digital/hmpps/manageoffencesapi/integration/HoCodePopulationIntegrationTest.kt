@@ -31,7 +31,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         80,
         0,
-        listOf(0.7334, 0.271350568, 0.3048963, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.7334,
+          "snsvStaticWeighting" to 0.3048963,
+          "snsvDynamicWeighting" to 0.271350568,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Absconding or bail offences",
           "Absconding/bail",
@@ -45,7 +51,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         29,
         0,
-        listOf(0.0, 0.194487132, 0.326858081, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.0,
+          "snsvStaticWeighting" to 0.326858081,
+          "snsvDynamicWeighting" to 0.194487132,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Violence",
           "Acquisitive violence",
@@ -59,7 +71,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         28,
         0,
-        listOf(-0.1239, -0.226808217, 0.151649693, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to -0.1239,
+          "snsvStaticWeighting" to 0.151649693,
+          "snsvDynamicWeighting" to -0.226808217,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Burglary (domestic)",
           "Burglary (domestic)",
@@ -73,7 +91,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         30,
         0,
-        listOf(0.2406, -0.22599054, -0.194200416, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.2406,
+          "snsvStaticWeighting" to -0.194200416,
+          "snsvDynamicWeighting" to -0.22599054,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Burglary (other)",
           "Burglary (other)",
@@ -87,7 +111,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         9,
         0,
-        listOf(0.205, 0.007780288, 0.186977546, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.205,
+          "snsvStaticWeighting" to 0.186977546,
+          "snsvDynamicWeighting" to 0.007780288,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Criminal damage",
           "Criminal damage",
@@ -101,7 +131,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         4,
         6,
-        listOf(-0.1214, 0.156493599, -0.212258595, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to -0.1214,
+          "snsvStaticWeighting" to -0.212258595,
+          "snsvDynamicWeighting" to 0.156493599,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Drink driving and related offences",
           "Drink driving",
@@ -115,7 +151,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         77,
         61,
-        listOf(-0.7956, -0.088394525, 0.081898246, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to -0.7956,
+          "snsvStaticWeighting" to 0.081898246,
+          "snsvDynamicWeighting" to -0.088394525,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Drug import/export/production",
           "Drug import/export/production",
@@ -129,7 +171,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         92,
         50,
-        listOf(0.0772, 0.081753217, 0.069450782, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.0772,
+          "snsvStaticWeighting" to 0.069450782,
+          "snsvDynamicWeighting" to 0.081753217,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Drug possession/supply",
           "Drug possession/supply",
@@ -143,7 +191,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         99,
         43,
-        listOf(-0.0607, 0.081954557, 0.084178964, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to -0.0607,
+          "snsvStaticWeighting" to 0.084178964,
+          "snsvDynamicWeighting" to 0.081954557,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Other offence",
           "Drunkenness",
@@ -157,7 +211,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         50,
         0,
-        listOf(0.1599, -0.210828726, -0.136811424, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.1599,
+          "snsvStaticWeighting" to -0.136811424,
+          "snsvDynamicWeighting" to -0.210828726,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Fraud and forgery",
           "Fraud and forgery",
@@ -171,7 +231,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         54,
         0,
-        listOf(0.3519, 0.092376574, -0.224505821, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.3519,
+          "snsvStaticWeighting" to -0.224505821,
+          "snsvDynamicWeighting" to 0.092376574,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Handling stolen goods",
           "Handling stolen goods",
@@ -185,7 +251,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         4,
         4,
-        listOf(0.2622, 0.130461601, -0.028644236, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.2622,
+          "snsvStaticWeighting" to -0.028644236,
+          "snsvDynamicWeighting" to 0.130461601,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Other motoring",
           "Motoring offences",
@@ -199,7 +271,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         8,
         32,
-        listOf(-0.0607, 0.123617391, -0.215779995, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to -0.0607,
+          "snsvStaticWeighting" to -0.215779995,
+          "snsvDynamicWeighting" to 0.123617391,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Other offence",
           "Other offences",
@@ -213,7 +291,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         64,
         0,
-        listOf(0.1819, 0.020639683, 0.044613202, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.1819,
+          "snsvStaticWeighting" to 0.044613202,
+          "snsvDynamicWeighting" to 0.020639683,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Public order",
           "Public order and harassment",
@@ -227,7 +311,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         16,
         12,
-        listOf(-0.6534, -0.40700568, -0.442179128, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to -0.6534,
+          "snsvStaticWeighting" to -0.442179128,
+          "snsvDynamicWeighting" to -0.40700568,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Sexual (against child)",
           "Sexual (against child)",
@@ -241,7 +331,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         16,
         0,
-        listOf(0.0328, -0.21117235, -0.045522889, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.0328,
+          "snsvStaticWeighting" to -0.045522889,
+          "snsvDynamicWeighting" to -0.21117235,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Sexual (not against child)",
           "Sexual (not against child)",
@@ -255,7 +351,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         39,
         0,
-        listOf(0.6612, 0.018761194, 0.020240798, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.6612,
+          "snsvStaticWeighting" to 0.020240798,
+          "snsvDynamicWeighting" to 0.018761194,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Theft (non-motor)",
           "Theft (non-motor)",
@@ -269,7 +371,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         37,
         0,
-        listOf(0.3801, 0.26444584, 0.226781313, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.3801,
+          "snsvStaticWeighting" to 0.226781313,
+          "snsvDynamicWeighting" to 0.26444584,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Taking & driving away and related offences",
           "Vehicle-related theft",
@@ -283,7 +391,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         1,
         0,
-        listOf(0.0, -0.006538498, 0.019270382, 0.204895024, 0.238802611),
+        mapOf(
+          "ogrs3Weighting" to 0.0,
+          "snsvStaticWeighting" to 0.019270382,
+          "snsvDynamicWeighting" to -0.006538498,
+          "snsvVatpStaticWeighting" to 0.238802611,
+          "snsvVatpDynamicWeighting" to 0.204895024,
+        ),
         listOf(
           "Violence",
           "Violence against the person",
@@ -297,7 +411,13 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
       Arguments.of(
         53,
         33,
-        listOf(0.1599, -0.067383107, -0.016912802, 0.0, 0.0),
+        mapOf(
+          "ogrs3Weighting" to 0.1599,
+          "snsvStaticWeighting" to -0.016912802,
+          "snsvDynamicWeighting" to -0.067383107,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
         listOf(
           "Fraud and forgery",
           "Welfare fraud",
@@ -315,7 +435,7 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
   fun `test HO code data consistency`(
     category: Int,
     subCategory: Int,
-    expectedWeightings: List<Double>,
+    expectedWeightings: Map<String, Double>,
     expectedDescriptions: List<String>,
     expectedFlagValue: Boolean,
   ) {
@@ -343,9 +463,10 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         "snsvVatpStaticWeighting",
       )
 
-    // Verify weighting values
-    assertThat(hoCodeWeightings.map { it.weightingValue })
-      .containsExactlyElementsOf(expectedWeightings)
+    val allMatch = expectedWeightings.all { (key, value) ->
+      hoCodeWeightings.any { it.weightingName == key && it.weightingValue == value }
+    }
+    assert(allMatch)
 
     // Verify weighting descriptions
     assertThat(hoCodeWeightings.map { it.weightingDesc })

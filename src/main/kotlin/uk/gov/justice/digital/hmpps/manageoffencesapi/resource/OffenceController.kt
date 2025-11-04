@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.OFFENCE_CODE_TO_HOME_OFFICE_CODE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeDTO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.OffenceService
 
 @RestController
@@ -133,6 +134,17 @@ class OffenceController(
   fun findLoadResults(): List<MostRecentLoadResult> {
     log.info("Request received to find the most recent load results")
     return offenceService.findLoadResults()
+  }
+
+  @GetMapping(value = ["/actuarial-mapping"])
+  @ResponseBody
+  @Operation(
+    summary = "Get offence code to actuarial weighting mapping",
+    description = "Queries database to get offence code to actuarial weighting mapping",
+  )
+  fun getAllRiskActuarialOffenceCodeMappings(): List<RiskActuarialHoCodeDTO> {
+    log.info("Request received to get all risk actuarial offence code mappings")
+    return offenceService.findAllRiskActuarialOffenceCodesToDto()
   }
 
   companion object {
