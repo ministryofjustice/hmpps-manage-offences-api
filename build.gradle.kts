@@ -45,7 +45,7 @@ dependencies {
   implementation("org.springframework.security:spring-security-config")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
 
   implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.10")
 
