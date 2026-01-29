@@ -1,8 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.0"
-  kotlin("plugin.spring") version "2.1.21"
-  kotlin("plugin.jpa") version "2.1.21"
-  id("se.patrikerdes.use-latest-versions") version "0.2.18"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "8.3.7"
+  kotlin("plugin.spring") version "2.3.0"
+  kotlin("plugin.jpa") version "2.3.0"
+  id("se.patrikerdes.use-latest-versions") version "0.2.19"
 }
 
 tasks.withType<Test> {
@@ -15,8 +15,8 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.3.1")
-    mavenBom("software.amazon.awssdk:bom:2.31.54")
+    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2")
+    mavenBom("software.amazon.awssdk:bom:2.41.17")
   }
 }
 
@@ -25,15 +25,15 @@ dependencies {
 
   // Database dependencies
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.6")
+  runtimeOnly("org.postgresql:postgresql:42.7.9")
 
   // AppInsights
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.16.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.24.0")
 
   // JWT
-  implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-  runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
-  runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+  implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+  runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+  runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
   // Spring boot dependencies
   implementation("org.springframework.boot:spring-boot-starter-security")
@@ -45,13 +45,13 @@ dependencies {
   implementation("org.springframework.security:spring-security-config")
 
   // OpenAPI
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15")
 
-  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.10")
+  implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.15.1")
 
   // Schedule locking
-  implementation("net.javacrumbs.shedlock:shedlock-spring:6.8.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.8.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:6.10.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.10.0")
 
   // AWS
   // See comment below relating to the SQS lib, keep these AWS dependencies above the SQS dependency
@@ -63,17 +63,17 @@ dependencies {
   // During an upgrade PR a springboot/aws related issue occurred which implied there was a conflict with the hmpps-sqs library
   // Moving this SQS lib below the AWS libs solved the problem. Not exactly sure why! See the PR for more details
   // https://github.com/ministryofjustice/hmpps-manage-offences-api/pull/175
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.4.5")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.6.3")
 
   // Miscellaneous
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.0")
 
   // Test dependencies
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.29")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.0")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.50.0")
-  testImplementation("org.testcontainers:postgresql:1.21.1")
-  testImplementation("org.apache.commons:commons-csv:1.9.0")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.37")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.58.0")
+  testImplementation("org.testcontainers:postgresql:1.21.4")
+  testImplementation("org.apache.commons:commons-csv:1.14.1")
   testImplementation(kotlin("test"))
 }
 
