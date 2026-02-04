@@ -41,6 +41,7 @@ jobs:
       postgres-db: manage_offences
       postgres-username: manage_offences
       postgres-password: manage_offences
+      jdk-version: "24"
   build:
     name: Build docker image from hmpps-github-actions
     if: github.ref == 'refs/heads/main'

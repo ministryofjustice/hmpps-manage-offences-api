@@ -11,7 +11,6 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
-import org.springframework.util.MultiValueMap
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ExchangeFunction
@@ -24,18 +23,18 @@ class WebClientConfiguration(
   @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
 ) {
   @Bean
-  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(standingDataReferenceServiceApiUrl)
+  fun standingDataReferenceServiceApiWebClient(): WebClient = WebClient.builder()
+    .baseUrl(standingDataReferenceServiceApiUrl)
     .defaultHeaders { headers -> headers.addAll(createHeaders()) }
     .build()
 
   @Bean
   fun prisonApiWebClient(
-    builder: WebClient.Builder,
     authorizedClientManager: OAuth2AuthorizedClientManager,
   ): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
-    return builder
+    return WebClient.builder()
       .baseUrl(prisonApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .build()
@@ -43,7 +42,7 @@ class WebClientConfiguration(
 
   // To be used when passing through the users token - rather than using system credentials
   @Bean
-  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient = builder
+  fun prisonApiUserWebClient(): WebClient = WebClient.builder()
     .baseUrl(prisonApiUrl)
     .filter(addAuthHeaderFilterFunction())
     .build()
@@ -69,7 +68,7 @@ class WebClientConfiguration(
     return authorizedClientManager
   }
 
-  private fun createHeaders(): MultiValueMap<String, String> {
+  private fun createHeaders(): HttpHeaders {
     val headers = HttpHeaders()
     headers.add(HttpHeaders.CONTENT_TYPE, "application/json")
     headers.add(HttpHeaders.ACCEPT, "application/json")

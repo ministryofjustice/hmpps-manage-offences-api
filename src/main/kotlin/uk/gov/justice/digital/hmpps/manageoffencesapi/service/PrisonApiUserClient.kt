@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.O
 // To be used when passing through the users token - rather than using system credentials
 @Service
 class PrisonApiUserClient(@Qualifier("prisonApiUserWebClient") private val webClient: WebClient) {
-  private inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
+  private inline fun <reified T : Any> typeReference() = object : ParameterizedTypeReference<T>() {}
   private val log = LoggerFactory.getLogger(this::class.java)
 
   fun changeOffenceActiveFlag(offenceActivationDto: OffenceActivationDto) {
