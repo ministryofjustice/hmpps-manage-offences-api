@@ -26,15 +26,12 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
   val riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository,
   val riskActuarialHoCodeWeightingsRepository: RiskActuarialHoCodeWeightingsRepository,
 ) {
-
   companion object {
-
     private val pg = PostgresContainer.instance
 
     @JvmStatic
     @DynamicPropertySource
     fun properties(registry: DynamicPropertyRegistry) {
-      // Use the same Postgres Testcontainer DB as production
       pg?.run {
         registry.add("spring.datasource.url", pg::getJdbcUrl)
         registry.add("spring.datasource.username", pg::getUsername)
@@ -45,8 +42,6 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         registry.add("spring.flyway.password", pg::getPassword)
       }
 
-      // 🔥 IMPORTANT:
-      // Disable schema validation because Hibernate 6.x performs strict JDBC type checks
       // This avoids the "expected BIGINT, found INT4" errors in tests.
       registry.add("spring.jpa.hibernate.ddl-auto") { "none" }
       registry.add("spring.jpa.properties.hibernate.hbm2ddl.auto") { "none" }
@@ -56,7 +51,8 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
     fun hoCodeTestCases(): Stream<Arguments> = Stream.of(
       // --- your entire huge list unchanged ---
       Arguments.of(
-        80, 0,
+        80,
+        0,
         mapOf(
           "ogrs3Weighting" to 0.7334,
           "snsvStaticWeighting" to 0.304896300301182,
@@ -74,8 +70,385 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
         false,
       ),
 
-      // (... leaving all your other Arguments.of() blocks unchanged ...)
-      // The rest of your test cases go here exactly as you posted.
+      Arguments.of(
+        29,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.0,
+          "snsvStaticWeighting" to 0.326858080852591,
+          "snsvDynamicWeighting" to 0.194487131847261,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Violence",
+          "Acquisitive violence",
+          "Acquisitive violence",
+          "Acquisitive violence",
+          "Acquisitive violence",
+        ),
+        true,
+      ),
+      // Burglary (domestic)
+      Arguments.of(
+        28,
+        0,
+        mapOf(
+          "ogrs3Weighting" to -0.1239,
+          "snsvStaticWeighting" to 0.151649692548355,
+          "snsvDynamicWeighting" to -0.226808217378264,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Burglary (domestic)",
+          "Burglary (domestic)",
+          "Burglary (domestic)",
+          "Burglary (domestic)",
+          "Burglary (domestic)",
+        ),
+        false,
+      ),
+      // Burglary (other)
+      Arguments.of(
+        30,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.2406,
+          "snsvStaticWeighting" to -0.194200416367268,
+          "snsvDynamicWeighting" to -0.225990540250696,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Burglary (other)",
+          "Burglary (other)",
+          "Burglary (other)",
+          "Burglary (other)",
+          "Burglary (other)",
+        ),
+        false,
+      ),
+      // Criminal damage
+      Arguments.of(
+        9,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.205,
+          "snsvStaticWeighting" to 0.186977546333514,
+          "snsvDynamicWeighting" to 0.00778028771796321,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Criminal damage",
+          "Criminal damage",
+          "Criminal damage",
+          "Criminal damage",
+          "Criminal damage",
+        ),
+        true,
+      ),
+      // Drink-driving
+      Arguments.of(
+        4,
+        6,
+        mapOf(
+          "ogrs3Weighting" to -0.1214,
+          "snsvStaticWeighting" to -0.212258595209629,
+          "snsvDynamicWeighting" to 0.156493599418026,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Drink driving and related offences",
+          "Drink driving",
+          "Drink driving",
+          "Drink driving",
+          "Drink driving",
+        ),
+        false,
+      ),
+      // Drug import/export/production
+      Arguments.of(
+        77,
+        61,
+        mapOf(
+          "ogrs3Weighting" to -0.7956,
+          "snsvStaticWeighting" to 0.0818982459627011,
+          "snsvDynamicWeighting" to -0.0883945245425247,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Drug import/export/production",
+          "Drug import/export/production",
+          "Drug import/export/production",
+          "Drug import/export/production",
+          "Drug import/export/production",
+        ),
+        false,
+      ),
+      // Drug possession/supply
+      Arguments.of(
+        92,
+        50,
+        mapOf(
+          "ogrs3Weighting" to 0.0772,
+          "snsvStaticWeighting" to 0.0694507822486554,
+          "snsvDynamicWeighting" to 0.081753216630546,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Drug possession/supply",
+          "Drug possession/supply",
+          "Drug possession/supply",
+          "Drug possession/supply",
+          "Drug possession/supply",
+        ),
+        false,
+      ),
+      // Drunkenness
+      Arguments.of(
+        99,
+        43,
+        mapOf(
+          "ogrs3Weighting" to -0.0607,
+          "snsvStaticWeighting" to 0.0841789642942883,
+          "snsvDynamicWeighting" to 0.0819545573517356,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Other offence",
+          "Drunkenness",
+          "Drunkenness",
+          "Drunkenness",
+          "Drunkenness",
+        ),
+        false,
+      ),
+      // Fraud and forgery
+      Arguments.of(
+        50,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.1599,
+          "snsvStaticWeighting" to -0.136811424047985,
+          "snsvDynamicWeighting" to -0.210828726274969,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Fraud and forgery",
+          "Fraud and forgery",
+          "Fraud and forgery",
+          "Fraud and forgery",
+          "Fraud and forgery",
+        ),
+        false,
+      ),
+      // Handling stolen goods
+      Arguments.of(
+        54,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.3519,
+          "snsvStaticWeighting" to -0.2245058213129,
+          "snsvDynamicWeighting" to 0.0923765737156082,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Handling stolen goods",
+          "Handling stolen goods",
+          "Handling stolen goods",
+          "Handling stolen goods",
+          "Handling stolen goods",
+        ),
+        false,
+      ),
+      // Motoring offences
+      Arguments.of(
+        4,
+        4,
+        mapOf(
+          "ogrs3Weighting" to 0.2622,
+          "snsvStaticWeighting" to -0.0286442357674878,
+          "snsvDynamicWeighting" to 0.130461601097636,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Other motoring",
+          "Motoring offences",
+          "Motoring offences",
+          "Motoring offences",
+          "Motoring offences",
+        ),
+        false,
+      ),
+      // Other offences
+      Arguments.of(
+        8,
+        32,
+        mapOf(
+          "ogrs3Weighting" to -0.0607,
+          "snsvStaticWeighting" to -0.215779995107354,
+          "snsvDynamicWeighting" to 0.123617390798186,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Other offence",
+          "Other offences",
+          "Other offences",
+          "Other offences",
+          "Other offences",
+        ),
+        false,
+      ),
+      // Public order and harassment
+      Arguments.of(
+        64,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.1819,
+          "snsvStaticWeighting" to 0.0446132016665715,
+          "snsvDynamicWeighting" to 0.0206396832377319,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Public order",
+          "Public order and harassment",
+          "Public order and harassment",
+          "Public order and harassment",
+          "Public order and harassment",
+        ),
+        false,
+      ),
+      // Sexual (against child)
+      Arguments.of(
+        16,
+        12,
+        mapOf(
+          "ogrs3Weighting" to -0.6534,
+          "snsvStaticWeighting" to -0.442179128494551,
+          "snsvDynamicWeighting" to -0.407005679932105,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Sexual (against child)",
+          "Sexual (against child)",
+          "Sexual (against child)",
+          "Sexual (against child)",
+          "Sexual (against child)",
+        ),
+        true,
+      ),
+      // Sexual (not against child)
+      Arguments.of(
+        16,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.0328,
+          "snsvStaticWeighting" to -0.0455228893277184,
+          "snsvDynamicWeighting" to -0.211172350332101,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Sexual (not against child)",
+          "Sexual (not against child)",
+          "Sexual (not against child)",
+          "Sexual (not against child)",
+          "Sexual (not against child)",
+        ),
+        true,
+      ),
+      // Theft (non-motor)
+      Arguments.of(
+        39,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.6612,
+          "snsvStaticWeighting" to 0.0202407984946185,
+          "snsvDynamicWeighting" to 0.0187611938936452,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Theft (non-motor)",
+          "Theft (non-motor)",
+          "Theft (non-motor)",
+          "Theft (non-motor)",
+          "Theft (non-motor)",
+        ),
+        false,
+      ),
+      // Vehicle-related theft
+      Arguments.of(
+        37,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.3801,
+          "snsvStaticWeighting" to 0.226781312933932,
+          "snsvDynamicWeighting" to 0.264445840395185,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Taking & driving away and related offences",
+          "Vehicle-related theft",
+          "Vehicle-related theft",
+          "Vehicle-related theft",
+          "Vehicle-related theft",
+        ),
+        false,
+      ),
+      // Violence against the person
+      Arguments.of(
+        1,
+        0,
+        mapOf(
+          "ogrs3Weighting" to 0.0,
+          "snsvStaticWeighting" to 0.01927038224,
+          "snsvDynamicWeighting" to -0.006538498404,
+          "snsvVatpStaticWeighting" to 0.238802610774108,
+          "snsvVatpDynamicWeighting" to 0.204895023669854,
+        ),
+        listOf(
+          "Violence",
+          "Violence against the person",
+          "Violence against the person",
+          "Violence against the person (ABH+)",
+          "Violence against the person (ABH+)",
+        ),
+        true,
+      ),
+      // Welfare fraud
+      Arguments.of(
+        53,
+        33,
+        mapOf(
+          "ogrs3Weighting" to 0.1599,
+          "snsvStaticWeighting" to -0.0169128022430282,
+          "snsvDynamicWeighting" to -0.0673831070937991,
+          "snsvVatpStaticWeighting" to 0.0,
+          "snsvVatpDynamicWeighting" to 0.0,
+        ),
+        listOf(
+          "Fraud and forgery",
+          "Welfare fraud",
+          "Welfare fraud",
+          "Welfare fraud",
+          "Welfare fraud",
+        ),
+        false,
+      ),
     )
   }
 

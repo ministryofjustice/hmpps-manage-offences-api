@@ -46,8 +46,6 @@ class RiskActuarialHoCodeTest(
         registry.add("spring.flyway.password", ::getPassword)
       }
 
-      // 🔥 Disable strict Hibernate 6 schema validation
-      // Hibernate 6.x enforces exact JDBC types (BIGINT vs INT4), which breaks legacy schemas.
       registry.add("spring.jpa.hibernate.ddl-auto") { "none" }
       registry.add("spring.jpa.properties.hibernate.hbm2ddl.auto") { "none" }
     }

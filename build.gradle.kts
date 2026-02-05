@@ -16,35 +16,24 @@ configurations {
 
 dependencyManagement {
   imports {
-    // 🟢 CRITICAL: This MUST be first and set to 3.4.1 to align all Spring libs
     mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
-
-    // AWS BOMs (listed after Boot so they don't downgrade it)
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.3.1")
     mavenBom("software.amazon.awssdk:bom:2.31.54")
-
-    // JUnit 5
     mavenBom("org.junit:junit-bom:5.11.4")
   }
 }
 
-// ⭐ The "Nuclear" Option: Strictly enforce version alignment
-// This prevents the "NoSuchFieldError" / "Split Brain" crashes
 configurations.all {
   resolutionStrategy.eachDependency {
-    // Force Spring Boot 3.4.1
     if (requested.group == "org.springframework.boot") {
       useVersion("3.4.1")
     }
-    // Force Spring Framework 6.2.1 (Matches Boot 3.4.1)
     if (requested.group == "org.springframework") {
       useVersion("6.2.1")
     }
-    // Force Spring Security 6.4.2 (Matches Boot 3.4.1)
     if (requested.group == "org.springframework.security") {
       useVersion("6.4.2")
     }
-    // JUnit Platform fixes
     if (requested.group == "org.junit.platform" && requested.name == "junit-platform-launcher") {
       useVersion("1.11.4")
     }
@@ -55,7 +44,6 @@ configurations.all {
 }
 
 dependencies {
-
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   // Database

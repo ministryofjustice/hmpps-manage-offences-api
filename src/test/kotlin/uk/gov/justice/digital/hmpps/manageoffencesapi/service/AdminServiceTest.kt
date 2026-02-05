@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -11,7 +12,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
-import com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.EventToRaise
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.EventType
