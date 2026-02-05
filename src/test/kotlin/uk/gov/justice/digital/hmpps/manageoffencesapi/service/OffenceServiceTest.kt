@@ -15,7 +15,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
-import tools.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
@@ -885,17 +885,20 @@ class OffenceServiceTest {
     private fun createPrisonApiOffencesResponse(
       totalPages: Int,
       content: List<PrisonApiOffence>,
-    ): RestResponsePage<PrisonApiOffence> = RestResponsePage(
-      content = content,
-      number = 1,
-      size = 1,
-      totalElements = 0L,
-      pageable = ObjectMapper().readTree("{}"),
-      last = true,
-      totalPages = totalPages,
-      sort = ObjectMapper().readTree("{}"),
-      first = true,
-      numberOfElements = 0,
-    )
+    ): RestResponsePage<PrisonApiOffence> {
+      val size = if (content.isNotEmpty()) content.size else 1
+      return RestResponsePage(
+        content = content,
+        number = 0,
+        size = size,
+        totalElements = (totalPages * size).toLong(),
+        pageable = ObjectMapper().readTree("{}"),
+        last = true,
+        totalPages = totalPages,
+        sort = ObjectMapper().readTree("{}"),
+        first = true,
+        numberOfElements = content.size,
+      )
+    }
   }
 }

@@ -16,22 +16,35 @@ configurations {
 
 dependencyManagement {
   imports {
-    // AWS + Boot BOMs (keep order)
+    // 🟢 CRITICAL: This MUST be first and set to 3.4.1 to align all Spring libs
+    mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
+
+    // AWS BOMs (listed after Boot so they don't downgrade it)
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.3.1")
     mavenBom("software.amazon.awssdk:bom:2.31.54")
 
-    // ⭐ Spring Boot BOM — YOUR PROJECT USES BOOT 3.4.1
-    mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.1")
-
-    // ⭐ Force JUnit 5 (Boot uses 5.11.x)
+    // JUnit 5
     mavenBom("org.junit:junit-bom:5.11.4")
   }
 }
 
-// ⭐ Force launcher engine to match Spring Boot:
-// fixes: NoClassDefFoundError: OutputDirectoryCreator
+// ⭐ The "Nuclear" Option: Strictly enforce version alignment
+// This prevents the "NoSuchFieldError" / "Split Brain" crashes
 configurations.all {
   resolutionStrategy.eachDependency {
+    // Force Spring Boot 3.4.1
+    if (requested.group == "org.springframework.boot") {
+      useVersion("3.4.1")
+    }
+    // Force Spring Framework 6.2.1 (Matches Boot 3.4.1)
+    if (requested.group == "org.springframework") {
+      useVersion("6.2.1")
+    }
+    // Force Spring Security 6.4.2 (Matches Boot 3.4.1)
+    if (requested.group == "org.springframework.security") {
+      useVersion("6.4.2")
+    }
+    // JUnit Platform fixes
     if (requested.group == "org.junit.platform" && requested.name == "junit-platform-launcher") {
       useVersion("1.11.4")
     }
@@ -58,17 +71,15 @@ dependencies {
   runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
   runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
-  // Spring Boot
+  // Spring Boot Starters
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
-  implementation("org.springframework.security:spring-security-config")
-  implementation("org.springframework.boot:spring-boot-starter-flyway")
-  implementation("org.springframework.boot:spring-boot-starter-webclient")
   implementation("org.springframework.boot:spring-boot-starter-cache")
+  implementation("org.springframework.security:spring-security-config")
 
   // OpenAPI
   implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.8")
@@ -82,11 +93,11 @@ dependencies {
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
-  // SQS
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:6.0.0")
+  // SQS (Downgraded to 5.x for Spring Boot 3 compatibility)
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:5.6.3")
 
   // Misc
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
 
   // ****************
   // TEST DEPENDENCIES
@@ -98,7 +109,7 @@ dependencies {
 
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
 
-  // Kotlin test — pin BEFORE JUnit 6 introduced
+  // Kotlin test
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.2.21")
 
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.29")
@@ -106,7 +117,7 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.50.0")
   testImplementation("org.testcontainers:postgresql:1.21.3")
   testImplementation("org.apache.commons:commons-csv:1.9.0")
-  testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
+  testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation(kotlin("test"))
 }
 
