@@ -314,8 +314,8 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
     // Compare top-level schedule fields (act, code, url, etc.)
     assertThat(actual)
       .usingRecursiveComparison()
-      .ignoringFields("scheduleParts")                // ignore dynamic parts list
-      .ignoringFieldsMatchingRegexes(".*id")          // continue ignoring IDs
+      .ignoringFields("scheduleParts") // ignore dynamic parts list
+      .ignoringFieldsMatchingRegexes(".*id") // continue ignoring IDs
       .isEqualTo(expected.copy(scheduleParts = null))
 
     // Assert that part numbers 1 and 2 exist (extras allowed)
