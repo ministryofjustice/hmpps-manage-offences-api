@@ -1,9 +1,13 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.codec.json.Jackson2JsonDecoder
+import org.springframework.http.codec.json.Jackson2JsonEncoder
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
@@ -14,6 +18,7 @@ import org.springframework.security.oauth2.client.web.reactive.function.client.S
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ExchangeFunction
+import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
@@ -21,12 +26,23 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfiguration(
   @Value("\${api.base.url.sdrs}") private val standingDataReferenceServiceApiUrl: String,
   @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
+  private val objectMapper: ObjectMapper,
 ) {
   @Bean
-  fun standingDataReferenceServiceApiWebClient(): WebClient = WebClient.builder()
-    .baseUrl(standingDataReferenceServiceApiUrl)
-    .defaultHeaders { headers -> headers.addAll(createHeaders()) }
-    .build()
+  fun standingDataReferenceServiceApiWebClient(): WebClient {
+    val exchangeStrategies = ExchangeStrategies.builder()
+      .codecs { configurer ->
+        configurer.defaultCodecs().jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON))
+        configurer.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON))
+      }
+      .build()
+
+    return WebClient.builder()
+      .baseUrl(standingDataReferenceServiceApiUrl)
+      .defaultHeaders { headers -> headers.addAll(createHeaders()) }
+      .exchangeStrategies(exchangeStrategies)
+      .build()
+  }
 
   @Bean
   fun prisonApiWebClient(

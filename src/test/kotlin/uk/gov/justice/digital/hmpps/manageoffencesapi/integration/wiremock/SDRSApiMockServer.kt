@@ -516,7 +516,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .withRequestBody(
           matchingJsonPath(
             "$.MessageBody.GatewayOperationType.GetControlTableRequest.ChangedDateTime",
-            matching(".*"),
+            matching("^2022-04-19.*"),
           ),
         )
         .willReturn(
@@ -572,7 +572,7 @@ class SDRSApiMockServer : WireMockServer(WIREMOCK_PORT) {
         .withRequestBody(
           matchingJsonPath(
             "$.MessageBody.GatewayOperationType.GetControlTableRequest.ChangedDateTime",
-            matching(".*"),
+            matching("^2022-04-18.*"),
           ),
         )
         .willReturn(
