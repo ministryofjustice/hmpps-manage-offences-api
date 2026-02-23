@@ -29,20 +29,19 @@ class WebClientConfiguration(
 
   // ✅ Uses Boot-managed builder → inherits spring.codec.max-in-memory-size from application.yml
   @Bean
-  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient =
-    builder
-      .baseUrl(standingDataReferenceServiceApiUrl)
-      .defaultHeaders { headers -> headers.addAll(createHeaders()) }
-      .codecs { configurer ->
-        // Augment codecs without resetting the already-applied maxInMemorySize
-        configurer.defaultCodecs().jackson2JsonEncoder(
-          Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON)
-        )
-        configurer.defaultCodecs().jackson2JsonDecoder(
-          Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON)
-        )
-      }
-      .build()
+  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient = builder
+    .baseUrl(standingDataReferenceServiceApiUrl)
+    .defaultHeaders { headers -> headers.addAll(createHeaders()) }
+    .codecs { configurer ->
+      // Augment codecs without resetting the already-applied maxInMemorySize
+      configurer.defaultCodecs().jackson2JsonEncoder(
+        Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON),
+      )
+      configurer.defaultCodecs().jackson2JsonDecoder(
+        Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON),
+      )
+    }
+    .build()
 
   @Bean
   fun prisonApiWebClient(
@@ -58,19 +57,17 @@ class WebClientConfiguration(
   }
 
   @Bean
-  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient =
-    builder
-      .baseUrl(prisonApiUrl)
-      .filter(addAuthHeaderFilterFunction())
-      .build()
+  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient = builder
+    .baseUrl(prisonApiUrl)
+    .filter(addAuthHeaderFilterFunction())
+    .build()
 
-  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction =
-    ExchangeFilterFunction { request, next ->
-      val filtered = ClientRequest.from(request)
-        .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
-        .build()
-      next.exchange(filtered)
-    }
+  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction = ExchangeFilterFunction { request, next ->
+    val filtered = ClientRequest.from(request)
+      .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
+      .build()
+    next.exchange(filtered)
+  }
 
   @Bean
   fun authorizedClientManager(
