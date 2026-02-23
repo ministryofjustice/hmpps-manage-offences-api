@@ -17,8 +17,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
-import org.springframework.web.reactive.function.client.ExchangeFunction
-import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
@@ -28,47 +26,51 @@ class WebClientConfiguration(
   @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
   private val objectMapper: ObjectMapper,
 ) {
+
+  // ✅ Uses Boot-managed builder → inherits spring.codec.max-in-memory-size from application.yml
   @Bean
-  fun standingDataReferenceServiceApiWebClient(): WebClient {
-    val exchangeStrategies = ExchangeStrategies.builder()
+  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient =
+    builder
+      .baseUrl(standingDataReferenceServiceApiUrl)
+      .defaultHeaders { headers -> headers.addAll(createHeaders()) }
       .codecs { configurer ->
-        configurer.defaultCodecs().jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON))
-        configurer.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON))
+        // Augment codecs without resetting the already-applied maxInMemorySize
+        configurer.defaultCodecs().jackson2JsonEncoder(
+          Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON)
+        )
+        configurer.defaultCodecs().jackson2JsonDecoder(
+          Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON)
+        )
       }
       .build()
 
-    return WebClient.builder()
-      .baseUrl(standingDataReferenceServiceApiUrl)
-      .defaultHeaders { headers -> headers.addAll(createHeaders()) }
-      .exchangeStrategies(exchangeStrategies)
-      .build()
-  }
-
   @Bean
   fun prisonApiWebClient(
+    builder: WebClient.Builder,
     authorizedClientManager: OAuth2AuthorizedClientManager,
   ): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
-    return WebClient.builder()
+    return builder
       .baseUrl(prisonApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .build()
   }
 
-  // To be used when passing through the users token - rather than using system credentials
   @Bean
-  fun prisonApiUserWebClient(): WebClient = WebClient.builder()
-    .baseUrl(prisonApiUrl)
-    .filter(addAuthHeaderFilterFunction())
-    .build()
-
-  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction = ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
-    val filtered = ClientRequest.from(request)
-      .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
+  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient =
+    builder
+      .baseUrl(prisonApiUrl)
+      .filter(addAuthHeaderFilterFunction())
       .build()
-    next.exchange(filtered)
-  }
+
+  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction =
+    ExchangeFilterFunction { request, next ->
+      val filtered = ClientRequest.from(request)
+        .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
+        .build()
+      next.exchange(filtered)
+    }
 
   @Bean
   fun authorizedClientManager(
@@ -84,10 +86,8 @@ class WebClientConfiguration(
     return authorizedClientManager
   }
 
-  private fun createHeaders(): HttpHeaders {
-    val headers = HttpHeaders()
-    headers.add(HttpHeaders.CONTENT_TYPE, "application/json")
-    headers.add(HttpHeaders.ACCEPT, "application/json")
-    return headers
+  private fun createHeaders(): HttpHeaders = HttpHeaders().apply {
+    add(HttpHeaders.CONTENT_TYPE, "application/json")
+    add(HttpHeaders.ACCEPT, "application/json")
   }
 }
