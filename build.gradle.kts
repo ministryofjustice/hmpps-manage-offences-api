@@ -54,8 +54,6 @@ dependencies {
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.0.1")
 
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-
   testImplementation("org.springframework.boot:spring-boot-starter-test") {
     exclude(group = "junit")
   }
