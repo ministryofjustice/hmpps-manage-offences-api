@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import tools.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -12,6 +11,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import software.amazon.awssdk.services.sns.SnsAsyncClient
 import software.amazon.awssdk.services.sns.model.PublishRequest
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.EventToRaise
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.EventType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature

@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import tools.jackson.databind.ObjectMapper
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -12,6 +11,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.EventToRaise
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.EventType
@@ -28,6 +28,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.FeatureToggle as FeatureToggleEntity
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Offence as NomisOffence
 
 class AdminServiceTest {
   private val featureToggleRepository = mock<FeatureToggleRepository>()
@@ -101,8 +102,8 @@ class AdminServiceTest {
       cjsTitle = "Encouragement to ${PARENT_OFFENCE.cjsTitle}",
     )
 
-    whenever(offenceRepository.save(any())).thenReturn(savedOffence)
-    doNothing().`when`(prisonApiClient).createOffences(any())
+    whenever(offenceRepository.save(any<Offence>())).thenReturn(savedOffence)
+    doNothing().`when`(prisonApiClient).createOffences(any<List<NomisOffence>>())
 
     val res = adminService.createEncouragementOffence(10)
 

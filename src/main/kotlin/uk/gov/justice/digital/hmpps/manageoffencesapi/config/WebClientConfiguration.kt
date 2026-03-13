@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.config
 
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import tools.jackson.databind.ObjectMapper
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.EventToRaiseRepository
 import uk.gov.justice.hmpps.sqs.HmppsQueueService

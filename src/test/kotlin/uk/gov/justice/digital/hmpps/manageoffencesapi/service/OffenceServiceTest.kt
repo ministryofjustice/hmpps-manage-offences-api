@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import tools.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -16,6 +15,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis

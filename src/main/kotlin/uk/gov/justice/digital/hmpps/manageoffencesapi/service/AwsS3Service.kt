@@ -1,10 +1,5 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import tools.jackson.databind.DeserializationFeature
-import tools.jackson.module.kotlin.jacksonObjectMapper
-import tools.jackson.module.kotlin.jsonMapper
-import tools.jackson.module.kotlin.kotlinModule
-import tools.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.async.SdkPublisher
@@ -23,6 +18,10 @@ import software.amazon.awssdk.services.s3.model.SelectObjectContentRequest
 import software.amazon.awssdk.services.s3.model.SelectObjectContentResponse
 import software.amazon.awssdk.services.s3.model.SelectObjectContentResponseHandler
 import software.amazon.awssdk.services.s3.model.selectobjectcontenteventstream.DefaultRecords
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.module.kotlin.jsonMapper
+import tools.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.readValue
 import java.util.concurrent.CompletableFuture
 
 @Service
