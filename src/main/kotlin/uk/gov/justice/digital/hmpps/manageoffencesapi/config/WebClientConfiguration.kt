@@ -25,29 +25,25 @@ class WebClientConfiguration(
 ) {
 
   @Bean
-  fun webClientBuilder(): WebClient.Builder = WebClient.builder()
-
-  @Bean
-  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient = builder
+  fun standingDataReferenceServiceApiWebClient(): WebClient = WebClient.builder()
     .baseUrl(standingDataReferenceServiceApiUrl)
     .defaultHeaders { headers -> headers.addAll(createHeaders()) }
     .build()
 
   @Bean
   fun prisonApiWebClient(
-    builder: WebClient.Builder,
     authorizedClientManager: OAuth2AuthorizedClientManager,
   ): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
-    return builder
+    return WebClient.builder()
       .baseUrl(prisonApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .build()
   }
 
   @Bean
-  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient = builder
+  fun prisonApiUserWebClient(): WebClient = WebClient.builder()
     .baseUrl(prisonApiUrl)
     .filter(addAuthHeaderFilterFunction())
     .build()
