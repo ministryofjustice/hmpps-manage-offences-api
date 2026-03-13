@@ -2,9 +2,10 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.integration
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.context.TestConfiguration
@@ -47,6 +48,13 @@ abstract class IntegrationTestBase {
 
   @Autowired
   lateinit var s3AsyncClient: S3AsyncClient
+
+  @BeforeEach
+  fun increaseWebClientBuffer() {
+    webTestClient = webTestClient.mutate()
+      .codecs { it.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) }
+      .build()
+  }
 
   @TestConfiguration
   class MockS3Beans {

@@ -6,5 +6,5 @@ import org.springframework.stereotype.Component
 object UserContext {
   private val authToken = ThreadLocal<String>()
   fun setAuthToken(token: String?) = authToken.set(token)
-  fun getAuthToken(): String = authToken.get()
+  fun getAuthToken(): String = authToken.get() ?: throw IllegalStateException("Missing auth token in UserContext")
 }

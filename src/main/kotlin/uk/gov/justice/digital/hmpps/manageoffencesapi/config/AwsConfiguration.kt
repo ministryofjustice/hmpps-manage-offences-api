@@ -24,7 +24,6 @@ class AwsConfiguration(
       .maxConcurrency(64)
       .build()
     val serviceConfiguration = S3Configuration.builder()
-      .checksumValidationEnabled(false)
       .chunkedEncodingEnabled(true)
       .build()
     return S3AsyncClient.builder().httpClient(httpClient)

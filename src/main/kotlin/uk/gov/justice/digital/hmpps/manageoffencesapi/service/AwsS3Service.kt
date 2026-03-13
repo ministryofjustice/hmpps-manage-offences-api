@@ -1,7 +1,10 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.jsonMapper
+import tools.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.core.async.SdkPublisher
@@ -32,7 +35,10 @@ class AwsS3Service(
   fun <T> loadParquetFileContents(fileKey: String, clazz: Class<T>): List<T> {
     val res = getParquetFileData(fileKey)
     val rowsAsStrings = res.split("\r?\n|\r".toRegex()).toTypedArray().toList().filter { it.isNotBlank() }
-    val mapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    val mapper = jsonMapper {
+      addModule(kotlinModule())
+      disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    }
     return rowsAsStrings.map { mapper.readValue(it, clazz) }
   }
   private fun getParquetFileData(fileKey: String): String {

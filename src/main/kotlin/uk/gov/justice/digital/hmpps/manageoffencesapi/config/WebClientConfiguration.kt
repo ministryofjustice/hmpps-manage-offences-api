@@ -1,13 +1,10 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.config
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import org.springframework.http.codec.json.Jackson2JsonDecoder
-import org.springframework.http.codec.json.Jackson2JsonEncoder
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
@@ -15,6 +12,8 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.WebClient
@@ -24,23 +23,15 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfiguration(
   @Value("\${api.base.url.sdrs}") private val standingDataReferenceServiceApiUrl: String,
   @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
-  private val objectMapper: ObjectMapper,
 ) {
 
-  // ✅ Uses Boot-managed builder → inherits spring.codec.max-in-memory-size from application.yml
+  @Bean
+  fun webClientBuilder(): WebClient.Builder = WebClient.builder()
+
   @Bean
   fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient = builder
     .baseUrl(standingDataReferenceServiceApiUrl)
     .defaultHeaders { headers -> headers.addAll(createHeaders()) }
-    .codecs { configurer ->
-      // Augment codecs without resetting the already-applied maxInMemorySize
-      configurer.defaultCodecs().jackson2JsonEncoder(
-        Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON),
-      )
-      configurer.defaultCodecs().jackson2JsonDecoder(
-        Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON),
-      )
-    }
     .build()
 
   @Bean
@@ -63,9 +54,15 @@ class WebClientConfiguration(
     .build()
 
   private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction = ExchangeFilterFunction { request, next ->
-    val filtered = ClientRequest.from(request)
-      .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
-      .build()
+    val servletRequest = (RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes)?.request
+    val authHeader = servletRequest?.getHeader(HttpHeaders.AUTHORIZATION)
+
+    val filtered = ClientRequest.from(request).apply {
+      if (!authHeader.isNullOrBlank()) {
+        header(HttpHeaders.AUTHORIZATION, authHeader)
+      }
+    }.build()
+
     next.exchange(filtered)
   }
 
