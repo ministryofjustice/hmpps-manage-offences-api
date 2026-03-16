@@ -26,6 +26,7 @@ class WebClientConfiguration(
 
   @Bean
   fun standingDataReferenceServiceApiWebClient(): WebClient = WebClient.builder()
+    .codecs { it.defaultCodecs().maxInMemorySize(50 * 1024 * 1024) }
     .baseUrl(standingDataReferenceServiceApiUrl)
     .defaultHeaders { headers -> headers.addAll(createHeaders()) }
     .build()

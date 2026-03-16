@@ -5,51 +5,23 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
-import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
-import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
-import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace.NONE
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.RiskActuarialHoCodeErrorCode
-import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.container.PostgresContainer
+import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.RiskActuarialHoCodeFlagsRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.RiskActuarialHoCodeRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.RiskActuarialHoCodeWeightingsRepository
 import java.time.LocalDateTime
 
-@DataJpaTest
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = NONE)
-@ImportAutoConfiguration(FlywayAutoConfiguration::class)
-class RiskActuarialHoCodeTest(
-  @Autowired private val riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository,
-  @Autowired private val riskActuarialHoCodeFlagsRepository: RiskActuarialHoCodeFlagsRepository,
-  @Autowired private val riskActuarialHoCodeWeightingsRepository: RiskActuarialHoCodeWeightingsRepository,
-) {
+class RiskActuarialHoCodeTest : IntegrationTestBase() {
 
-  companion object {
-    private val pg = PostgresContainer.instance
+  @Autowired
+  lateinit var riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository
 
-    @JvmStatic
-    @DynamicPropertySource
-    fun postgresProps(registry: DynamicPropertyRegistry) {
-      pg?.run {
-        registry.add("spring.datasource.url", ::getJdbcUrl)
-        registry.add("spring.datasource.username", ::getUsername)
-        registry.add("spring.datasource.password", ::getPassword)
+  @Autowired
+  lateinit var riskActuarialHoCodeFlagsRepository: RiskActuarialHoCodeFlagsRepository
 
-        registry.add("spring.flyway.url", ::getJdbcUrl)
-        registry.add("spring.flyway.user", ::getUsername)
-        registry.add("spring.flyway.password", ::getPassword)
-      }
-
-      registry.add("spring.jpa.hibernate.ddl-auto") { "none" }
-      registry.add("spring.jpa.properties.hibernate.hbm2ddl.auto") { "none" }
-    }
-  }
+  @Autowired
+  lateinit var riskActuarialHoCodeWeightingsRepository: RiskActuarialHoCodeWeightingsRepository
 
   @Test
   fun `Should save a valid risk actuarial HoCode`() {

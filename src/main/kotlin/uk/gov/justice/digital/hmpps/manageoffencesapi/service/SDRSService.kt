@@ -65,8 +65,9 @@ class SDRSService(
   private val scheduleService: ScheduleService,
 ) {
 
-  @Scheduled(cron = "0 0 */1 * * *")
-  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
+//  @Scheduled(cron = "0 0 */1 * * *")
+  @Scheduled(cron = "0 */1 * * * *")
+//  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
   @Transactional
   fun fullSynchroniseWithSdrs() {
     if (!adminService.isFeatureEnabled(FULL_SYNC_SDRS)) {
@@ -134,11 +135,11 @@ class SDRSService(
       }
     }
 
-    offenceToScheduleMappings.forEach {
-      val offence = offenceRepository.findOneByCode(it.offence.code)
-        .orElseThrow { EntityNotFoundException("Offence code ${it.offence.code} missing that was previously assigned to a schedule") }
-      offenceScheduleMappingRepository.save(transform(offence, it))
-    }
+//    offenceToScheduleMappings.forEach {
+//      val offence = offenceRepository.findOneByCode(it.offence.code)
+//        .orElseThrow { EntityNotFoundException("Offence code ${it.offence.code} missing that was previously assigned to a schedule") }
+//      offenceScheduleMappingRepository.save(transform(offence, it))
+//    }
   }
 
   private fun setParentOffences(sdrsCache: SdrsCache) {
