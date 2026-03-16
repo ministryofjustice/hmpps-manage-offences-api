@@ -135,11 +135,14 @@ class SDRSService(
       }
     }
 
-//    offenceToScheduleMappings.forEach {
-//      val offence = offenceRepository.findOneByCode(it.offence.code)
-//        .orElseThrow { EntityNotFoundException("Offence code ${it.offence.code} missing that was previously assigned to a schedule") }
-//      offenceScheduleMappingRepository.save(transform(offence, it))
-//    }
+    // TODO After the introduction of ENCOURAGEMENT offences, this will no longer work
+    // BUT that is potentially OK because a full load is never done any more in prod (we only do delta loads in production)
+    // Could easily be fixed, just ignore ENCOURAGEMENT offences when processing the mappings
+    offenceToScheduleMappings.forEach {
+      val offence = offenceRepository.findOneByCode(it.offence.code)
+        .orElseThrow { EntityNotFoundException("Offence code ${it.offence.code} missing that was previously assigned to a schedule") }
+      offenceScheduleMappingRepository.save(transform(offence, it))
+    }
   }
 
   private fun setParentOffences(sdrsCache: SdrsCache) {

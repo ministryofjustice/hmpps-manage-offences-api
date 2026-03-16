@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.EITHER
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.NO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.YES
@@ -472,15 +473,57 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       )
   }
 
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+  )
   @Test
   fun `Get risk actuarial offence code mappings 200 ok`() {
     val testData = this::class.java.getResource("/risk-actuarial-ho-code-test-data.json")?.readText()
+
     if (testData != null) {
-      webTestClient.get().uri("/offences/actuarial-mapping")
+      val result = webTestClient.get()
+        .uri("/offences/actuarial-mapping")
         .headers(setAuthorisation())
         .exchange()
         .expectStatus().isOk
-        .expectBody().json(testData)
+        .expectBody()
+        .returnResult()
+
+      val actualJson = result.responseBody?.toString(Charsets.UTF_8) ?: error("Response body was null")
+
+      val mapper = ObjectMapper()
+      val expectedArray = mapper.readTree(testData)
+      val actualArray = mapper.readTree(actualJson)
+
+      println("=======================================")
+      println("DEBUG actuarial mapping test")
+      println("EXPECTED size: ${expectedArray.size()}")
+      println("ACTUAL size  : ${actualArray.size()}")
+      println("=======================================")
+
+      val expectedByKey = expectedArray.associateBy {
+        "${it.get("category")?.asText()}|${it.get("subCategory")?.asText()}"
+      }
+      val actualByKey = actualArray.associateBy {
+        "${it.get("category")?.asText()}|${it.get("subCategory")?.asText()}"
+      }
+
+      val extraKeys = actualByKey.keys - expectedByKey.keys
+      val missingKeys = expectedByKey.keys - actualByKey.keys
+
+      println("EXTRA keys:")
+      extraKeys.forEach { key ->
+        println(key)
+        println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actualByKey.getValue(key)))
+      }
+
+      println("MISSING keys:")
+      missingKeys.forEach { key ->
+        println(key)
+        println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(expectedByKey.getValue(key)))
+      }
+
+      org.skyscreamer.jsonassert.JSONAssert.assertEquals(testData, actualJson, true)
     }
   }
 
