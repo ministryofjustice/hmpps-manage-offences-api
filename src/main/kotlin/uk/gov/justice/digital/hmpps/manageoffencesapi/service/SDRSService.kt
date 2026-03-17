@@ -65,9 +65,8 @@ class SDRSService(
   private val scheduleService: ScheduleService,
 ) {
 
-//  @Scheduled(cron = "0 0 */1 * * *")
-  @Scheduled(cron = "0 */1 * * * *")
-//  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
+  @Scheduled(cron = "0 0 */1 * * *")
+  @SchedulerLock(name = "fullSynchroniseWithSdrsLock")
   @Transactional
   fun fullSynchroniseWithSdrs() {
     if (!adminService.isFeatureEnabled(FULL_SYNC_SDRS)) {
@@ -240,7 +239,7 @@ class SDRSService(
 
   private fun processUpdatesForOffencesThatExistInAnotherCache(
     updates: List<Offence>,
-    duplicateOffences: List<uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence>,
+    duplicateOffences: List<EntityOffence>,
     cache: SdrsCache,
   ) {
     updates.forEach {
