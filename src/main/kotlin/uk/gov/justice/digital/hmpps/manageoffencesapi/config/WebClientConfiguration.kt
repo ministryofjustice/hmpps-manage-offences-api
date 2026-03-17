@@ -23,7 +23,6 @@ class WebClientConfiguration(
   @Value("\${api.base.url.sdrs}") private val standingDataReferenceServiceApiUrl: String,
   @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
 ) {
-
   @Bean
   fun standingDataReferenceServiceApiWebClient(): WebClient = WebClient.builder()
     .codecs { it.defaultCodecs().maxInMemorySize(50 * 1024 * 1024) }
