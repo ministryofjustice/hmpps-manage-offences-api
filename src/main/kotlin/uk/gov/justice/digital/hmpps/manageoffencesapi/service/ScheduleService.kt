@@ -332,7 +332,7 @@ class ScheduleService(
   fun getToreraOffenceCodes() = scheduleRepository.getToreraOffenceCodes()
 
   fun getToreraOffenceCodesByPart(): ToreraSchedulePartCodes {
-    val groupedByParts = scheduleRepository.getToreraOffenceCodesByPart().groupBy({ it[0] as Int }, { it[1] as String })
+    val groupedByParts = scheduleRepository.getToreraOffenceCodesByPart().groupBy({ it.first }, { it.second })
     return ToreraSchedulePartCodes(parts = groupedByParts)
   }
 
