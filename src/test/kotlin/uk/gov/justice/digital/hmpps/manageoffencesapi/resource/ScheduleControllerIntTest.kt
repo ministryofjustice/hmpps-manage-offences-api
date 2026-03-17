@@ -308,19 +308,11 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
       .json("""{"parts":{"1":["AO07000"],"2":["AO07001"]}}""")
   }
 
-  private fun assertThatScheduleMatches(actual: Schedule?, expected: Schedule) {
-    requireNotNull(actual) { "Schedule must not be null" }
-
-    // Compare top-level schedule fields (act, code, url, etc.)
-    assertThat(actual)
+  private fun assertThatScheduleMatches(scheduleBefore: Schedule?, schedule: Schedule) {
+    assertThat(scheduleBefore)
       .usingRecursiveComparison()
-      .ignoringFields("scheduleParts") // ignore dynamic parts list
-      .ignoringFieldsMatchingRegexes(".*id") // continue ignoring IDs
-      .isEqualTo(expected.copy(scheduleParts = null))
-
-    // Assert that part numbers 1 and 2 exist (extras allowed)
-    val partNumbers = actual.scheduleParts!!.map { it.partNumber }
-    assertThat(partNumbers).contains(1, 2)
+      .ignoringFieldsMatchingRegexes(".*id")
+      .isEqualTo(schedule)
   }
 
   private fun getScheduleDetails(createdScheduleId: Long?) = webTestClient.get().uri("/schedule/by-id/$createdScheduleId")
