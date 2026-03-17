@@ -15,7 +15,7 @@ interface ScheduleRepository : JpaRepository<Schedule, Long> {
         JOIN SchedulePart sp on sp.schedule = s 
         JOIN OffenceScheduleMapping osm on osm.schedulePart = sp 
         JOIN Offence o ON osm.offence = o 
-    WHERE s.code = '19ZA'
+    WHERE s.code = "19ZA"
         AND sp.partNumber IN (1, 2)
    """,
   )
