@@ -29,17 +29,21 @@ class HoCodePopulationIntegrationTest : IntegrationTestBase() {
     expectedDescriptions: List<String>,
     expectedFlagValue: Boolean,
   ) {
+    // When
     val hoCode = riskActuarialHoCodeRepository.findByCategoryAndSubCategory(category, subCategory)
     val hoCodeFlags = hoCode.riskActuarialHoCodeFlags
     val hoCodeWeightings = hoCode.riskActuarialHoCodeWeightings
 
+    // Then
     assertEquals(category, hoCode.category)
     assertEquals(subCategory, hoCode.subCategory)
 
+    // Verify flag
     assertEquals(1, hoCodeFlags.size)
     assertEquals("opdViolSex", hoCodeFlags.first().flagName)
     assertEquals(expectedFlagValue, hoCodeFlags.first().flagValue)
 
+    // Verify weighting names
     assertThat(hoCodeWeightings.map { it.weightingName })
       .containsExactlyInAnyOrder(
         "ogrs3Weighting",
@@ -49,6 +53,7 @@ class HoCodePopulationIntegrationTest : IntegrationTestBase() {
         "snsvVatpStaticWeighting",
       )
 
+    // Verify weighting values
     expectedWeightings.forEach { (key, expectedValue) ->
       val actual = hoCodeWeightings.find { it.weightingName == key }
       assertEquals(
@@ -58,6 +63,7 @@ class HoCodePopulationIntegrationTest : IntegrationTestBase() {
       )
     }
 
+    // Verify weighting descriptions
     assertThat(hoCodeWeightings.map { it.weightingDesc })
       .containsExactlyElementsOf(expectedDescriptions)
   }
@@ -92,10 +98,10 @@ class HoCodePopulationIntegrationTest : IntegrationTestBase() {
   }
 
   companion object {
-
     @JvmStatic
     fun hoCodeTestCases(): Stream<Arguments> = Stream.of(
-      // --- your entire huge list unchanged ---
+      // category, subCategory, expectedWeightings, expectedDescriptions, expectedFlagValue
+      // Absconding/bail
       Arguments.of(
         80,
         0,
@@ -115,7 +121,7 @@ class HoCodePopulationIntegrationTest : IntegrationTestBase() {
         ),
         false,
       ),
-
+      // Acquisitive violent
       Arguments.of(
         29,
         0,
