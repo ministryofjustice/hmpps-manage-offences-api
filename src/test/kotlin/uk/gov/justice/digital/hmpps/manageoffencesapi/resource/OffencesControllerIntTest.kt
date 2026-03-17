@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.EITHER
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.NO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.YES
