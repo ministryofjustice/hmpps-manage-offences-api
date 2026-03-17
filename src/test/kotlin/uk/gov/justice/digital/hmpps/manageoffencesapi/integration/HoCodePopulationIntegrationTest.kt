@@ -13,90 +13,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.RiskActuarialHo
 import java.util.stream.Stream
 
 class HoCodePopulationIntegrationTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository
-
-  @Autowired
-  lateinit var riskActuarialHoCodeWeightingsRepository: RiskActuarialHoCodeWeightingsRepository
-
-  @ParameterizedTest(name = "Category {0}, SubCategory {1}")
-  @MethodSource("hoCodeTestCases")
-  fun `test HO code data consistency`(
-    category: Int,
-    subCategory: Int,
-    expectedWeightings: Map<String, Double>,
-    expectedDescriptions: List<String>,
-    expectedFlagValue: Boolean,
-  ) {
-    // When
-    val hoCode = riskActuarialHoCodeRepository.findByCategoryAndSubCategory(category, subCategory)
-    val hoCodeFlags = hoCode.riskActuarialHoCodeFlags
-    val hoCodeWeightings = hoCode.riskActuarialHoCodeWeightings
-
-    // Then
-    assertEquals(category, hoCode.category)
-    assertEquals(subCategory, hoCode.subCategory)
-
-    // Verify flag
-    assertEquals(1, hoCodeFlags.size)
-    assertEquals("opdViolSex", hoCodeFlags.first().flagName)
-    assertEquals(expectedFlagValue, hoCodeFlags.first().flagValue)
-
-    // Verify weighting names
-    assertThat(hoCodeWeightings.map { it.weightingName })
-      .containsExactlyInAnyOrder(
-        "ogrs3Weighting",
-        "snsvDynamicWeighting",
-        "snsvStaticWeighting",
-        "snsvVatpDynamicWeighting",
-        "snsvVatpStaticWeighting",
-      )
-
-    // Verify weighting values
-    expectedWeightings.forEach { (key, expectedValue) ->
-      val actual = hoCodeWeightings.find { it.weightingName == key }
-      assertEquals(
-        expectedValue,
-        actual?.weightingValue,
-        "Mismatch for weighting '$key'",
-      )
-    }
-
-    // Verify weighting descriptions
-    assertThat(hoCodeWeightings.map { it.weightingDesc })
-      .containsExactlyElementsOf(expectedDescriptions)
-  }
-
-  @Test
-  fun `ogrs3 weightings 999 with error`() {
-    val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findByWeightingValue(999.0)
-    assertThat(hoCodeWeightings.all { it.errorCode == RiskActuarialHoCodeErrorCode.NEED_DETAILS_OF_EXACT_OFFENCE }).isTrue()
-  }
-
-  @Test
-  fun `no empty weighting descriptions`() {
-    val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findAll()
-    assertThat(hoCodeWeightings.all { it.weightingDesc != "" }).isTrue()
-  }
-
-  @Test
-  fun `no category sub category combination 00000 or 00001 present`() {
-    val hoCode = riskActuarialHoCodeRepository.findAll()
-    val filtered = hoCode.filter {
-      it.category.toString() + it.subCategory.toString() == "00" ||
-        it.category.toString() + it.subCategory.toString() == "01"
-    }
-    assertThat(filtered).isEmpty()
-  }
-
-  @Test
-  fun `no weighting value 999 present`() {
-    val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findAll()
-    val filtered = hoCodeWeightings.filter { it.weightingValue == 999.0 }
-    assertThat(filtered).isEmpty()
-  }
-
   companion object {
     @JvmStatic
     fun hoCodeTestCases(): Stream<Arguments> = Stream.of(
@@ -502,5 +418,88 @@ class HoCodePopulationIntegrationTest : IntegrationTestBase() {
         false,
       ),
     )
+  }
+
+  @Autowired
+  lateinit var riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository
+
+  @Autowired
+  lateinit var riskActuarialHoCodeWeightingsRepository: RiskActuarialHoCodeWeightingsRepository
+
+  @ParameterizedTest(name = "Category {0}, SubCategory {1}")
+  @MethodSource("hoCodeTestCases")
+  fun `test HO code data consistency`(
+    category: Int,
+    subCategory: Int,
+    expectedWeightings: Map<String, Double>,
+    expectedDescriptions: List<String>,
+    expectedFlagValue: Boolean,
+  ) {
+    // When
+    val hoCode = riskActuarialHoCodeRepository.findByCategoryAndSubCategory(category, subCategory)
+    val hoCodeFlags = hoCode.riskActuarialHoCodeFlags
+    val hoCodeWeightings = hoCode.riskActuarialHoCodeWeightings
+
+    // Then
+    assertEquals(category, hoCode.category)
+    assertEquals(subCategory, hoCode.subCategory)
+
+    // Verify flag
+    assertEquals(1, hoCodeFlags.size)
+    assertEquals("opdViolSex", hoCodeFlags.first().flagName)
+    assertEquals(expectedFlagValue, hoCodeFlags.first().flagValue)
+
+    // Verify weighting names
+    assertThat(hoCodeWeightings.map { it.weightingName })
+      .containsExactlyInAnyOrder(
+        "ogrs3Weighting",
+        "snsvDynamicWeighting",
+        "snsvStaticWeighting",
+        "snsvVatpDynamicWeighting",
+        "snsvVatpStaticWeighting",
+      )
+
+    // Verify weighting values
+    expectedWeightings.forEach { (key, expectedValue) ->
+      val actual = hoCodeWeightings.find { it.weightingName == key }
+      assertEquals(
+        expectedValue,
+        actual?.weightingValue,
+        "Mismatch for weighting '$key'",
+      )
+    }
+
+    // Verify weighting descriptions
+    assertThat(hoCodeWeightings.map { it.weightingDesc })
+      .containsExactlyElementsOf(expectedDescriptions)
+  }
+
+  @Test
+  fun `ogrs3 weightings 999 with error`() {
+    val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findByWeightingValue(999.0)
+    assertThat(hoCodeWeightings.all { it.errorCode == RiskActuarialHoCodeErrorCode.NEED_DETAILS_OF_EXACT_OFFENCE }).isTrue()
+  }
+
+  @Test
+  fun `no empty weighting descriptions`() {
+    val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findAll()
+    assertThat(hoCodeWeightings.all { it.weightingDesc != "" }).isTrue()
+  }
+
+  @Test
+  fun `no category sub category combination 00000 or 00001 present`() {
+    val hoCode = riskActuarialHoCodeRepository.findAll()
+    val filtered = hoCode.filter {
+      it.category.toString() + it.subCategory.toString() == "00" ||
+        it.category.toString() + it.subCategory.toString() == "01"
+    }
+    assertThat(filtered).isEmpty()
+  }
+
+  @Test
+  fun `no weighting value 999 present`() {
+    val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findAll()
+    val filtered = hoCodeWeightings.filter { it.weightingValue == 999.0 }
+    assertThat(filtered).isEmpty()
   }
 }
