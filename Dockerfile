@@ -6,6 +6,9 @@ ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
 
 WORKDIR /app
 ADD . .
+USER root
+RUN chown -R 1000:1000 /app
+USER 1000
 RUN ./gradlew --no-daemon assemble
 
 FROM ${BASE_IMAGE}
