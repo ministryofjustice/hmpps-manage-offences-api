@@ -14,6 +14,7 @@ LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
 
+USER root
 RUN apt-get update && \
     apt-get -y upgrade && \
     rm -rf /var/lib/apt/lists/*
