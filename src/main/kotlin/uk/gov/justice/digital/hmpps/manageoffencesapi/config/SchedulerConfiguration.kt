@@ -19,11 +19,10 @@ import javax.sql.DataSource
 )
 class SchedulerConfiguration {
   @Bean
-  fun lockProvider(dataSource: DataSource): LockProvider =
-    JdbcTemplateLockProvider(
-      JdbcTemplateLockProvider.Configuration.builder()
-        .withJdbcTemplate(JdbcTemplate(dataSource))
-        .usingDbTime()
-        .build(),
-    )
+  fun lockProvider(dataSource: DataSource): LockProvider = JdbcTemplateLockProvider(
+    JdbcTemplateLockProvider.Configuration.builder()
+      .withJdbcTemplate(JdbcTemplate(dataSource))
+      .usingDbTime()
+      .build(),
+  )
 }

@@ -120,9 +120,7 @@ class OffenceController(
     @Parameter(required = true, example = "AA1256A", description = "The offence code")
     @PathVariable("offenceCode")
     offenceCode: String,
-  ): String? {
-    return offenceService.findHoCodeByOffenceCode(offenceCode)
-  }
+  ): String? = offenceService.findHoCodeByOffenceCode(offenceCode)
 
   @GetMapping(value = ["/load-results"])
   @ResponseBody
