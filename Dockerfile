@@ -27,16 +27,16 @@ ENV TZ=Europe/London
 RUN ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 
 # Install AWS RDS Root cert into Java truststore
-RUN mkdir /home/appuser/.postgresql
-ADD --chown=appuser:appgroup https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appuser/.postgresql/root.crt
+RUN mkdir -p /home/appuser/.postgresql && chown -R 2000:2000 /home/appuser/.postgresql
+ADD --chown=2000:2000 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /home/appuser/.postgresql/root.crt
 
 WORKDIR /app
-COPY --from=builder --chown=appuser:appgroup /app/build/libs/hmpps-manage-offences-api*.jar /app/app.jar
-COPY --from=builder --chown=appuser:appgroup /app/build/libs/applicationinsights-agent*.jar /app/agent.jar
-COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.json /app
-COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.dev.json /app
+COPY --from=builder --chown=2000:2000 /app/build/libs/hmpps-manage-offences-api*.jar /app/app.jar
+COPY --from=builder --chown=2000:2000 /app/build/libs/applicationinsights-agent*.jar /app/agent.jar
+COPY --from=builder --chown=2000:2000 /app/applicationinsights.json /app
+COPY --from=builder --chown=2000:2000 /app/applicationinsights.dev.json /app
 
-COPY --chown=appuser:appgroup certificates/sdrs-staging.pem /app
+COPY --chown=2000:2000 certificates/sdrs-staging.pem /app
 RUN keytool -noprompt -storepass changeit -importcert -trustcacerts -cacerts -file sdrs-staging.pem -alias sdrs_staging_cert
 
 USER 2000
