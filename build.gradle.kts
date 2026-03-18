@@ -67,7 +67,6 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.50.0")
   testImplementation("org.testcontainers:postgresql:1.21.3")
   testImplementation("org.apache.commons:commons-csv:1.9.0")
-  testImplementation("org.mockito:mockito-inline:5.2.0")
 }
 
 kotlin {
