@@ -34,7 +34,7 @@ class CacheConfiguration {
   )
   @Scheduled(fixedDelay = 2, timeUnit = HOURS)
   fun cacheEvict() {
-    log.info(
+    log.debug(
       "Evicting caches: {}, {}, {}, {}, {}",
       PCSC_LISTS,
       SDS_EARLY_RELEASE_EXCLUSION_LISTS,

@@ -121,7 +121,7 @@ class OffenceController(
     @PathVariable("offenceCode")
     offenceCode: String,
   ): String? {
-    log.info("Request received to fetch HO Code for offenceCode {}", offenceCode)
+    log.debug("Request received to fetch HO Code for offenceCode {}", offenceCode)
     return offenceService.findHoCodeByOffenceCode(offenceCode)
   }
 
