@@ -1,12 +1,11 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
-import io.hypersistence.utils.hibernate.type.json.internal.JacksonUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNull
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -16,6 +15,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisChangeHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
@@ -890,10 +890,10 @@ class OffenceServiceTest {
       number = 1,
       size = 1,
       totalElements = 0L,
-      pageable = JacksonUtil.toJsonNode("{}"),
+      pageable = ObjectMapper().readTree("{}"),
       last = true,
       totalPages = totalPages,
-      sort = JacksonUtil.toJsonNode("{}"),
+      sort = ObjectMapper().readTree("{}"),
       first = true,
       numberOfElements = 0,
     )

@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.S
 
 @Service
 class PrisonApiClient(@Qualifier("prisonApiWebClient") private val webClient: WebClient) {
-  private inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
+  private inline fun <reified T : Any> typeReference() = object : ParameterizedTypeReference<T>() {}
   private val log = LoggerFactory.getLogger(this::class.java)
 
   fun findByOffenceCodeStartsWith(offenceCode: String, pageNumber: Int): RestResponsePage<Offence> {

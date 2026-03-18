@@ -1,3 +1,5 @@
+DELETE FROM nomis_change_history;
+
 INSERT INTO nomis_change_history (code, description, change_type, nomis_change_type, sent_to_nomis_date)
 VALUES ('AP04003', 'Knowingly furnish false/misleading info to person acting in execution of these Reg''s', 'UPDATE',
         'OFFENCE', '2022-11-16 10:46:04.631477+00'),

@@ -2,7 +2,7 @@
 
 package uk.gov.justice.digital.hmpps.manageoffencesapi.model
 
-import com.fasterxml.jackson.databind.JsonNode
+import tools.jackson.databind.JsonNode
 
 data class RestResponsePage<T>(
   val content: List<T>,

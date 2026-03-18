@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.sdrs
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.PropertyNamingStrategies.UpperCamelCaseStrategy
-import com.fasterxml.jackson.databind.annotation.JsonNaming
+import tools.jackson.databind.PropertyNamingStrategies.UpperCamelCaseStrategy
+import tools.jackson.databind.annotation.JsonNaming
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator
 import java.time.LocalDate
 import java.time.LocalDateTime

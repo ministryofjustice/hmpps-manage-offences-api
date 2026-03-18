@@ -1,28 +1,18 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.RiskActuarialHoCodeErrorCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.RiskActuarialHoCodeRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.RiskActuarialHoCodeWeightingsRepository
 import java.util.stream.Stream
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
-@DataJpaTest
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class HoCodePopulationIntegrationTest @Autowired constructor(
-  val riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository,
-  val riskActuarialHoCodeWeightingsRepository: RiskActuarialHoCodeWeightingsRepository,
-) {
-
+class HoCodePopulationIntegrationTest : IntegrationTestBase() {
   companion object {
     @JvmStatic
     fun hoCodeTestCases(): Stream<Arguments> = Stream.of(
@@ -430,6 +420,12 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
     )
   }
 
+  @Autowired
+  lateinit var riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository
+
+  @Autowired
+  lateinit var riskActuarialHoCodeWeightingsRepository: RiskActuarialHoCodeWeightingsRepository
+
   @ParameterizedTest(name = "Category {0}, SubCategory {1}")
   @MethodSource("hoCodeTestCases")
   fun `test HO code data consistency`(
@@ -480,26 +476,19 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
 
   @Test
   fun `ogrs3 weightings 999 with error`() {
-    // When
     val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findByWeightingValue(999.0)
-    // Then
     assertThat(hoCodeWeightings.all { it.errorCode == RiskActuarialHoCodeErrorCode.NEED_DETAILS_OF_EXACT_OFFENCE }).isTrue()
   }
 
   @Test
   fun `no empty weighting descriptions`() {
-    // When
     val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findAll()
-    // Then
     assertThat(hoCodeWeightings.all { it.weightingDesc != "" }).isTrue()
   }
 
   @Test
   fun `no category sub category combination 00000 or 00001 present`() {
-    // When
     val hoCode = riskActuarialHoCodeRepository.findAll()
-    // Then
-    // 00000 = 00, 00001 = 01 in db
     val filtered = hoCode.filter {
       it.category.toString() + it.subCategory.toString() == "00" ||
         it.category.toString() + it.subCategory.toString() == "01"
@@ -509,9 +498,7 @@ class HoCodePopulationIntegrationTest @Autowired constructor(
 
   @Test
   fun `no weighting value 999 present`() {
-    // When
     val hoCodeWeightings = riskActuarialHoCodeWeightingsRepository.findAll()
-    // Then
     val filtered = hoCodeWeightings.filter { it.weightingValue == 999.0 }
     assertThat(filtered).isEmpty()
   }

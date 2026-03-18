@@ -246,7 +246,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
         ),
       )
 
-    assertThat(result!!.first { it.code == "XX99001" }!!.schedules)
+    assertThat(result!!.first { it.code == "XX99001" }.schedules)
       .usingRecursiveComparison()
       .ignoringFieldsMatchingRegexes(".*id")
       .ignoringCollectionOrder()
@@ -262,7 +262,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
         ),
       )
 
-    assertThat(result.first { it.code == "XX99002" }!!.schedules).isNull()
+    assertThat(result.first { it.code == "XX99002" }.schedules).isNull()
   }
 
   @Test

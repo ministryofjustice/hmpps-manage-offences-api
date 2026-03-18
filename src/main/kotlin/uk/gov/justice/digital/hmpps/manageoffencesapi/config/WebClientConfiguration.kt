@@ -11,10 +11,10 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
-import org.springframework.util.MultiValueMap
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
-import org.springframework.web.reactive.function.client.ExchangeFunction
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
@@ -24,34 +24,40 @@ class WebClientConfiguration(
   @Value("\${api.base.url.prison.api}") private val prisonApiUrl: String,
 ) {
   @Bean
-  fun standingDataReferenceServiceApiWebClient(builder: WebClient.Builder): WebClient = builder.baseUrl(standingDataReferenceServiceApiUrl)
+  fun standingDataReferenceServiceApiWebClient(): WebClient = WebClient.builder()
+    .codecs { it.defaultCodecs().maxInMemorySize(50 * 1024 * 1024) }
+    .baseUrl(standingDataReferenceServiceApiUrl)
     .defaultHeaders { headers -> headers.addAll(createHeaders()) }
     .build()
 
   @Bean
   fun prisonApiWebClient(
-    builder: WebClient.Builder,
     authorizedClientManager: OAuth2AuthorizedClientManager,
   ): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
-    return builder
+    return WebClient.builder()
       .baseUrl(prisonApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .build()
   }
 
-  // To be used when passing through the users token - rather than using system credentials
   @Bean
-  fun prisonApiUserWebClient(builder: WebClient.Builder): WebClient = builder
+  fun prisonApiUserWebClient(): WebClient = WebClient.builder()
     .baseUrl(prisonApiUrl)
     .filter(addAuthHeaderFilterFunction())
     .build()
 
-  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction = ExchangeFilterFunction { request: ClientRequest, next: ExchangeFunction ->
-    val filtered = ClientRequest.from(request)
-      .header(HttpHeaders.AUTHORIZATION, UserContext.getAuthToken())
-      .build()
+  private fun addAuthHeaderFilterFunction(): ExchangeFilterFunction = ExchangeFilterFunction { request, next ->
+    val servletRequest = (RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes)?.request
+    val authHeader = servletRequest?.getHeader(HttpHeaders.AUTHORIZATION)
+
+    val filtered = ClientRequest.from(request).apply {
+      if (!authHeader.isNullOrBlank()) {
+        header(HttpHeaders.AUTHORIZATION, authHeader)
+      }
+    }.build()
+
     next.exchange(filtered)
   }
 
@@ -69,10 +75,8 @@ class WebClientConfiguration(
     return authorizedClientManager
   }
 
-  private fun createHeaders(): MultiValueMap<String, String> {
-    val headers = HttpHeaders()
-    headers.add(HttpHeaders.CONTENT_TYPE, "application/json")
-    headers.add(HttpHeaders.ACCEPT, "application/json")
-    return headers
+  private fun createHeaders(): HttpHeaders = HttpHeaders().apply {
+    add(HttpHeaders.CONTENT_TYPE, "application/json")
+    add(HttpHeaders.ACCEPT, "application/json")
   }
 }
