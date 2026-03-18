@@ -9,6 +9,7 @@ ADD . .
 USER root
 RUN chown -R 1000:1000 /app
 USER 1000
+ENV GRADLE_USER_HOME=/app/.gradle
 RUN ./gradlew --no-daemon assemble
 
 FROM ${BASE_IMAGE}
