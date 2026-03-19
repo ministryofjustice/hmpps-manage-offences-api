@@ -1,8 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.5"
-  kotlin("plugin.spring") version "2.3.10"
-  kotlin("plugin.jpa") version "2.3.10"
-  id("se.patrikerdes.use-latest-versions") version "0.2.18"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.6"
+  kotlin("plugin.spring") version "2.3.20"
+  kotlin("plugin.jpa") version "2.3.20"
+  id("se.patrikerdes.use-latest-versions") version "0.2.19"
 }
 
 tasks.withType<Test> {
@@ -17,7 +17,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0")
-    mavenBom("software.amazon.awssdk:bom:2.31.54")
+    mavenBom("software.amazon.awssdk:bom:2.42.16")
   }
 }
 
@@ -28,11 +28,11 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql")
 
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.16.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.26.0")
 
-  implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-  runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
-  runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+  implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+  runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+  runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -43,7 +43,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("org.springframework.security:spring-security-config")
 
-  implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.8")
+  implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.16")
 
   implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
@@ -52,7 +52,7 @@ dependencies {
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.0.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.1.0")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test") {
     exclude(group = "junit")
@@ -62,11 +62,11 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
   testImplementation("org.springframework.boot:spring-boot-webflux-test")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.29")
-  testImplementation("org.wiremock:wiremock-standalone:3.13.0")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.50.0")
-  testImplementation("org.testcontainers:postgresql:1.21.3")
-  testImplementation("org.apache.commons:commons-csv:1.9.0")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.39")
+  testImplementation("org.wiremock:wiremock-standalone:3.13.2")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.60.1")
+  testImplementation("org.testcontainers:postgresql:1.21.4")
+  testImplementation("org.apache.commons:commons-csv:1.14.1")
 }
 
 kotlin {
