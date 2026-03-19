@@ -33,16 +33,7 @@ class CacheConfiguration {
     cacheNames = [PCSC_LISTS, SDS_EARLY_RELEASE_EXCLUSION_LISTS, TORERA_OFFENCE_CODES, SCHEDULE_DATA],
   )
   @Scheduled(fixedDelay = 2, timeUnit = HOURS)
-  fun cacheEvict() {
-    log.debug(
-      "Evicting caches: {}, {}, {}, {}, {}",
-      PCSC_LISTS,
-      SDS_EARLY_RELEASE_EXCLUSION_LISTS,
-      TORERA_OFFENCE_CODES,
-      SCHEDULE_19ZA_OFFENCES,
-      SCHEDULE_DATA,
-    )
-  }
+  fun cacheEvict() {}
 
   @CacheEvict(
     allEntries = true,
