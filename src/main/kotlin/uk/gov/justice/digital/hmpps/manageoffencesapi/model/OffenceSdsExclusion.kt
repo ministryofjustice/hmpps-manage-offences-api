@@ -51,4 +51,5 @@ enum class OffenceSdsExclusionIndicator {
   NATIONAL_SECURITY,
   TERRORISM,
   MURDER_T3,
+  SCHEDULE_13_PART_3,
 }
