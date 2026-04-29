@@ -40,7 +40,7 @@ data class OffenceSdsExclusion(
   }
 }
 
-@Schema(description = "Categories for the offence")
+@Schema(description = "Categories for the offence", enumAsRef = true)
 enum class OffenceSdsExclusionIndicator {
   SEXUAL,
   SEXUAL_T3,
