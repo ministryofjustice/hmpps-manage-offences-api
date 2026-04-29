@@ -23,6 +23,7 @@ class CachedScheduleService(
     val tranceThreeMurderMappings = scheduleService.getTrancheThreeMurderScheduleMappings()
 
     val (part1LifeMappings, part2LifeMappings, seriousViolentOffenceMappings) = scheduleService.getSchedule15PcscMappings()
+    val schedule13Part3Mappings = scheduleService.getSchedule13Part3Mappings()
 
     return CachedScheduleInformation(
       part1Mappings.map { it.offence.code }.toSet(),
@@ -38,6 +39,7 @@ class CachedScheduleService(
       part1LifeMappings.map { OffenceAndStartDate(it.offence.code, it.offence.startDate) }.toSet(),
       part2LifeMappings.map { OffenceAndStartDate(it.offence.code, it.offence.startDate) }.toSet(),
       seriousViolentOffenceMappings.map { OffenceAndStartDate(it.offence.code, it.offence.startDate) }.toSet(),
+      schedule13Part3Mappings.map { it.offence.code }.toSet(),
     )
   }
 }
@@ -56,6 +58,7 @@ data class CachedScheduleInformation(
   val part1LifeMappings: Set<OffenceAndStartDate>,
   val part2LifeMappings: Set<OffenceAndStartDate>,
   val seriousViolentOffenceMappings: Set<OffenceAndStartDate>,
+  val schedule13Part3Mappings: Set<String>,
 )
 
 data class OffenceAndStartDate(

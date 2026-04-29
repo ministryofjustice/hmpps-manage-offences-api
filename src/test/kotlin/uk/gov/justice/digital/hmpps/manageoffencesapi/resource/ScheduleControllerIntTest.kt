@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.DOMESTIC_ABUSE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.NATIONAL_SECURITY
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.NONE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.SCHEDULE_13_PART_3
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.SEXUAL
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.TERRORISM
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.VIOLENT
@@ -21,6 +22,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsOffenceDetails
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -133,6 +135,43 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
           OffenceSdsExclusion(offenceCode = "DV00001", schedulePart = DOMESTIC_ABUSE),
           OffenceSdsExclusion(offenceCode = "NSLEGIS", schedulePart = NATIONAL_SECURITY),
           OffenceSdsExclusion(offenceCode = "TR00001", schedulePart = TERRORISM),
+        ),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data-sds-exclusions.sql",
+    "classpath:test_data/set-progression-model-offence-data-sds-exclusions.sql",
+  )
+  fun `Get PCSC markers and early release exclusion indicators for multiple offences by offence codes`() {
+    resetCache()
+    val result = webTestClient.get()
+      .uri("/schedule/sds-offence-details?offenceCodes=AB14001,AB14002,AB14003,AF06999,SX03TEST,SX56TEST,SXLEGIS,DV00001,NSLEGIS,TR00001")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList(SdsOffenceDetails::class.java)
+      .returnResult().responseBody
+
+    val noPcscMarkers = PcscMarkers(inListA = false, inListB = false, inListC = false, inListD = false)
+    val allPcscMarkers = PcscMarkers(inListA = true, inListB = true, inListC = true, inListD = true)
+    assertThat(result)
+      .usingRecursiveComparison()
+      .ignoringCollectionOrder()
+      .isEqualTo(
+        listOf(
+          SdsOffenceDetails(offenceCode = "AB14001", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf(VIOLENT)),
+          SdsOffenceDetails(offenceCode = "AB14002", pcscMarkers = allPcscMarkers, earlyReleaseExclusions = listOf(SEXUAL)),
+          SdsOffenceDetails(offenceCode = "SX03TEST", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf(SEXUAL)),
+          SdsOffenceDetails(offenceCode = "SX56TEST", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf(SEXUAL)),
+          SdsOffenceDetails(offenceCode = "AB14003", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf()),
+          SdsOffenceDetails(offenceCode = "AF06999", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf()),
+          SdsOffenceDetails(offenceCode = "SXLEGIS", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf(SEXUAL)),
+          SdsOffenceDetails(offenceCode = "DV00001", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf(DOMESTIC_ABUSE)),
+          SdsOffenceDetails(offenceCode = "NSLEGIS", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf(NATIONAL_SECURITY, SCHEDULE_13_PART_3)),
+          SdsOffenceDetails(offenceCode = "TR00001", pcscMarkers = noPcscMarkers, earlyReleaseExclusions = listOf(TERRORISM)),
         ),
       )
   }
