@@ -69,7 +69,7 @@ data class Offence(
   val statuteDescription: String
     get() = legislation?.takeUnless { it.isBlank() } ?: statuteCode
   val activeFlag: String
-    get() = endDate?.takeIf { it.isAfter(LocalDate.now()) }?.let { "Y" } ?: "N"
+    get() = endDate?.takeUnless { it.isAfter(LocalDate.now()) }?.let { "N" } ?: "Y"
   val expiryDate: LocalDate?
     get() = endDate?.takeUnless { it.isAfter(LocalDate.now()) }?.let { LocalDate.now() }
 
