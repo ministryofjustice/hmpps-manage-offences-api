@@ -7,8 +7,10 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.T3_OFFENCE_EX
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion.Companion.getSdsExclusionIndicator
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleInfo
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsOffenceDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
 import java.time.LocalDate
 
@@ -22,6 +24,7 @@ class IsOffenceInScheduleService(
     log.info("Determining PCSC schedules for passed in offences")
     return getOffencePcscMarkers(offenceCodes)
   }
+
   fun categoriseSdsExclusionsOffences(offenceCodes: List<String>): List<OffenceSdsExclusion> {
     log.info("Determining Sexual or Violent status for passed in offences")
     return getSdsExclusionIndicators(offenceCodes)
@@ -29,41 +32,72 @@ class IsOffenceInScheduleService(
 
   private fun getSdsExclusionIndicators(offenceCodes: List<String>): List<OffenceSdsExclusion> {
     val scheduleInfo = cachedScheduleService.getCachedScheduleInformation()
-    val includeTrancheThree = trancheThreeEnabled()
 
     return offenceCodes.map { offenceCode ->
-      val isSexual = scheduleInfo.part2Mappings.contains(offenceCode) ||
-        hasSexualCodePrefix(offenceCode) ||
-        scheduleInfo.sexualOffencesFromLegislation.contains(offenceCode) ||
-        scheduleInfo.sexScheduleMappings.contains(offenceCode)
+      getSds40Exclusions(offenceCode, scheduleInfo)
+    }
+  }
 
-      val isSexualTranche3 =
-        includeTrancheThree && scheduleInfo.trancheThreeSexScheduleMappings.contains(offenceCode)
-      val isDomesticViolenceTranche3 =
-        includeTrancheThree && scheduleInfo.trancheThreeViolenceMappings.contains(offenceCode)
-      val isMurderTranche3 = includeTrancheThree && scheduleInfo.tranceThreeMurderMappings.contains(offenceCode)
-
-      val isDomesticViolence = scheduleInfo.domesticViolenceMappings.contains(offenceCode)
-      val isNationalSecurity = scheduleInfo.securityOffencesFromLegislation.contains(offenceCode)
-      val isViolent = scheduleInfo.part1Mappings.contains(offenceCode)
-      val isTerrorism = scheduleInfo.terrorismMapping.contains(offenceCode)
-
-      val indicator = getSdsExclusionIndicator(
-        isSexual,
-        isDomesticViolence,
-        isNationalSecurity,
-        isTerrorism,
-        isViolent,
-        isDomesticViolenceTranche3,
-        isSexualTranche3,
-        isMurderTranche3,
-      )
-
-      OffenceSdsExclusion(
+  fun getSdsOffenceDetails(offenceCodes: List<String>): List<SdsOffenceDetails> {
+    log.info("Determining SDS markers for passed in offences")
+    val scheduleInfo = cachedScheduleService.getCachedScheduleInformation()
+    return offenceCodes.map { offenceCode ->
+      val pcscMarkers = getPcscMarkers(offenceCode, scheduleInfo).pcscMarkers
+      val sds40Exclusion = getSds40Exclusions(offenceCode, scheduleInfo).schedulePart.let { sds40ExclusionMarker ->
+        if (sds40ExclusionMarker != OffenceSdsExclusionIndicator.NONE) {
+          sds40ExclusionMarker
+        } else {
+          null
+        }
+      }
+      val progressionModelExclusion = getProgressionModelExclusion(offenceCode, scheduleInfo)
+      SdsOffenceDetails(
         offenceCode = offenceCode,
-        schedulePart = indicator,
+        pcscMarkers = pcscMarkers,
+        earlyReleaseExclusions = listOfNotNull(sds40Exclusion, progressionModelExclusion),
       )
     }
+  }
+
+  private fun getSds40Exclusions(
+    offenceCode: String,
+    scheduleInfo: CachedScheduleInformation,
+  ): OffenceSdsExclusion {
+    val isSexual = scheduleInfo.part2Mappings.contains(offenceCode) ||
+      hasSexualCodePrefix(offenceCode) ||
+      scheduleInfo.sexualOffencesFromLegislation.contains(offenceCode) ||
+      scheduleInfo.sexScheduleMappings.contains(offenceCode)
+
+    val isSexualTranche3 = scheduleInfo.trancheThreeSexScheduleMappings.contains(offenceCode)
+    val isDomesticViolenceTranche3 = scheduleInfo.trancheThreeViolenceMappings.contains(offenceCode)
+    val isMurderTranche3 = scheduleInfo.tranceThreeMurderMappings.contains(offenceCode)
+
+    val isDomesticViolence = scheduleInfo.domesticViolenceMappings.contains(offenceCode)
+    val isNationalSecurity = scheduleInfo.securityOffencesFromLegislation.contains(offenceCode)
+    val isViolent = scheduleInfo.part1Mappings.contains(offenceCode)
+    val isTerrorism = scheduleInfo.terrorismMapping.contains(offenceCode)
+
+    val indicator = getSdsExclusionIndicator(
+      isSexual,
+      isDomesticViolence,
+      isNationalSecurity,
+      isTerrorism,
+      isViolent,
+      isDomesticViolenceTranche3,
+      isSexualTranche3,
+      isMurderTranche3,
+    )
+
+    return OffenceSdsExclusion(
+      offenceCode = offenceCode,
+      schedulePart = indicator,
+    )
+  }
+
+  private fun getProgressionModelExclusion(offenceCode: String, scheduleInfo: CachedScheduleInformation): OffenceSdsExclusionIndicator? = if (scheduleInfo.schedule13Part3Mappings.contains(offenceCode)) {
+    OffenceSdsExclusionIndicator.SCHEDULE_13_PART_3
+  } else {
+    null
   }
 
   private fun hasSexualCodePrefix(offenceCode: String): Boolean = SEXUAL_CODES_FOR_EXCLUSION_LIST.any { offenceCode.startsWith(it) }
@@ -72,17 +106,22 @@ class IsOffenceInScheduleService(
     val scheduleInfo = cachedScheduleService.getCachedScheduleInformation()
 
     return offenceCodes.map {
-      OffencePcscMarkers(
-        offenceCode = it,
-        PcscMarkers(
-          inListA = inListA(scheduleInfo.part1LifeMappings, scheduleInfo.part2LifeMappings, it),
-          inListB = inListB(scheduleInfo.seriousViolentOffenceMappings, scheduleInfo.part2LifeMappings, it),
-          inListC = inListC(scheduleInfo.seriousViolentOffenceMappings, scheduleInfo.part2LifeMappings, it),
-          inListD = inListD(scheduleInfo.part1LifeMappings, scheduleInfo.part2LifeMappings, it),
-        ),
-      )
+      getPcscMarkers(it, scheduleInfo)
     }
   }
+
+  private fun getPcscMarkers(
+    offenceCode: String,
+    scheduleInfo: CachedScheduleInformation,
+  ): OffencePcscMarkers = OffencePcscMarkers(
+    offenceCode = offenceCode,
+    PcscMarkers(
+      inListA = inListA(scheduleInfo.part1LifeMappings, scheduleInfo.part2LifeMappings, offenceCode),
+      inListB = inListB(scheduleInfo.seriousViolentOffenceMappings, scheduleInfo.part2LifeMappings, offenceCode),
+      inListC = inListC(scheduleInfo.seriousViolentOffenceMappings, scheduleInfo.part2LifeMappings, offenceCode),
+      inListD = inListD(scheduleInfo.part1LifeMappings, scheduleInfo.part2LifeMappings, offenceCode),
+    ),
+  )
 
   // List A: Schedule 15 Part 1 + Schedule 15 Part 2 that attract life (exclude all offences that start on or after 28 June 2022)
 // NOMIS SCHEDULE_15_ATTRACTS_LIFE - SDS >7 years between 01 April 2020 and 28 June 2022

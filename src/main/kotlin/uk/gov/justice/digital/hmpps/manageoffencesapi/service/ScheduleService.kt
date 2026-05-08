@@ -442,6 +442,14 @@ class ScheduleService(
     return Pair(part1Mappings, part2Mappings)
   }
 
+  fun getSchedule13Part3Mappings(): List<OffenceScheduleMapping> {
+    val mappings = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+      SCHEDULE_13.act,
+      SCHEDULE_13.code,
+    )
+    return mappings.filter { it.schedulePart.partNumber == 3 }
+  }
+
   fun getDomesticViolenceScheduleMappings(): Pair<List<OffenceScheduleMapping>, List<OffenceScheduleMapping>> {
     val mappings = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
       DOMESTIC_VIOLENCE_SCHEDULE.act,
@@ -555,6 +563,10 @@ class ScheduleService(
     val TERRORISM_SCHEDULE = ScheduleInfo(
       act = "Terrorism Excluded Offences",
       code = "TEO",
+    )
+    val SCHEDULE_13 = ScheduleInfo(
+      act = "Sentencing Act 2020",
+      code = "13",
     )
   }
 }

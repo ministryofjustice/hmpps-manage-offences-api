@@ -12,3 +12,4 @@ UPDATE sdrs_load_result SET status = NULL, load_type = NULL, load_date = NULL, l
 UPDATE feature_toggle SET enabled = TRUE;
 UPDATE feature_toggle SET enabled = FALSE WHERE feature = 'FULL_SYNC_SDRS';
 
+DELETE from schedule_part WHERE schedule_id = (select id from schedule where code = '13') AND part_number = 3;

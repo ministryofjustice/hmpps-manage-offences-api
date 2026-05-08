@@ -25,7 +25,7 @@ class WebClientConfiguration(
 ) {
   @Bean
   fun standingDataReferenceServiceApiWebClient(): WebClient = WebClient.builder()
-    .codecs { it.defaultCodecs().maxInMemorySize(50 * 1024 * 1024) }
+    .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE_BYTES) }
     .baseUrl(standingDataReferenceServiceApiUrl)
     .defaultHeaders { headers -> headers.addAll(createHeaders()) }
     .build()
@@ -37,6 +37,7 @@ class WebClientConfiguration(
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
     return WebClient.builder()
+      .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE_BYTES) }
       .baseUrl(prisonApiUrl)
       .apply(oauth2Client.oauth2Configuration())
       .build()
@@ -44,6 +45,7 @@ class WebClientConfiguration(
 
   @Bean
   fun prisonApiUserWebClient(): WebClient = WebClient.builder()
+    .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE_BYTES) }
     .baseUrl(prisonApiUrl)
     .filter(addAuthHeaderFilterFunction())
     .build()
@@ -78,5 +80,9 @@ class WebClientConfiguration(
   private fun createHeaders(): HttpHeaders = HttpHeaders().apply {
     add(HttpHeaders.CONTENT_TYPE, "application/json")
     add(HttpHeaders.ACCEPT, "application/json")
+  }
+
+  private companion object {
+    private const val MAX_IN_MEMORY_SIZE_BYTES = 50 * 1024 * 1024
   }
 }

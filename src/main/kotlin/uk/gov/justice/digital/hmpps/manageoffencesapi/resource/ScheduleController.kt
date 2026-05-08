@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsOffenceDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ToreraSchedulePartCodes
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.IsOffenceInScheduleService
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService
@@ -134,6 +135,19 @@ class ScheduleController(
   ): List<OffenceSdsExclusion> {
     log.info("Request received to determine sexual or violent status for ${offenceCodes.size} offence codes")
     return isOffenceInScheduleService.categoriseSdsExclusionsOffences(offenceCodes)
+  }
+
+  @GetMapping(value = ["/sds-offence-details"])
+  @ResponseBody
+  @Operation(
+    summary = "Determine both if the passed in offence codes are related to the PCSC list and whether they have any exclusions to be considered for SDS40 and Progression Model",
+    description = "This endpoint will return a list of offences with PCSC markers and any SDS early release exclusions if applicable.",
+  )
+  fun getSdsOffenceDetails(
+    @RequestParam offenceCodes: List<String>,
+  ): List<SdsOffenceDetails> {
+    log.info("Request received to determine PCSC markers and early release exclusions for ${offenceCodes.size} offence codes")
+    return isOffenceInScheduleService.getSdsOffenceDetails(offenceCodes)
   }
 
   @Cacheable(SDS_EARLY_RELEASE_EXCLUSION_LISTS)
