@@ -68,7 +68,7 @@ class AdminService(
     offenceIds.forEach { offenceId ->
       val offence = offenceRepository.findById(offenceId)
         .orElseThrow { EntityNotFoundException("Offence with ID $offenceId not found") }
-      if (offence.endDate == null || offence.endDate.isAfter(LocalDate.now().minusDays(1))) {
+      if (offence.endDate == null || offence.endDate!!.isAfter(LocalDate.now().minusDays(1))) {
         throw ValidationException("This offence's end date has not yet expired - therefore cannot deactivate in NOMIS")
       }
       val nomisOffence = prisonApiClient
@@ -92,11 +92,11 @@ class AdminService(
       .orElseThrow { EntityNotFoundException("Offence not found with ID $parentOffenceId") }
 
     // Parent offence should have no parentCode, or parentCode must be the same as the current Offence (indicating the parent)
-    if (offence.parentCode !== null && offence.parentCode !== offence.code) {
+    if (offence.parentCode !== null && offence.parentCode != offence.code) {
       throw ValidationException("Offence must be a valid parent")
     }
 
-    if (offence.endDate !== null && offence.endDate < encouragementOffenceEligibilityStartDate) {
+    if (offence.endDate !== null && offence.endDate!! < encouragementOffenceEligibilityStartDate) {
       throw ValidationException("Offence must have an end date post $encouragementOffenceEligibilityStartDate")
     }
 
