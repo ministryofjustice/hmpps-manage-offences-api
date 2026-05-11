@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.2.4"
   kotlin("plugin.spring") version "2.3.21"
   kotlin("plugin.jpa") version "2.3.21"
   id("se.patrikerdes.use-latest-versions") version "0.2.19"
@@ -16,7 +16,7 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.1")
+    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2")
     mavenBom("software.amazon.awssdk:bom:2.44.4")
   }
 }
@@ -52,7 +52,7 @@ dependencies {
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.3.2")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test") {
     exclude(group = "junit")
@@ -64,7 +64,7 @@ dependencies {
 
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.41")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.61.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.62.0")
   testImplementation("org.testcontainers:postgresql:1.21.4")
   testImplementation("org.apache.commons:commons-csv:1.14.1")
 }
