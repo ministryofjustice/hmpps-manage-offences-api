@@ -25,4 +25,7 @@ jobs:
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_pipeline_scan.yml@v2 # WORKFLOW_VERSION
     with:
       channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
+      veracode_package_artifact_name: 'build-results'
+      veracode_artifact_name: '${{ github.event.repository.name }}-veracode.jar'
     secrets: inherit
+    needs: create-artifact
