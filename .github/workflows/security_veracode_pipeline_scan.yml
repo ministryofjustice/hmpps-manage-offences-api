@@ -4,6 +4,18 @@ on:
   schedule:
     - cron: "6 6 * * MON-FRI" # Every weekday at 06:06 UTC
 jobs:
+  create-artifact:
+    name: Build the artifact for veracode to scan
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/gradle_verify.yml@v2 # WORKFLOW_VERSION
+    with:
+      gradle-command: 'BUILD_NUMBER=veracode ./gradlew assemble'
+      upload-build-artifacts: true
+      build-artifact-name: 'build-results'
+      upload-test-artifacts: false
+      java-version: "25"
+    permissions:
+      contents: read
+      actions: read
   security-veracode-pipeline-scan:
     permissions:
       contents: read
