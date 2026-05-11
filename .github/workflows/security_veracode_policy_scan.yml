@@ -28,3 +28,4 @@ jobs:
       veracode_package_artifact_name: 'build-results'
       veracode_artifact_name: '${{ github.event.repository.name }}-veracode.jar'
     secrets: inherit
+    needs: create-artifact
