@@ -67,20 +67,12 @@ data class Offence(
   val derivedDescription: String
     get() = (cjsTitle ?: description)!!
   val statuteDescription: String
-    get() {
-      if (legislation.isNullOrBlank()) return statuteCode
-      return legislation
-    }
+    get() = legislation?.takeUnless { it.isBlank() } ?: statuteCode
   val activeFlag: String
-    get() {
-      if (endDate == null || endDate.isAfter(LocalDate.now())) return "Y"
-      return "N"
-    }
+    get() = endDate?.takeUnless { it.isAfter(LocalDate.now()) }?.let { "N" } ?: "Y"
   val expiryDate: LocalDate?
-    get() {
-      if (endDate == null || endDate.isAfter(LocalDate.now())) return null
-      return LocalDate.now()
-    }
+    get() = endDate?.takeUnless { it.isAfter(LocalDate.now()) }?.let { LocalDate.now() }
+
   val parentCode: String?
     get() {
       if (code.length < 8) return null
