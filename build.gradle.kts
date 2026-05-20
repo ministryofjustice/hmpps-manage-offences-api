@@ -17,7 +17,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2")
-    mavenBom("software.amazon.awssdk:bom:2.44.9")
+    mavenBom("software.amazon.awssdk:bom:2.44.10")
   }
 }
 
@@ -28,7 +28,7 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.11")
 
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.28.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.28.1")
 
   implementation("io.jsonwebtoken:jjwt-api:0.13.0")
   runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
