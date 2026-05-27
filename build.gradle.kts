@@ -17,7 +17,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2")
-    mavenBom("software.amazon.awssdk:bom:2.44.12")
+    mavenBom("software.amazon.awssdk:bom:2.44.13")
   }
 }
 
@@ -62,7 +62,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
   testImplementation("org.springframework.boot:spring-boot-webflux-test")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.42")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.43")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.62.0")
   testImplementation("org.testcontainers:postgresql:1.21.4")
