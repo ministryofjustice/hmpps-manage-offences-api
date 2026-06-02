@@ -271,7 +271,6 @@ class ScheduleServiceTest {
       schedulePart = SCHEDULE_15_PART_1,
       paragraphNumber = "65",
     )
-
   }
 
   @Nested
