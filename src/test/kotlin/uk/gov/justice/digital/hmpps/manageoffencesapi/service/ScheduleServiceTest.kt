@@ -10,12 +10,9 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.NomisScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
@@ -24,7 +21,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRe
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
 import java.time.LocalDate
@@ -40,9 +36,6 @@ class ScheduleServiceTest {
   private val featureToggleRepository = mock<FeatureToggleRepository>()
   private val nomisScheduleMappingRepository = mock<NomisScheduleMappingRepository>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
-  private val prisonApiClient = mock<PrisonApiClient>()
-  private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
-  private val adminService = mock<AdminService>()
   private val cacheConfiguration = mock<CacheConfiguration>()
 
   private val scheduleService =
@@ -53,10 +46,7 @@ class ScheduleServiceTest {
       offenceRepository,
       featureToggleRepository,
       prisonApiUserClient,
-      prisonApiClient,
       nomisScheduleMappingRepository,
-      offenceToSyncWithNomisRepository,
-      adminService,
       cacheConfiguration,
     )
 
@@ -233,87 +223,6 @@ class ScheduleServiceTest {
     }
   }
 
-  @Nested
-  inner class NomisScheduleMappingMigrationTests {
-    @Test
-    fun `Test scheduled job that unlinks schedule mappings to NOMIS`() {
-      whenever(adminService.isFeatureEnabled(Feature.UNLINK_SCHEDULES_NOMIS)).thenReturn(true)
-      whenever(offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_FROM_OFFENCE)).thenReturn(
-        listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS),
-      )
-
-      scheduleService.unlinkScheduleMappingsToNomis()
-
-      verify(prisonApiClient).unlinkFromSchedule(
-        listOf(
-          OffenceToScheduleMappingDto(
-            BASE_OFFENCE.code,
-            NomisScheduleName.SCHEDULE_15.name,
-          ),
-        ),
-      )
-      verify(offenceToSyncWithNomisRepository).deleteAllById(listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS.id))
-      verify(cacheConfiguration).cacheEvict()
-    }
-
-    @Test
-    fun `Test scheduled job that links schedule mappings to NOMIS`() {
-      whenever(adminService.isFeatureEnabled(Feature.LINK_SCHEDULES_NOMIS)).thenReturn(true)
-      whenever(offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE)).thenReturn(
-        listOf(S15_OFFENCE_TO_SYNC_WITH_NOMIS, POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS),
-      )
-      whenever(
-        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
-          "Criminal Justice Act 2003",
-          "15",
-        ),
-      ).thenReturn(
-        listOf(
-          OFFENCE_SCHEDULE_MAPPING_S15_P1_LIFE,
-          OFFENCE_SCHEDULE_MAPPING_S15_P2_LIFE,
-        ),
-      )
-
-      scheduleService.linkScheduleMappingsToNomis()
-
-      verify(prisonApiClient).linkToSchedule(
-        listOf(
-          OffenceToScheduleMappingDto(
-            BASE_OFFENCE.code,
-            NomisScheduleName.SCHEDULE_15.name,
-          ),
-        ),
-      )
-      verify(prisonApiClient).linkToSchedule(
-        listOf(
-          OffenceToScheduleMappingDto(
-            BASE_OFFENCE.code,
-            NomisScheduleName.SCHEDULE_15_ATTRACTS_LIFE.name,
-          ),
-          OffenceToScheduleMappingDto(
-            BASE_OFFENCE.code,
-            NomisScheduleName.PCSC_SDS.name,
-          ),
-          OffenceToScheduleMappingDto(
-            BASE_OFFENCE.code,
-            NomisScheduleName.PCSC_SEC_250.name,
-          ),
-          OffenceToScheduleMappingDto(
-            BASE_OFFENCE.code,
-            NomisScheduleName.PCSC_SDS_PLUS.name,
-          ),
-        ),
-      )
-      verify(offenceToSyncWithNomisRepository).deleteAllById(
-        listOf(
-          S15_OFFENCE_TO_SYNC_WITH_NOMIS.id,
-          POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS.id,
-        ),
-      )
-      verify(cacheConfiguration).cacheEvict()
-    }
-  }
-
   companion object {
     private const val OFFENCE_ID_91 = 91L
     private const val SCHEDULE_PART_ID_92 = 92L
@@ -363,17 +272,6 @@ class ScheduleServiceTest {
       paragraphNumber = "65",
     )
 
-    private val S15_OFFENCE_TO_SYNC_WITH_NOMIS = OffenceToSyncWithNomis(
-      offenceCode = BASE_OFFENCE.code,
-      nomisScheduleName = NomisScheduleName.SCHEDULE_15,
-      nomisSyncType = NomisSyncType.UNLINK_SCHEDULE_FROM_OFFENCE,
-    )
-
-    private val POTENTIAL_LINK_PCSC_OFFENCE_TO_LINK_WITH_NOMIS = OffenceToSyncWithNomis(
-      offenceCode = BASE_OFFENCE.code,
-      nomisScheduleName = NomisScheduleName.POTENTIAL_LINK_PCSC,
-      nomisSyncType = NomisSyncType.UNLINK_SCHEDULE_FROM_OFFENCE,
-    )
   }
 
   @Nested
