@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRe
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService.Companion.NATIONAL_SECURITY_LEGISLATION
@@ -37,9 +36,6 @@ class IsOffenceInScheduleServiceTest {
   private val featureToggleRepository = mock<FeatureToggleRepository>()
   private val nomisScheduleMappingRepository = mock<NomisScheduleMappingRepository>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
-  private val prisonApiClient = mock<PrisonApiClient>()
-  private val offenceToSyncWithNomisRepository = mock<OffenceToSyncWithNomisRepository>()
-  private val adminService = mock<AdminService>()
   private val cacheConfiguration = mock<CacheConfiguration>()
 
   private val scheduleService =
@@ -50,10 +46,7 @@ class IsOffenceInScheduleServiceTest {
       offenceRepository,
       featureToggleRepository,
       prisonApiUserClient,
-      prisonApiClient,
       nomisScheduleMappingRepository,
-      offenceToSyncWithNomisRepository,
-      adminService,
       cacheConfiguration,
     )
 
