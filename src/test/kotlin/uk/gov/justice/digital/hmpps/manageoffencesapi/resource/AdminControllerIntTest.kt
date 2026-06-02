@@ -9,11 +9,9 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_SDRS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_SDRS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.LINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.PUBLISH_EVENTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.SYNC_HOME_OFFICE_CODES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.T3_OFFENCE_EXCLUSIONS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.UNLINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
@@ -53,8 +51,6 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(DELTA_SYNC_SDRS, true),
           FeatureToggle(SYNC_HOME_OFFICE_CODES, true),
           FeatureToggle(PUBLISH_EVENTS, true),
-          FeatureToggle(UNLINK_SCHEDULES_NOMIS, true),
-          FeatureToggle(LINK_SCHEDULES_NOMIS, true),
           FeatureToggle(T3_OFFENCE_EXCLUSIONS, true),
         ),
       )
@@ -85,8 +81,6 @@ class AdminControllerIntTest : IntegrationTestBase() {
           FeatureToggle(DELTA_SYNC_SDRS, true),
           FeatureToggle(SYNC_HOME_OFFICE_CODES, true),
           FeatureToggle(PUBLISH_EVENTS, true),
-          FeatureToggle(UNLINK_SCHEDULES_NOMIS, true),
-          FeatureToggle(LINK_SCHEDULES_NOMIS, true),
           FeatureToggle(T3_OFFENCE_EXCLUSIONS, true),
         ),
       )

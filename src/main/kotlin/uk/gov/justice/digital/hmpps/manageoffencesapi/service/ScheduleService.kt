@@ -2,20 +2,15 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import jakarta.persistence.EntityExistsException
 import jakarta.persistence.EntityNotFoundException
-import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.LINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.T3_OFFENCE_EXCLUSIONS
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.UNLINK_SCHEDULES_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
-import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
@@ -30,7 +25,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRe
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceScheduleMappingRepository
-import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.OffenceToSyncWithNomisRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
 import java.time.LocalDate
@@ -44,71 +38,9 @@ class ScheduleService(
   private val offenceRepository: OffenceRepository,
   private val featureToggleRepository: FeatureToggleRepository,
   private val prisonApiUserClient: PrisonApiUserClient,
-  private val prisonApiClient: PrisonApiClient,
   private val nomisScheduleMappingRepository: NomisScheduleMappingRepository,
-  private val offenceToSyncWithNomisRepository: OffenceToSyncWithNomisRepository,
-  private val adminService: AdminService,
   private val cacheConfiguration: CacheConfiguration,
 ) {
-
-  //  Only used for migration purposes when the data is changed outside the UI
-  @Scheduled(cron = "0 */10 * * * *")
-  @SchedulerLock(name = "unlinkScheduleMappingsToNomis")
-  @Transactional
-  fun unlinkScheduleMappingsToNomis() {
-    if (!adminService.isFeatureEnabled(UNLINK_SCHEDULES_NOMIS)) {
-      log.info("Unlink schedules with NOMIS - disabled")
-      return
-    }
-    log.info("Unlink schedules with NOMIS used for migration records - starting")
-
-    val schedulesToUnlink =
-      offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.UNLINK_SCHEDULE_FROM_OFFENCE)
-
-    prisonApiClient.unlinkFromSchedule(
-      schedulesToUnlink.map { s ->
-        OffenceToScheduleMappingDto(
-          schedule = s.nomisScheduleName?.name!!,
-          offenceCode = s.offenceCode,
-        )
-      },
-    )
-    offenceToSyncWithNomisRepository.deleteAllById(schedulesToUnlink.map { it.id })
-    cacheConfiguration.cacheEvict()
-    log.info("Unlink schedules with NOMIS finished")
-  }
-
-  //  Only used for migration purposes when the data is changed outside the UI
-  @Scheduled(cron = "0 5-55/10 * * * *")
-  @SchedulerLock(name = "linkScheduleMappingsToNomis")
-  @Transactional
-  fun linkScheduleMappingsToNomis() {
-    if (!adminService.isFeatureEnabled(LINK_SCHEDULES_NOMIS)) {
-      log.info("Link schedules with NOMIS - disabled")
-      return
-    }
-    log.info("Link schedules with NOMIS used for migration records - starting")
-
-    val (pcscSchedulesToLink, schedulesToLink) = offenceToSyncWithNomisRepository.findByNomisSyncType(NomisSyncType.LINK_SCHEDULE_TO_OFFENCE)
-      .partition { it.nomisScheduleName == NomisScheduleName.POTENTIAL_LINK_PCSC }
-
-    prisonApiClient.linkToSchedule(
-      schedulesToLink.map { s ->
-        OffenceToScheduleMappingDto(
-          schedule = s.nomisScheduleName?.name!!,
-          offenceCode = s.offenceCode,
-        )
-      },
-    )
-
-    if (pcscSchedulesToLink.isNotEmpty()) {
-      val pcscMappings = determinePcscMappingsForNomis(pcscSchedulesToLink.map { o -> o.offenceCode })
-      prisonApiClient.linkToSchedule(pcscMappings)
-    }
-    offenceToSyncWithNomisRepository.deleteAllById(pcscSchedulesToLink.plus(schedulesToLink).map { it.id })
-    cacheConfiguration.cacheEvict()
-    log.info("Link schedules with NOMIS finished")
-  }
 
   @Transactional
   fun createSchedule(schedule: ModelSchedule) {
