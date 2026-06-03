@@ -17,7 +17,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2")
-    mavenBom("software.amazon.awssdk:bom:2.46.0")
+    mavenBom("software.amazon.awssdk:bom:2.46.1")
   }
 }
 
