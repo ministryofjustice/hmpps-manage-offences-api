@@ -17,11 +17,11 @@ object PostgresContainer {
 
     val logConsumer = Slf4jLogConsumer(log).withPrefix("postgresql")
 
-    return PostgreSQLContainer<Nothing>("postgres:17").apply {
+    return PostgreSQLContainer<Nothing>("postgres:18").apply {
       withEnv("HOSTNAME_EXTERNAL", "localhost")
-      withDatabaseName("identify_remand")
-      withUsername("identify_remand")
-      withPassword("identify_remand")
+      withDatabaseName("manage_offences")
+      withUsername("manage_offences")
+      withPassword("manage_offences")
       setWaitStrategy(Wait.forListeningPort())
       withReuse(false)
       start()

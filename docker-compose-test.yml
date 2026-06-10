@@ -1,7 +1,7 @@
 version: "3"
 services:
   manage-offences-db:
-    image: postgres
+    image: postgres:18
     networks:
       - hmpps
     container_name: manage-offences-db
