@@ -53,7 +53,7 @@ jobs:
       - app_version
     with:
       localstack-tag: "3"
-      postgres-tag: "17"
+      postgres-tag: "18"
       postgres-db: manage_offences
       postgres-username: manage_offences
       postgres-password: manage_offences
