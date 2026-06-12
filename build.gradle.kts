@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.4.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.0"
   kotlin("plugin.spring") version "2.4.0"
   kotlin("plugin.jpa") version "2.4.0"
   id("se.patrikerdes.use-latest-versions") version "0.2.19"
@@ -17,7 +17,7 @@ configurations {
 dependencyManagement {
   imports {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2")
-    mavenBom("software.amazon.awssdk:bom:2.46.6")
+    mavenBom("software.amazon.awssdk:bom:2.46.9")
   }
 }
 
@@ -62,7 +62,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
   testImplementation("org.springframework.boot:spring-boot-webflux-test")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.43")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.44")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.63.0")
   testImplementation("org.testcontainers:postgresql:1.21.4")
