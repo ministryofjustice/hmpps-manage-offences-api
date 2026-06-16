@@ -19,6 +19,12 @@ dependencyManagement {
     mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2")
     mavenBom("software.amazon.awssdk:bom:2.46.10")
   }
+  // hmpps-sqs-spring-boot-starter:7.4.0 pulls in spring-retry:2.0.12 (SNYK-JAVA-ORGSPRINGFRAMEWORKRETRY-17260993)
+  // need to temporarily force 2.0.13 to override this
+  // REMOVE once hmpps-sqs-spring-boot-starter fixed
+  dependencies {
+    dependency("org.springframework.retry:spring-retry:2.0.13")
+  }
 }
 
 dependencies {
@@ -49,6 +55,7 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
 
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
+
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
