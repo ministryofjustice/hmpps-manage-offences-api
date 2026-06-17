@@ -16,7 +16,6 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.2")
     mavenBom("software.amazon.awssdk:bom:2.46.11")
   }
 }
@@ -48,7 +47,7 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
 
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
