@@ -59,6 +59,9 @@ spring:
     url: ${spring.datasource.url}
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
+    placeholders:
+      dpr_user: ${DPR_USER}
+      dpr_password: ${DPR_PASSWORD}
 
   sql:
     init:

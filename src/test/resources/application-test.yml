@@ -1,5 +1,11 @@
 spring:
 
+  flyway:
+    locations: classpath:/migration/common
+    placeholders:
+      dpr_user: digital_prison_reporting
+      dpr_password: unused
+
   security:
     oauth2:
       resourceserver:
