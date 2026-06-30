@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.2"
   kotlin("plugin.spring") version "2.4.0"
   kotlin("plugin.jpa") version "2.4.0"
   id("se.patrikerdes.use-latest-versions") version "0.2.19"
@@ -61,7 +61,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
   testImplementation("org.springframework.boot:spring-boot-webflux-test")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.44")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.45")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.63.0")
   testImplementation("org.testcontainers:postgresql:1.21.4")
