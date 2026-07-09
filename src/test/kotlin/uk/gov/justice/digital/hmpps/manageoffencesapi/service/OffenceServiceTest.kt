@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -21,10 +20,11 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceReactivatedInNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceToSyncWithNomis
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCode
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCodeCategory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCodeFlags
-import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCodeWeightings
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ActuarialCategory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
@@ -664,21 +664,18 @@ class OffenceServiceTest {
     val result = offenceService.findAllRiskActuarialOffenceCodesToDto()
 
     assertEquals(1, result.size)
-    val dto = result.first()
-    assertEquals(1, dto.category)
-    assertEquals(2, dto.subCategory)
+
+    val dto = result.get("12")!!
+    assertEquals("testParentGroupDescription", dto.parentGroupDescription)
+    assertEquals("testCategoryDescription", dto.categoryDescription)
+    assertEquals("testSubCategoryDescription", dto.subCategoryDescription)
+    assertEquals(ActuarialCategory.ACQUISITIVE_VIOLENCE, dto.actuarialCategory)
 
     assertEquals(1, dto.flags.size)
+
     val flag = dto.flags.first()
     assertEquals("testFlag", flag.name)
     assertEquals(true, flag.value)
-
-    assertEquals(1, dto.weightings.size)
-    val weighting = dto.weightings.first()
-    assertEquals("TestWeighting", weighting.name)
-    assertEquals(0.75, weighting.value)
-    assertEquals("Description", weighting.description)
-    assertNull(weighting.errorCode)
   }
 
   companion object {
@@ -867,19 +864,18 @@ class OffenceServiceTest {
       riskActuarialHoCode = null,
     )
 
-    val RISK_ACTUARIAL_HO_CODE_WEIGHTING = RiskActuarialHoCodeWeightings(
-      weightingName = "TestWeighting",
-      weightingValue = 0.75,
-      weightingDesc = "Description",
-      errorCode = null,
-      riskActuarialHoCode = null,
+    val RISK_ACTUARIAL_HO_CODE_WEIGHTING = RiskActuarialHoCodeCategory(
+      categoryName = ActuarialCategory.ACQUISITIVE_VIOLENCE,
     )
 
     val RISK_ACTUARIAL_HO_CODE = RiskActuarialHoCode(
       category = 1,
       subCategory = 2,
+      parentGroupDescription = "testParentGroupDescription",
+      categoryDescription = "testCategoryDescription",
+      subCategoryDescription = "testSubCategoryDescription",
       riskActuarialHoCodeFlags = mutableListOf(RISK_ACTUARIAL_HO_CODE_FLAG),
-      riskActuarialHoCodeWeightings = mutableListOf(RISK_ACTUARIAL_HO_CODE_WEIGHTING),
+      riskActuarialHoCodeCategory = RISK_ACTUARIAL_HO_CODE_WEIGHTING,
     )
 
     private fun createPrisonApiOffencesResponse(

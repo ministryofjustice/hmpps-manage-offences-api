@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeDTO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeFlagsDTO
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeWeightingsDTO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
@@ -437,22 +436,18 @@ class OffenceService(
     return populateOffenceModel(offenceRepository.findByCategoryAndSubCategory(category, subCategory))
   }
 
-  fun findAllRiskActuarialOffenceCodesToDto(): List<RiskActuarialHoCodeDTO> {
+  fun findAllRiskActuarialOffenceCodesToDto(): Map<String, RiskActuarialHoCodeDTO> {
     log.info("Fetching risk actuarial offence code mappings")
-    return riskActuarialHoCodeRepository.findAll().map { hoCode ->
-      RiskActuarialHoCodeDTO(
-        category = hoCode.category,
-        subCategory = hoCode.subCategory,
+
+    return riskActuarialHoCodeRepository.findAll().associate { hoCode ->
+      val combinedKey = "${hoCode.category}${hoCode.subCategory}"
+      combinedKey to RiskActuarialHoCodeDTO(
+        parentGroupDescription = hoCode.parentGroupDescription,
+        categoryDescription = hoCode.categoryDescription,
+        subCategoryDescription = hoCode.subCategoryDescription,
+        actuarialCategory = hoCode.riskActuarialHoCodeCategory!!.categoryName,
         flags = hoCode.riskActuarialHoCodeFlags.map { flag ->
           RiskActuarialHoCodeFlagsDTO(flag.flagName, flag.flagValue)
-        },
-        weightings = hoCode.riskActuarialHoCodeWeightings.map { weighting ->
-          RiskActuarialHoCodeWeightingsDTO(
-            weighting.weightingName,
-            weighting.weightingValue,
-            weighting.weightingDesc,
-            weighting.errorCode,
-          )
         },
       )
     }
