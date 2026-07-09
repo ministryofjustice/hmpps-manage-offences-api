@@ -15,7 +15,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
+import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
+import uk.gov.justice.hmpps.kotlin.auth.authorisedWebClient
 
 @Configuration
 @EnableScheduling
@@ -31,16 +33,12 @@ class WebClientConfiguration(
     .build()
 
   @Bean
-  fun prisonApiWebClient(
-    authorizedClientManager: OAuth2AuthorizedClientManager,
-  ): WebClient {
-    val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
-    oauth2Client.setDefaultClientRegistrationId("prison-api")
+  fun prisonApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
+    val strategies = ExchangeStrategies.builder().codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE_BYTES) }.build()
     return WebClient.builder()
-      .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE_BYTES) }
       .baseUrl(prisonApiUrl)
-      .apply(oauth2Client.oauth2Configuration())
-      .build()
+      .exchangeStrategies(strategies)
+      .authorisedWebClient(authorizedClientManager, registrationId = "prison-api", url = prisonApiUrl)
   }
 
   @Bean
