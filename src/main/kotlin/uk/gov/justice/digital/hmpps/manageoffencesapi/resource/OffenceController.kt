@@ -139,7 +139,7 @@ class OffenceController(
     summary = "Get offence code to actuarial weighting mapping",
     description = "Queries database to get offence code to actuarial weighting mapping",
   )
-  fun getAllRiskActuarialOffenceCodeMappings(): List<RiskActuarialHoCodeDTO> {
+  fun getAllRiskActuarialOffenceCodeMappings(): Map<String, RiskActuarialHoCodeDTO> {
     log.info("Request received to get all risk actuarial offence code mappings")
     return offenceService.findAllRiskActuarialOffenceCodesToDto()
   }
