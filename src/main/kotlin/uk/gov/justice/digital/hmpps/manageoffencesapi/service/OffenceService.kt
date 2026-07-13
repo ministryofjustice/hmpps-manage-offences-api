@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeDTO
-import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeFlagsDTO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisChangeHistoryRepository
@@ -440,14 +439,14 @@ class OffenceService(
     log.info("Fetching risk actuarial offence code mappings")
 
     return riskActuarialHoCodeRepository.findAll().associate { hoCode ->
-      val combinedKey = "${hoCode.category}${hoCode.subCategory}"
+      val combinedKey = COMBINED_CODE_FORMAT.format(hoCode.category, hoCode.subCategory)
       combinedKey to RiskActuarialHoCodeDTO(
         parentGroupDescription = hoCode.parentGroupDescription,
         categoryDescription = hoCode.categoryDescription,
         subCategoryDescription = hoCode.subCategoryDescription,
         actuarialCategory = hoCode.riskActuarialHoCodeCategory!!.categoryName,
-        flags = hoCode.riskActuarialHoCodeFlags.map { flag ->
-          RiskActuarialHoCodeFlagsDTO(flag.flagName, flag.flagValue)
+        flags = hoCode.riskActuarialHoCodeFlags.associate {
+          it.flagName to it.flagValue
         },
       )
     }
@@ -456,5 +455,6 @@ class OffenceService(
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     private const val MAX_RECORDS_IN_POST_PAYLOAD = 100
+    private const val COMBINED_CODE_FORMAT = "%03d%02d"
   }
 }

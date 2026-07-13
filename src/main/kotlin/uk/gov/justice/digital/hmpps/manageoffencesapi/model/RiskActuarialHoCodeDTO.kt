@@ -7,5 +7,5 @@ data class RiskActuarialHoCodeDTO(
   val categoryDescription: String,
   val subCategoryDescription: String,
   val actuarialCategory: ActuarialCategory,
-  val flags: List<RiskActuarialHoCodeFlagsDTO>,
+  val flags: Map<String, Boolean?>,
 )
