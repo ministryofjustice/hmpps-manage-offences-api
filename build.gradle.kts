@@ -16,7 +16,7 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("software.amazon.awssdk:bom:2.46.21")
+    mavenBom("software.amazon.awssdk:bom:2.47.0")
   }
 }
 
@@ -25,7 +25,7 @@ dependencies {
 
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  runtimeOnly("org.postgresql:postgresql:42.7.12")
+  runtimeOnly("org.postgresql:postgresql:42.7.13")
 
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.29.0")
 
