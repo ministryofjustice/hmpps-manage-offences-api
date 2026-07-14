@@ -665,7 +665,7 @@ class OffenceServiceTest {
 
     assertEquals(1, result.size)
 
-    val dto = result.get("12")!!
+    val dto = result.get("00102")!!
     assertEquals("testParentGroupDescription", dto.parentGroupDescription)
     assertEquals("testCategoryDescription", dto.categoryDescription)
     assertEquals("testSubCategoryDescription", dto.subCategoryDescription)
@@ -673,9 +673,8 @@ class OffenceServiceTest {
 
     assertEquals(1, dto.flags.size)
 
-    val flag = dto.flags.first()
-    assertEquals("testFlag", flag.name)
-    assertEquals(true, flag.value)
+    val flag = dto.flags
+    assertEquals(true, flag.get("testFlag"))
   }
 
   companion object {
