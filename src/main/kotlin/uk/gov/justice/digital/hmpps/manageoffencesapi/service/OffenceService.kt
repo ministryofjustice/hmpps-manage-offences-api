@@ -446,7 +446,7 @@ class OffenceService(
         subCategoryDescription = hoCode.subCategoryDescription,
         actuarialCategory = hoCode.riskActuarialHoCodeCategory!!.categoryName,
         flags = hoCode.riskActuarialHoCodeFlags.associate {
-          it.flagName to it.flagValue
+          it.flagName.value to it.flagValue
         },
       )
     }
