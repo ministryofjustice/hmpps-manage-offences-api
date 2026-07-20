@@ -16,7 +16,7 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("software.amazon.awssdk:bom:2.47.4")
+    mavenBom("software.amazon.awssdk:bom:2.47.5")
   }
 }
 
@@ -64,7 +64,7 @@ dependencies {
 
   testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.45")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.63.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.64.0")
   testImplementation("org.testcontainers:postgresql:1.21.4")
   testImplementation("org.apache.commons:commons-csv:1.14.1")
 }
