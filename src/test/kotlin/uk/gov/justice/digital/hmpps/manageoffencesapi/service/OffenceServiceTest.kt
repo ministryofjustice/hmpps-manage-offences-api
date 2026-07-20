@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.RiskActuarialHoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ActuarialCategory
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ActuarialFlags
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
@@ -674,7 +675,7 @@ class OffenceServiceTest {
     assertEquals(1, dto.flags.size)
 
     val flag = dto.flags
-    assertEquals(true, flag.get("testFlag"))
+    assertEquals(true, flag.get("opdViolenceSex"))
   }
 
   companion object {
@@ -858,7 +859,7 @@ class OffenceServiceTest {
     )
 
     val RISK_ACTUARIAL_HO_CODE_FLAG = RiskActuarialHoCodeFlags(
-      flagName = "testFlag",
+      flagName = ActuarialFlags.OPD_VIOLENCE_SEX_FLAG,
       flagValue = true,
       riskActuarialHoCode = null,
     )
