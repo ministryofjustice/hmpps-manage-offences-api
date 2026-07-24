@@ -45,7 +45,7 @@ class ScheduleService(
   @Transactional
   fun createSchedule(schedule: ModelSchedule) {
     scheduleRepository.findOneByActAndCode(schedule.act, schedule.code)
-      ?: throw EntityExistsException(schedule.id.toString())
+      ?.let { throw EntityExistsException("Schedule ${schedule.act} ${schedule.code} already exists") }
 
     val scheduleEntity = scheduleRepository.save(transform(schedule))
     if (schedule.scheduleParts != null) {

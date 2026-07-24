@@ -1,8 +1,12 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import jakarta.persistence.EntityExistsException
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -26,6 +30,8 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleReposit
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule as ModelSchedule
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart as ModelSchedulePart
 
 class ScheduleServiceTest {
 
@@ -223,6 +229,31 @@ class ScheduleServiceTest {
     }
   }
 
+  @Nested
+  inner class CreateScheduleTests {
+    @Test
+    fun `Creating a schedule that does not already exist saves the schedule and its parts`() {
+      whenever(scheduleRepository.findOneByActAndCode("Act", "15")).thenReturn(null)
+      whenever(scheduleRepository.save(any())).thenReturn(SCHEDULE_15)
+
+      scheduleService.createSchedule(NEW_SCHEDULE)
+
+      verify(scheduleRepository).save(any())
+      verify(schedulePartRepository).saveAll(any<List<SchedulePart>>())
+    }
+
+    @Test
+    fun `Creating a schedule that already exists throws and saves nothing`() {
+      whenever(scheduleRepository.findOneByActAndCode("Act", "15")).thenReturn(SCHEDULE_15)
+
+      assertThatThrownBy { scheduleService.createSchedule(NEW_SCHEDULE) }
+        .isInstanceOf(EntityExistsException::class.java)
+
+      verify(scheduleRepository, never()).save(any())
+      verifyNoInteractions(schedulePartRepository)
+    }
+  }
+
   companion object {
     private const val OFFENCE_ID_91 = 91L
     private const val SCHEDULE_PART_ID_92 = 92L
@@ -241,6 +272,13 @@ class ScheduleServiceTest {
     private val SCHEDULE_13_PART_1 = SchedulePart(id = SCHEDULE_PART_ID_92, partNumber = 1, schedule = SCHEDULE_13)
 
     private val SCHEDULE_15 = Schedule(code = "15", id = 15, act = "Act", url = "url")
+    private val NEW_SCHEDULE = ModelSchedule(
+      id = 0,
+      act = "Act",
+      code = "15",
+      url = "url",
+      scheduleParts = listOf(ModelSchedulePart(id = 0, partNumber = 1)),
+    )
     private val SCHEDULE_15_PART_1 = SchedulePart(id = SCHEDULE_PART_ID_92, partNumber = 1, schedule = SCHEDULE_15)
     private val SCHEDULE_15_PART_2 = SchedulePart(id = SCHEDULE_PART_ID_93, partNumber = 2, schedule = SCHEDULE_15)
     private val NOMIS_SCHEDULE_MAPPING =
