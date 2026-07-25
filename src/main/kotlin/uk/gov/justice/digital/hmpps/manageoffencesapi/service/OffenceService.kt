@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResultHistory
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.INSERT
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType.UPDATE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.DELTA_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.FULL_SYNC_NOMIS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
@@ -43,7 +45,16 @@ class OffenceService(
   private val riskActuarialHoCodeRepository: RiskActuarialHoCodeRepository,
   private val prisonApiClient: PrisonApiClient,
   private val adminService: AdminService,
+  private val scheduleVisibilityService: ScheduleVisibilityService,
 ) {
+
+  private fun visibleMappings(
+    mappings: List<OffenceScheduleMapping>?,
+  ) = if (scheduleVisibilityService.canViewDrafts()) {
+    mappings
+  } else {
+    mappings?.filter { it.schedulePart.schedule.status == ScheduleStatus.LIVE }
+  }
   fun findOffencesByCode(code: String): List<Offence> {
     log.info("Fetching offences by offenceCode")
     val offences = offenceRepository.findByCodeStartsWithIgnoreCase(code)
@@ -62,7 +73,7 @@ class OffenceService(
     val offenceMappingsByOffenceId =
       offenceScheduleMappingRepository.findByOffenceIdIn(matchingOffenceIds).groupBy { it.offence.id }
     return matchingOffences.map {
-      it.copy(schedules = transform(offenceMappingsByOffenceId[it.id]))
+      it.copy(schedules = transform(visibleMappings(offenceMappingsByOffenceId[it.id])))
     }.sortedBy { it.code }
   }
 
@@ -409,7 +420,7 @@ class OffenceService(
     val children = offenceRepository.findByParentOffenceId(offence.id)
     val offenceMappings = offenceScheduleMappingRepository.findByOffenceId(offence.id)
     val populatedOffence = transform(offence, children.map { it.id })
-    return populatedOffence.copy(schedules = transform(offenceMappings))
+    return populatedOffence.copy(schedules = transform(visibleMappings(offenceMappings)))
   }
 
   fun searchOffences(searchString: String, excludeLegislation: Boolean): List<Offence> {

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleStatusRequest
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.AdminService
 
 @RestController
@@ -21,6 +22,20 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.service.AdminService
 class AdminController(
   private val adminService: AdminService,
 ) {
+  @PutMapping(value = ["/schedule/{scheduleId}/status"])
+  @PreAuthorize("hasRole('ROLE_MANAGE_OFFENCES_ADMIN')")
+  @Operation(
+    summary = "Set the publication status of a schedule",
+    description = "Schedules are created as DRAFT and are withheld from callers without ROLE_MANAGE_OFFENCES_ADMIN until published",
+  )
+  fun setScheduleStatus(
+    @PathVariable scheduleId: Long,
+    @RequestBody request: ScheduleStatusRequest,
+  ) {
+    log.info("Request received to set status of schedule {} to {}", scheduleId, request.status)
+    adminService.setScheduleStatus(scheduleId, request.status)
+  }
+
   @PutMapping(value = ["/toggle-feature"])
   @PreAuthorize("hasRole('ROLE_MANAGE_OFFENCES_ADMIN')")
   @Operation(

@@ -4,10 +4,13 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 
 @Repository
 interface ScheduleRepository : JpaRepository<Schedule, Long> {
   fun findOneByActAndCode(act: String, code: String): Schedule?
+
+  fun findAllByStatus(status: ScheduleStatus): List<Schedule>
 
   @Query(
     """
