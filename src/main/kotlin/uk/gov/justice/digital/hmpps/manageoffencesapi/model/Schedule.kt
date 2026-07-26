@@ -14,7 +14,7 @@ data class Schedule(
     description = "Publication status. Schedules are always created as DRAFT; the value supplied on create is ignored. " +
       "DRAFT schedules are only returned to callers holding ROLE_MANAGE_OFFENCES_ADMIN.",
   )
-  val status: ScheduleStatus = ScheduleStatus.DRAFT,
+  val status: ScheduleStatus = ScheduleStatus.LIVE,
 )
 
 data class ScheduleInfo(
