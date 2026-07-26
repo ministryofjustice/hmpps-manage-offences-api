@@ -234,11 +234,11 @@ class ScheduleServiceTest {
     @Test
     fun `Creating a schedule that does not already exist saves the schedule and its parts`() {
       whenever(scheduleRepository.findOneByActAndCode("Act", "15")).thenReturn(null)
-      whenever(scheduleRepository.save(any())).thenReturn(SCHEDULE_15)
+      whenever(scheduleRepository.save(any<Schedule>())).thenReturn(SCHEDULE_15)
 
       scheduleService.createSchedule(NEW_SCHEDULE)
 
-      verify(scheduleRepository).save(any())
+      verify(scheduleRepository).save(any<Schedule>())
       verify(schedulePartRepository).saveAll(any<List<SchedulePart>>())
     }
 
@@ -249,7 +249,7 @@ class ScheduleServiceTest {
       assertThatThrownBy { scheduleService.createSchedule(NEW_SCHEDULE) }
         .isInstanceOf(EntityExistsException::class.java)
 
-      verify(scheduleRepository, never()).save(any())
+      verify(scheduleRepository, never()).save(any<Schedule>())
       verifyNoInteractions(schedulePartRepository)
     }
   }
