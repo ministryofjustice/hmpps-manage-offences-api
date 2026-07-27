@@ -10,6 +10,7 @@ interface OffenceScheduleMappingRepository : JpaRepository<OffenceScheduleMappin
   fun findBySchedulePartScheduleId(scheduleId: Long): List<OffenceScheduleMapping>
   fun findByOffenceIdIn(offenceId: List<Long>): List<OffenceScheduleMapping>
   fun findByOffenceId(offenceId: Long): List<OffenceScheduleMapping>
+  fun countBySchedulePartId(schedulePartId: Long): Long
   fun deleteBySchedulePartIdAndOffenceId(schedulePartId: Long, offenceId: Long): Long
 
   @EntityGraph(value = "OffenceScheduleMapping.detail", type = EntityGraph.EntityGraphType.LOAD)

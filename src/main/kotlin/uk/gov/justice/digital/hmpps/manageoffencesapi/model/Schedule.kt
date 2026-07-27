@@ -22,6 +22,16 @@ data class ScheduleInfo(
   val code: String,
 )
 
+@Schema(
+  description = "Request to update a schedule. The act and code may only be changed while the schedule is a DRAFT, " +
+    "because published schedules are matched by act and code elsewhere in the service.",
+)
+data class UpdateSchedule(
+  val act: String,
+  val code: String,
+  val url: String?,
+)
+
 @Schema(description = "Request to change the publication status of a schedule")
 data class ScheduleStatusRequest(
   val status: ScheduleStatus,
