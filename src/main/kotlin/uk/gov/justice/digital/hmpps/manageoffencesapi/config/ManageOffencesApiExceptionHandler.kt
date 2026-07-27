@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.config
 
+import jakarta.persistence.EntityExistsException
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
@@ -22,6 +23,20 @@ class ManageOffencesApiExceptionHandler {
         ErrorResponse(
           status = BAD_REQUEST,
           userMessage = "Validation failure: ${e.message}",
+          developerMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(EntityExistsException::class)
+  fun handleEntityExistsException(e: EntityExistsException): ResponseEntity<ErrorResponse> {
+    log.info("Entity exists exception: {}", e.message)
+    return ResponseEntity
+      .status(HttpStatus.CONFLICT)
+      .body(
+        ErrorResponse(
+          status = HttpStatus.CONFLICT.value(),
+          userMessage = "Conflict: ${e.message}",
           developerMessage = e.message,
         ),
       )

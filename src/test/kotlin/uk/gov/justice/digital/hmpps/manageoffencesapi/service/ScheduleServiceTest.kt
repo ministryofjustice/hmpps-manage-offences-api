@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import jakarta.persistence.EntityExistsException
 import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.UpdateSchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
@@ -291,6 +293,75 @@ class ScheduleServiceTest {
       assertThatThrownBy { scheduleService.findScheduleById(DRAFT_SCHEDULE_ID) }
         .isInstanceOf(EntityNotFoundException::class.java)
         .hasMessage("No schedule exists for $DRAFT_SCHEDULE_ID")
+    }
+  }
+
+  @Nested
+  inner class SchedulePartTests {
+    @Test
+    fun `A part cannot be added twice with the same number`() {
+      whenever(scheduleRepository.findById(15L)).thenReturn(Optional.of(SCHEDULE_15))
+      whenever(schedulePartRepository.findByScheduleIdAndPartNumber(15L, 1)).thenReturn(SCHEDULE_15_PART_1)
+
+      assertThatThrownBy { scheduleService.addSchedulePart(15L, 1) }
+        .isInstanceOf(EntityExistsException::class.java)
+
+      verify(schedulePartRepository, never()).save(any<SchedulePart>())
+    }
+
+    @Test
+    fun `A part with linked offences cannot be deleted`() {
+      whenever(schedulePartRepository.findById(SCHEDULE_PART_ID_92)).thenReturn(Optional.of(SCHEDULE_15_PART_1))
+      whenever(offenceScheduleMappingRepository.countBySchedulePartId(SCHEDULE_PART_ID_92)).thenReturn(3L)
+
+      assertThatThrownBy { scheduleService.deleteSchedulePart(SCHEDULE_PART_ID_92) }
+        .isInstanceOf(ValidationException::class.java)
+
+      verify(schedulePartRepository, never()).delete(any<SchedulePart>())
+    }
+
+    @Test
+    fun `An empty part is deleted`() {
+      whenever(schedulePartRepository.findById(SCHEDULE_PART_ID_92)).thenReturn(Optional.of(SCHEDULE_15_PART_1))
+      whenever(offenceScheduleMappingRepository.countBySchedulePartId(SCHEDULE_PART_ID_92)).thenReturn(0L)
+
+      scheduleService.deleteSchedulePart(SCHEDULE_PART_ID_92)
+
+      verify(schedulePartRepository).delete(SCHEDULE_15_PART_1)
+    }
+  }
+
+  @Nested
+  inner class UpdateScheduleTests {
+    @Test
+    fun `The act and code of a published schedule cannot be changed`() {
+      whenever(scheduleRepository.findById(15L)).thenReturn(Optional.of(SCHEDULE_15))
+
+      assertThatThrownBy { scheduleService.updateSchedule(15L, UpdateSchedule(act = "Act", code = "16", url = "url")) }
+        .isInstanceOf(ValidationException::class.java)
+
+      verify(scheduleRepository, never()).save(any<Schedule>())
+    }
+
+    @Test
+    fun `The url of a published schedule can be changed`() {
+      whenever(scheduleRepository.findById(15L)).thenReturn(Optional.of(SCHEDULE_15))
+      whenever(scheduleRepository.save(any<Schedule>())).thenReturn(SCHEDULE_15.copy(url = "new-url"))
+
+      scheduleService.updateSchedule(15L, UpdateSchedule(act = "Act", code = "15", url = "new-url"))
+
+      verify(scheduleRepository).save(SCHEDULE_15.copy(url = "new-url"))
+    }
+
+    @Test
+    fun `The act and code of a draft schedule can be changed`() {
+      whenever(scheduleRepository.findById(DRAFT_SCHEDULE_ID)).thenReturn(Optional.of(DRAFT_SCHEDULE))
+      whenever(scheduleRepository.findOneByActAndCode("Act", "100")).thenReturn(null)
+      whenever(scheduleRepository.save(any<Schedule>())).thenReturn(DRAFT_SCHEDULE.copy(code = "100"))
+
+      scheduleService.updateSchedule(DRAFT_SCHEDULE_ID, UpdateSchedule(act = "Act", code = "100", url = "url"))
+
+      verify(scheduleRepository).save(DRAFT_SCHEDULE.copy(code = "100"))
     }
   }
 
