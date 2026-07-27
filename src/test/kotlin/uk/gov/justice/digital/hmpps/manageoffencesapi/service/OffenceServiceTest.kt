@@ -64,6 +64,7 @@ class OffenceServiceTest {
   private val riskActuarialHoCodeRepository = mock<RiskActuarialHoCodeRepository>()
   private val prisonApiClient = mock<PrisonApiClient>()
   private val adminService = mock<AdminService>()
+  private val scheduleVisibilityService = mock<ScheduleVisibilityService>()
 
   private val offenceService =
     OffenceService(
@@ -77,6 +78,7 @@ class OffenceServiceTest {
       riskActuarialHoCodeRepository,
       prisonApiClient,
       adminService,
+      scheduleVisibilityService,
     )
 
   private inline fun <reified T : Any> argumentCaptor(): ArgumentCaptor<T> = ArgumentCaptor.forClass(T::class.java)

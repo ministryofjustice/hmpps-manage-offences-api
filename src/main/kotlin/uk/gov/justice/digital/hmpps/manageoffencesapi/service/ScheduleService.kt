@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.T3_OFFENCE_EXCLUSIONS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
@@ -40,15 +41,16 @@ class ScheduleService(
   private val prisonApiUserClient: PrisonApiUserClient,
   private val nomisScheduleMappingRepository: NomisScheduleMappingRepository,
   private val cacheConfiguration: CacheConfiguration,
+  private val scheduleVisibilityService: ScheduleVisibilityService,
 ) {
 
   @Transactional
-  fun createSchedule(schedule: ModelSchedule) {
+  fun createSchedule(schedule: ModelSchedule): ModelSchedule {
     scheduleRepository.findOneByActAndCode(schedule.act, schedule.code)
       ?.let { throw EntityExistsException("Schedule ${schedule.act} ${schedule.code} already exists") }
 
     val scheduleEntity = scheduleRepository.save(transform(schedule))
-    if (schedule.scheduleParts != null) {
+    val savedParts = if (schedule.scheduleParts != null) {
       schedulePartRepository.saveAll(
         schedule.scheduleParts.map { schedulePart ->
           transform(
@@ -57,8 +59,20 @@ class ScheduleService(
           )
         },
       )
+    } else {
+      emptyList()
     }
     cacheConfiguration.cacheEvict()
+    return transform(scheduleEntity, savedParts.map { transform(it, emptyMap()) })
+  }
+
+  @Transactional
+  fun setScheduleStatus(scheduleId: Long, status: ScheduleStatus) {
+    val schedule = scheduleRepository.findById(scheduleId)
+      .orElseThrow { EntityNotFoundException("No schedule exists for $scheduleId") }
+    scheduleRepository.save(schedule.copy(status = status))
+    cacheConfiguration.cacheEvict()
+    log.info("Schedule {} status set to {}", scheduleId, status)
   }
 
   /*
@@ -234,6 +248,12 @@ class ScheduleService(
     val schedule = scheduleRepository.findById(scheduleId)
       .orElseThrow { EntityNotFoundException("No schedule exists for $scheduleId") }
 
+    // Deliberately the same exception as a genuine miss so that a non-admin cannot infer
+    // the existence of a draft schedule by probing ids
+    if (schedule.status == ScheduleStatus.DRAFT && !scheduleVisibilityService.canViewDrafts()) {
+      throw EntityNotFoundException("No schedule exists for $scheduleId")
+    }
+
     val entityScheduleParts = schedulePartRepository.findByScheduleId(scheduleId)
     val offenceScheduleMappings = offenceScheduleMappingRepository.findBySchedulePartScheduleId(scheduleId)
     val offencesByParts = offenceScheduleMappings.groupBy { it.schedulePart.id }
@@ -247,7 +267,11 @@ class ScheduleService(
 
   @Transactional(readOnly = true)
   fun findAllSchedules(): List<ModelSchedule> {
-    val schedules = scheduleRepository.findAll()
+    val schedules = if (scheduleVisibilityService.canViewDrafts()) {
+      scheduleRepository.findAll()
+    } else {
+      scheduleRepository.findAllByStatus(ScheduleStatus.LIVE)
+    }
 
     return schedules.map {
       transform(it)
