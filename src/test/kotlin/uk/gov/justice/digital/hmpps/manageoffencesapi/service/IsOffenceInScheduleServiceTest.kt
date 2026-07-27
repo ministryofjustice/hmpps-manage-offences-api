@@ -37,6 +37,7 @@ class IsOffenceInScheduleServiceTest {
   private val nomisScheduleMappingRepository = mock<NomisScheduleMappingRepository>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
   private val cacheConfiguration = mock<CacheConfiguration>()
+  private val scheduleVisibilityService = mock<ScheduleVisibilityService>()
 
   private val scheduleService =
     ScheduleService(
@@ -48,6 +49,7 @@ class IsOffenceInScheduleServiceTest {
       prisonApiUserClient,
       nomisScheduleMappingRepository,
       cacheConfiguration,
+      scheduleVisibilityService,
     )
 
   private val cachedScheduleService = CachedScheduleService(scheduleService)

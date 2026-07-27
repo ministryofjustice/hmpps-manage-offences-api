@@ -1,8 +1,14 @@
 package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
+import jakarta.persistence.EntityExistsException
+import jakarta.persistence.EntityNotFoundException
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
@@ -13,6 +19,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapp
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
@@ -26,6 +33,8 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleReposit
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule as ModelSchedule
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart as ModelSchedulePart
 
 class ScheduleServiceTest {
 
@@ -37,6 +46,7 @@ class ScheduleServiceTest {
   private val nomisScheduleMappingRepository = mock<NomisScheduleMappingRepository>()
   private val prisonApiUserClient = mock<PrisonApiUserClient>()
   private val cacheConfiguration = mock<CacheConfiguration>()
+  private val scheduleVisibilityService = mock<ScheduleVisibilityService>()
 
   private val scheduleService =
     ScheduleService(
@@ -48,6 +58,7 @@ class ScheduleServiceTest {
       prisonApiUserClient,
       nomisScheduleMappingRepository,
       cacheConfiguration,
+      scheduleVisibilityService,
     )
 
   @Nested
@@ -223,6 +234,66 @@ class ScheduleServiceTest {
     }
   }
 
+  @Nested
+  inner class CreateScheduleTests {
+    @Test
+    fun `Creating a schedule that does not already exist saves the schedule and its parts`() {
+      whenever(scheduleRepository.findOneByActAndCode("Act", "15")).thenReturn(null)
+      whenever(scheduleRepository.save(any<Schedule>())).thenReturn(SCHEDULE_15)
+
+      scheduleService.createSchedule(NEW_SCHEDULE)
+
+      verify(scheduleRepository).save(any<Schedule>())
+      verify(schedulePartRepository).saveAll(any<List<SchedulePart>>())
+    }
+
+    @Test
+    fun `Creating a schedule that already exists throws and saves nothing`() {
+      whenever(scheduleRepository.findOneByActAndCode("Act", "15")).thenReturn(SCHEDULE_15)
+
+      assertThatThrownBy { scheduleService.createSchedule(NEW_SCHEDULE) }
+        .isInstanceOf(EntityExistsException::class.java)
+
+      verify(scheduleRepository, never()).save(any<Schedule>())
+      verifyNoInteractions(schedulePartRepository)
+    }
+  }
+
+  @Nested
+  inner class ScheduleVisibilityTests {
+    @Test
+    fun `A caller without the admin role is only offered live schedules`() {
+      whenever(scheduleVisibilityService.canViewDrafts()).thenReturn(false)
+      whenever(scheduleRepository.findAllByStatus(ScheduleStatus.LIVE)).thenReturn(listOf(SCHEDULE_15))
+
+      val schedules = scheduleService.findAllSchedules()
+
+      assertThat(schedules).extracting("code").containsExactly("15")
+      verify(scheduleRepository, never()).findAll()
+    }
+
+    @Test
+    fun `An admin is offered drafts alongside live schedules`() {
+      whenever(scheduleVisibilityService.canViewDrafts()).thenReturn(true)
+      whenever(scheduleRepository.findAll()).thenReturn(listOf(SCHEDULE_15, DRAFT_SCHEDULE))
+
+      val schedules = scheduleService.findAllSchedules()
+
+      assertThat(schedules).extracting("code").containsExactlyInAnyOrder("15", "99")
+      verify(scheduleRepository, never()).findAllByStatus(any())
+    }
+
+    @Test
+    fun `Fetching a draft by id without the admin role is indistinguishable from it not existing`() {
+      whenever(scheduleVisibilityService.canViewDrafts()).thenReturn(false)
+      whenever(scheduleRepository.findById(DRAFT_SCHEDULE_ID)).thenReturn(Optional.of(DRAFT_SCHEDULE))
+
+      assertThatThrownBy { scheduleService.findScheduleById(DRAFT_SCHEDULE_ID) }
+        .isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessage("No schedule exists for $DRAFT_SCHEDULE_ID")
+    }
+  }
+
   companion object {
     private const val OFFENCE_ID_91 = 91L
     private const val SCHEDULE_PART_ID_92 = 92L
@@ -240,7 +311,17 @@ class ScheduleServiceTest {
     private val SCHEDULE_13 = Schedule(code = "13", id = 15, act = "Act", url = "url")
     private val SCHEDULE_13_PART_1 = SchedulePart(id = SCHEDULE_PART_ID_92, partNumber = 1, schedule = SCHEDULE_13)
 
-    private val SCHEDULE_15 = Schedule(code = "15", id = 15, act = "Act", url = "url")
+    private val SCHEDULE_15 = Schedule(code = "15", id = 15, act = "Act", url = "url", status = ScheduleStatus.LIVE)
+    private const val DRAFT_SCHEDULE_ID = 99L
+    private val DRAFT_SCHEDULE =
+      Schedule(code = "99", id = DRAFT_SCHEDULE_ID, act = "Act", url = "url", status = ScheduleStatus.DRAFT)
+    private val NEW_SCHEDULE = ModelSchedule(
+      id = 0,
+      act = "Act",
+      code = "15",
+      url = "url",
+      scheduleParts = listOf(ModelSchedulePart(id = 0, partNumber = 1)),
+    )
     private val SCHEDULE_15_PART_1 = SchedulePart(id = SCHEDULE_PART_ID_92, partNumber = 1, schedule = SCHEDULE_15)
     private val SCHEDULE_15_PART_2 = SchedulePart(id = SCHEDULE_PART_ID_93, partNumber = 2, schedule = SCHEDULE_15)
     private val NOMIS_SCHEDULE_MAPPING =

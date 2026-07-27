@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SdrsLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ChangeType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.OFFENCE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATUTE
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.BasicOffence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkOffence
@@ -143,6 +144,7 @@ fun transform(schedule: ModelSchedule) = EntitySchedule(
   act = schedule.act,
   code = schedule.code,
   url = schedule.url,
+  status = ScheduleStatus.DRAFT,
 )
 
 fun transform(
@@ -163,6 +165,7 @@ fun transform(
   code = schedule.code,
   url = schedule.url,
   scheduleParts = scheduleParts,
+  status = schedule.status,
 )
 
 fun transform(it: EntitySchedule) = ModelSchedule(
@@ -171,6 +174,7 @@ fun transform(it: EntitySchedule) = ModelSchedule(
   code = it.code,
   url = it.url,
   scheduleParts = null,
+  status = it.status,
 )
 
 fun transform(offence: PrisonApiOffence, changeType: ChangeType) = NomisChangeHistory(

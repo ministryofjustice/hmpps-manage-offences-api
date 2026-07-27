@@ -43,9 +43,9 @@ class ScheduleController(
   @Operation(
     summary = "Create a schedule",
   )
-  fun createSchedule(@RequestBody schedule: Schedule) {
+  fun createSchedule(@RequestBody schedule: Schedule): Schedule {
     log.info("Request received to create a schedule with code {}", schedule.code)
-    scheduleService.createSchedule(schedule)
+    return scheduleService.createSchedule(schedule)
   }
 
   @PostMapping(value = ["/link-offence"])

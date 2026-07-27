@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.config.AuthAwareAuthentica
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.EventToRaise
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.EventType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.FeatureToggle
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.EventToRaiseRepository
@@ -34,6 +35,8 @@ class AdminService(
 ) {
 
   private val encouragementOffenceEligibilityStartDate = LocalDate.parse("2008-02-15")
+
+  fun setScheduleStatus(scheduleId: Long, status: ScheduleStatus) = scheduleService.setScheduleStatus(scheduleId, status)
 
   @Transactional
   fun toggleFeature(featureToggles: List<FeatureToggle>) {
