@@ -16,7 +16,7 @@ configurations {
 
 dependencyManagement {
   imports {
-    mavenBom("software.amazon.awssdk:bom:2.48.2")
+    mavenBom("software.amazon.awssdk:bom:2.48.3")
   }
 }
 
@@ -33,7 +33,7 @@ dependencies {
   runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
   runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0-beta2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
