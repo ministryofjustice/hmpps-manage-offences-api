@@ -41,6 +41,9 @@ generic-service:
       DB_PASS: "database_password"
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_HMPPSEVENTTOPIC_ARN: "topic_arn"
+    digital-prison-reporting:
+      DPR_USER: "DPR_USER"
+      DPR_PASSWORD: "DPR_PASSWORD"
 
   allowlist:
     analytical-platform-1: 18.168.85.104/32
