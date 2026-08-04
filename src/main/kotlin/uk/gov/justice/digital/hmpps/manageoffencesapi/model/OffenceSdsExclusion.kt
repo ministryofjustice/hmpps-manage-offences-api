@@ -52,4 +52,5 @@ enum class OffenceSdsExclusionIndicator {
   TERRORISM,
   MURDER_T3,
   SCHEDULE_13_PART_3,
+  SENTENCING_ACT_2026_PROGRESSION_MODEL,
 }

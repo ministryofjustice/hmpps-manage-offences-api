@@ -50,11 +50,11 @@ class IsOffenceInScheduleService(
           null
         }
       }
-      val progressionModelExclusion = getProgressionModelExclusion(offenceCode, scheduleInfo)
+      val progressionModelExclusions = getProgressionModelExclusions(offenceCode, scheduleInfo)
       SdsOffenceDetails(
         offenceCode = offenceCode,
         pcscMarkers = pcscMarkers,
-        earlyReleaseExclusions = listOfNotNull(sds40Exclusion, progressionModelExclusion),
+        earlyReleaseExclusions = listOfNotNull(sds40Exclusion) + progressionModelExclusions,
       )
     }
   }
@@ -94,11 +94,10 @@ class IsOffenceInScheduleService(
     )
   }
 
-  private fun getProgressionModelExclusion(offenceCode: String, scheduleInfo: CachedScheduleInformation): OffenceSdsExclusionIndicator? = if (scheduleInfo.schedule13Part3Mappings.contains(offenceCode)) {
-    OffenceSdsExclusionIndicator.SCHEDULE_13_PART_3
-  } else {
-    null
-  }
+  private fun getProgressionModelExclusions(offenceCode: String, scheduleInfo: CachedScheduleInformation): List<OffenceSdsExclusionIndicator> = listOfNotNull(
+    if (scheduleInfo.schedule13Part3Mappings.contains(offenceCode)) OffenceSdsExclusionIndicator.SCHEDULE_13_PART_3 else null,
+    if (scheduleInfo.sentencingAct2026ProgressionModelExclusions.contains(offenceCode)) OffenceSdsExclusionIndicator.SENTENCING_ACT_2026_PROGRESSION_MODEL else null,
+  )
 
   private fun hasSexualCodePrefix(offenceCode: String): Boolean = SEXUAL_CODES_FOR_EXCLUSION_LIST.any { offenceCode.startsWith(it) }
 

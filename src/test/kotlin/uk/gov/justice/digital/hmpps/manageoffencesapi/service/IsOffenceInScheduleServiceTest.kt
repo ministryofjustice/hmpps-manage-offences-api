@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRep
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService.Companion.NATIONAL_SECURITY_LEGISLATION
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService.Companion.SCHEDULE_13
+import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService.Companion.SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.ScheduleService.Companion.SEXUAL_OFFENCES_LEGISLATION
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -237,7 +238,7 @@ class IsOffenceInScheduleServiceTest {
     }
 
     @Test
-    fun `Can fetch SDS markers for offence without PCSC markers but with both a SDS40 and progression model exclusion`() {
+    fun `Can fetch SDS markers for offence without PCSC markers but with both a SDS40 and progression model schedule 13 part 3 exclusion`() {
       whenever(
         offenceRepository.findByLegislationLikeIgnoreCase(
           NATIONAL_SECURITY_LEGISLATION[0],
@@ -267,6 +268,42 @@ class IsOffenceInScheduleServiceTest {
               inListD = false,
             ),
             listOf(OffenceSdsExclusionIndicator.NATIONAL_SECURITY, OffenceSdsExclusionIndicator.SCHEDULE_13_PART_3),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `Can fetch SDS markers for offence without PCSC markers but with both a SDS40 and SA2026 progression model exclusion`() {
+      whenever(
+        offenceRepository.findByLegislationLikeIgnoreCase(
+          NATIONAL_SECURITY_LEGISLATION[0],
+          NATIONAL_SECURITY_LEGISLATION[1],
+          NATIONAL_SECURITY_LEGISLATION[2],
+          NATIONAL_SECURITY_LEGISLATION[3],
+        ),
+      )
+        .thenReturn(listOf(BASE_OFFENCE))
+
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+        ),
+      ).thenReturn(listOf(OFFENCE_SCHEDULE_MAPPING_S13_P3))
+
+      val res = isOffenceInScheduleService.getSdsOffenceDetails(listOf(BASE_OFFENCE.code))
+      assertThat(res).isEqualTo(
+        listOf(
+          SdsOffenceDetails(
+            offenceCode = BASE_OFFENCE.code,
+            PcscMarkers(
+              inListA = false,
+              inListB = false,
+              inListC = false,
+              inListD = false,
+            ),
+            listOf(OffenceSdsExclusionIndicator.NATIONAL_SECURITY, OffenceSdsExclusionIndicator.SENTENCING_ACT_2026_PROGRESSION_MODEL),
           ),
         ),
       )

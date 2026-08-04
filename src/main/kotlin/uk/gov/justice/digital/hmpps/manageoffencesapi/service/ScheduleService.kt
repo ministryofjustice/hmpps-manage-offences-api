@@ -358,6 +358,11 @@ class ScheduleService(
     TRANCHE_THREE_MURDER_SCHEDULE.code,
   )
 
+  fun getSentencingAct2026ProgressionModelMappings() = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+    SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+    SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+  )
+
   fun getSdsExclusionLists(): SdsExclusionLists {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val (domesticViolenceMappings, trancheThreeDomesticViolenceMappings) = getDomesticViolenceScheduleMappings()
@@ -574,6 +579,10 @@ class ScheduleService(
     val SCHEDULE_13 = ScheduleInfo(
       act = "Sentencing Act 2020",
       code = "13",
+    )
+    val SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE = ScheduleInfo(
+      act = "SA2026 Excluded Offences for Progression Model",
+      code = "SA2026 EOPM",
     )
   }
 }
