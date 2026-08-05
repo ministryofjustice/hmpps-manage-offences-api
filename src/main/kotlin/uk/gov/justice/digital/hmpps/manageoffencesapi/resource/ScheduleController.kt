@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PCSC_LISTS
+import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.PROGRESSION_MODEL_EXCLUSION_LISTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SCHEDULE_19ZA_OFFENCES
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.SDS_EARLY_RELEASE_EXCLUSION_LISTS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.TORERA_OFFENCE_CODES
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusion
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ProgressionModelExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
@@ -195,7 +197,7 @@ class ScheduleController(
   @GetMapping(value = ["/sds-early-release-exclusion-lists"])
   @ResponseBody
   @Operation(
-    summary = "Retrieves the lists of all the offences that are to be excluded from early release.",
+    summary = "Retrieves the lists of all the offences that are to be excluded from SDS40 early release.",
     description = "This returns five lists for Sexual, Violent, Domestic Abuse, National Security or Terrorism offences.",
   )
   fun getSdsExclusionLists(): SdsExclusionLists {
@@ -231,6 +233,18 @@ class ScheduleController(
   fun getPcscLists(): PcscLists {
     log.info("Request received to get PCSC Lists")
     return scheduleService.getPcscLists()
+  }
+
+  @Cacheable(PROGRESSION_MODEL_EXCLUSION_LISTS)
+  @GetMapping(value = ["/progression-model-exclusion-lists"])
+  @ResponseBody
+  @Operation(
+    summary = "Retrieves the lists of all the offences that are to be excluded from Progression Model.",
+    description = "This returns five lists for Sexual, Violent, Domestic Abuse, National Security or Terrorism offences.",
+  )
+  fun getProgressionModelExclusionLists(): ProgressionModelExclusionLists {
+    log.info("Request received to get list progression model exclusions")
+    return scheduleService.getProgressionModelExclusionLists()
   }
 
   companion object {

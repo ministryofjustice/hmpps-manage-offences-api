@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
+import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator
@@ -286,6 +287,20 @@ class IsOffenceInScheduleServiceTest {
         .thenReturn(listOf(BASE_OFFENCE))
 
       whenever(
+        scheduleRepository.findOneByActAndCode(
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+        ),
+      ).thenReturn(
+        Schedule(
+          1000,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+          "/foo",
+          ScheduleStatus.LIVE,
+        ),
+      )
+      whenever(
         offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
           SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
           SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
@@ -303,7 +318,84 @@ class IsOffenceInScheduleServiceTest {
               inListC = false,
               inListD = false,
             ),
-            listOf(OffenceSdsExclusionIndicator.NATIONAL_SECURITY, OffenceSdsExclusionIndicator.SENTENCING_ACT_2026_PROGRESSION_MODEL),
+            listOf(
+              OffenceSdsExclusionIndicator.NATIONAL_SECURITY,
+              OffenceSdsExclusionIndicator.SENTENCING_ACT_2026_PROGRESSION_MODEL,
+            ),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `Can fetch SDS markers for offence when SA2026 progression model exclusion schedule does not exist yet`() {
+      whenever(
+        scheduleRepository.findOneByActAndCode(
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+        ),
+      ).thenReturn(null)
+
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+        ),
+      ).thenReturn(listOf(OFFENCE_SCHEDULE_MAPPING_S13_P3))
+
+      val res = isOffenceInScheduleService.getSdsOffenceDetails(listOf(BASE_OFFENCE.code))
+      assertThat(res).isEqualTo(
+        listOf(
+          SdsOffenceDetails(
+            offenceCode = BASE_OFFENCE.code,
+            PcscMarkers(
+              inListA = false,
+              inListB = false,
+              inListC = false,
+              inListD = false,
+            ),
+            listOf(),
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `Can fetch SDS markers for offence when SA2026 progression model exclusion schedule has not been published yet`() {
+      whenever(
+        scheduleRepository.findOneByActAndCode(
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+        ),
+      ).thenReturn(
+        Schedule(
+          1000,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+          "/foo",
+          ScheduleStatus.DRAFT,
+        ),
+      )
+
+      whenever(
+        offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+          SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+        ),
+      ).thenReturn(listOf(OFFENCE_SCHEDULE_MAPPING_S13_P3))
+
+      val res = isOffenceInScheduleService.getSdsOffenceDetails(listOf(BASE_OFFENCE.code))
+      assertThat(res).isEqualTo(
+        listOf(
+          SdsOffenceDetails(
+            offenceCode = BASE_OFFENCE.code,
+            PcscMarkers(
+              inListA = false,
+              inListB = false,
+              inListC = false,
+              inListD = false,
+            ),
+            listOf(),
           ),
         ),
       )
@@ -314,12 +406,15 @@ class IsOffenceInScheduleServiceTest {
     private const val SCHEDULE_PART_ID_92 = 92L
     private const val SCHEDULE_PART_ID_93 = 93L
     private val SCHEDULE_15_ENTITY = Schedule(code = "15", id = 15, act = "Act", url = "url")
-    private val SCHEDULE_15_PART_1 = SchedulePart(id = SCHEDULE_PART_ID_92, partNumber = 1, schedule = SCHEDULE_15_ENTITY)
-    private val SCHEDULE_15_PART_2 = SchedulePart(id = SCHEDULE_PART_ID_93, partNumber = 2, schedule = SCHEDULE_15_ENTITY)
+    private val SCHEDULE_15_PART_1 =
+      SchedulePart(id = SCHEDULE_PART_ID_92, partNumber = 1, schedule = SCHEDULE_15_ENTITY)
+    private val SCHEDULE_15_PART_2 =
+      SchedulePart(id = SCHEDULE_PART_ID_93, partNumber = 2, schedule = SCHEDULE_15_ENTITY)
 
     private const val SCHEDULE_PART_ID_99 = 99L
     private val SCHEDULE_13_ENTITY = Schedule(code = "13", id = 13, act = "Act", url = "url")
-    private val SCHEDULE_13_PART_3 = SchedulePart(id = SCHEDULE_PART_ID_99, partNumber = 3, schedule = SCHEDULE_13_ENTITY)
+    private val SCHEDULE_13_PART_3 =
+      SchedulePart(id = SCHEDULE_PART_ID_99, partNumber = 3, schedule = SCHEDULE_13_ENTITY)
 
     private val BASE_OFFENCE = Offence(
       code = "AABB011",

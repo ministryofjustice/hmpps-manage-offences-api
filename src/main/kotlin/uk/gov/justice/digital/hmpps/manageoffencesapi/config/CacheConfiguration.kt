@@ -26,11 +26,12 @@ class CacheConfiguration {
     SCHEDULE_19ZA_OFFENCES,
     OFFENCE_CODE_TO_HOME_OFFICE_CODE,
     SCHEDULE_DATA,
+    PROGRESSION_MODEL_EXCLUSION_LISTS,
   )
 
   @CacheEvict(
     allEntries = true,
-    cacheNames = [PCSC_LISTS, SDS_EARLY_RELEASE_EXCLUSION_LISTS, TORERA_OFFENCE_CODES, SCHEDULE_DATA],
+    cacheNames = [PCSC_LISTS, SDS_EARLY_RELEASE_EXCLUSION_LISTS, TORERA_OFFENCE_CODES, SCHEDULE_DATA, PROGRESSION_MODEL_EXCLUSION_LISTS],
   )
   @Scheduled(fixedDelay = 2, timeUnit = HOURS)
   fun cacheEvict() {}
@@ -48,6 +49,7 @@ class CacheConfiguration {
     val log: Logger = LoggerFactory.getLogger(CacheConfiguration::class.java)
     const val PCSC_LISTS: String = "pcscLists"
     const val SDS_EARLY_RELEASE_EXCLUSION_LISTS: String = "sdsEarlyReleaseExclusionLists"
+    const val PROGRESSION_MODEL_EXCLUSION_LISTS: String = "progressionModelExclusionLists"
     const val TORERA_OFFENCE_CODES: String = "toreraOffenceCodes"
     const val SCHEDULE_19ZA_OFFENCES: String = "schedule19ZaOffences"
     const val OFFENCE_CODE_TO_HOME_OFFICE_CODE: String = "offenceCodesToHomeOfficeCode"
