@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ProgressionModelExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleInfo
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
@@ -358,10 +359,22 @@ class ScheduleService(
     TRANCHE_THREE_MURDER_SCHEDULE.code,
   )
 
-  fun getSentencingAct2026ProgressionModelMappings() = offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
-    SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
-    SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
-  )
+  fun getProgressionModelExclusionLists(): ProgressionModelExclusionLists = ProgressionModelExclusionLists(sentencingAct2026ProgressionModelExclusions = getSentencingAct2026ProgressionModelMappings().map { transform(it) }.sortedBy { it.code }.toSet())
+
+  fun getSentencingAct2026ProgressionModelMappings(): List<OffenceScheduleMapping> {
+    val schedule = scheduleRepository.findOneByActAndCode(
+      SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+      SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+    )
+    return if (schedule == null || schedule.status != ScheduleStatus.LIVE) {
+      emptyList()
+    } else {
+      offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+        SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+        SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+      )
+    }
+  }
 
   fun getSdsExclusionLists(): SdsExclusionLists {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()

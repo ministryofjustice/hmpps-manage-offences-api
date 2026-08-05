@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionI
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSdsExclusionIndicator.VIOLENT
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ProgressionModelExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
@@ -290,6 +291,48 @@ class ScheduleControllerIntTest : IntegrationTestBase() {
               changedDate = changeDate,
               startDate = startDate,
               loadDate = loadDate,
+            ),
+          ),
+        ),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-progression-model-test-exclusions.sql",
+  )
+  fun `Get progression model exclusion lists`() {
+    val result = webTestClient.get().uri("/schedule/progression-model-exclusion-lists")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(ProgressionModelExclusionLists::class.java)
+      .returnResult().responseBody
+
+    assertThat(result).usingRecursiveComparison()
+      .ignoringFieldsMatchingRegexes(".*id|.*isChild|.*childOffences|.*changedDate|.*loadDate")
+      .ignoringCollectionOrder()
+      .isEqualTo(
+        ProgressionModelExclusionLists(
+          setOf(
+            OffenceToScheduleMapping(
+              id = 698,
+              description = "Some exclusion CJS",
+              code = "PM01",
+              revisionId = 570173,
+              changedDate = LocalDateTime.now(),
+              startDate = LocalDate.of(2009, 11, 2),
+              loadDate = LocalDateTime.now(),
+            ),
+            OffenceToScheduleMapping(
+              id = 699,
+              description = "Another exclusion CJS",
+              code = "PM02",
+              revisionId = 574415,
+              changedDate = LocalDateTime.now(),
+              startDate = LocalDate.of(2015, 3, 13),
+              loadDate = LocalDateTime.now(),
             ),
           ),
         ),
