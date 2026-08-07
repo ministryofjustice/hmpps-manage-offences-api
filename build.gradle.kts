@@ -14,12 +14,6 @@ configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
 
-dependencyManagement {
-  imports {
-    mavenBom("software.amazon.awssdk:bom:2.50.1")
-  }
-}
-
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
