@@ -52,3 +52,9 @@ aws:
   region: "eu-west-1"
   accessKeyId: "access_key"
   secretAccessKey: "secret"
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
