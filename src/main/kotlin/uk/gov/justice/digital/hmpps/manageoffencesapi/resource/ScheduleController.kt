@@ -240,7 +240,7 @@ class ScheduleController(
   @ResponseBody
   @Operation(
     summary = "Retrieves the lists of all the offences that are to be excluded from Progression Model.",
-    description = "This returns lists of offences which are excluded from Progression Model",
+    description = "This returns a single list containing Rape and Serious Sexual offences against a child",
   )
   fun getProgressionModelExclusionLists(): ProgressionModelExclusionLists {
     log.info("Request received to get list progression model exclusions")
