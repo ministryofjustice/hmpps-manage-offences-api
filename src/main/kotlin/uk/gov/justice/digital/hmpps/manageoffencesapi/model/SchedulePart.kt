@@ -2,6 +2,11 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.model
 
 import io.swagger.v3.oas.annotations.media.Schema
 
+@Schema(description = "Request to add a part to an existing schedule")
+data class CreateSchedulePart(
+  val partNumber: Int,
+)
+
 @Schema(description = "Schedule part details and associated offences")
 data class SchedulePart(
   val id: Long,

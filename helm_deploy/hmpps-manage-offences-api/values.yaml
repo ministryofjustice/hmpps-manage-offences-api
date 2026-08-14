@@ -23,6 +23,8 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     AWS_REGION: "eu-west-1"
     HMPPS_SQS_USE_WEB_TOKEN: "true"
+    SPRINGDOC_API-DOCS_ENABLED: "true"
+    SPRINGDOC_SWAGGER-UI_ENABLED: "true"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
@@ -41,6 +43,9 @@ generic-service:
       DB_PASS: "database_password"
     hmpps-domain-events-topic:
       HMPPS_SQS_TOPICS_HMPPSEVENTTOPIC_ARN: "topic_arn"
+    digital-prison-reporting:
+      DPR_USER: "DPR_USER"
+      DPR_PASSWORD: "DPR_PASSWORD"
 
   allowlist:
     analytical-platform-1: 18.168.85.104/32

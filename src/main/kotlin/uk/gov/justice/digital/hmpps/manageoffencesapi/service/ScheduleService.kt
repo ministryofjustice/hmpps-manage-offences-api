@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.manageoffencesapi.service
 
 import jakarta.persistence.EntityExistsException
 import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.Offence
 import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.OffenceScheduleMapping
+import uk.gov.justice.digital.hmpps.manageoffencesapi.entity.SchedulePart
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.Feature.T3_OFFENCE_EXCLUSIONS
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisScheduleName
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
@@ -17,10 +19,12 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffencePcscMarkers
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceToScheduleMapping
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.PcscMarkers
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ProgressionModelExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ScheduleInfo
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePartIdAndOffenceId
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SdsExclusionLists
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.ToreraSchedulePartCodes
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.UpdateSchedule
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.OffenceToScheduleMappingDto
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.FeatureToggleRepository
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.NomisScheduleMappingRepository
@@ -30,6 +34,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.SchedulePartRep
 import uk.gov.justice.digital.hmpps.manageoffencesapi.repository.ScheduleRepository
 import java.time.LocalDate
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Schedule as ModelSchedule
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.SchedulePart as ModelSchedulePart
 
 @Service
 class ScheduleService(
@@ -64,6 +69,53 @@ class ScheduleService(
     }
     cacheConfiguration.cacheEvict()
     return transform(scheduleEntity, savedParts.map { transform(it, emptyMap()) })
+  }
+
+  @Transactional
+  fun addSchedulePart(scheduleId: Long, partNumber: Int): ModelSchedulePart {
+    val schedule = scheduleRepository.findById(scheduleId)
+      .orElseThrow { EntityNotFoundException("No schedule exists for $scheduleId") }
+    schedulePartRepository.findByScheduleIdAndPartNumber(scheduleId, partNumber)
+      ?.let { throw EntityExistsException("Schedule $scheduleId already has a part numbered $partNumber") }
+
+    val saved = schedulePartRepository.save(SchedulePart(schedule = schedule, partNumber = partNumber))
+    cacheConfiguration.cacheEvict()
+    log.info("Added part {} to schedule {}", partNumber, scheduleId)
+    return transform(saved, emptyMap())
+  }
+
+  @Transactional
+  fun deleteSchedulePart(schedulePartId: Long) {
+    val schedulePart = schedulePartRepository.findById(schedulePartId)
+      .orElseThrow { EntityNotFoundException("No schedule part exists for $schedulePartId") }
+    val linkedOffences = offenceScheduleMappingRepository.countBySchedulePartId(schedulePartId)
+    if (linkedOffences > 0) {
+      throw ValidationException("Schedule part $schedulePartId has $linkedOffences linked offences; unlink them before deleting the part")
+    }
+
+    schedulePartRepository.delete(schedulePart)
+    cacheConfiguration.cacheEvict()
+    log.info("Deleted schedule part {}", schedulePartId)
+  }
+
+  @Transactional
+  fun updateSchedule(scheduleId: Long, update: UpdateSchedule): ModelSchedule {
+    val schedule = scheduleRepository.findById(scheduleId)
+      .orElseThrow { EntityNotFoundException("No schedule exists for $scheduleId") }
+
+    val identityChanged = update.act != schedule.act || update.code != schedule.code
+    if (identityChanged) {
+      if (schedule.status != ScheduleStatus.DRAFT) {
+        throw ValidationException("The act and code of a published schedule cannot be changed")
+      }
+      scheduleRepository.findOneByActAndCode(update.act, update.code)
+        ?.let { throw EntityExistsException("Schedule ${update.act} ${update.code} already exists") }
+    }
+
+    val saved = scheduleRepository.save(schedule.copy(act = update.act, code = update.code, url = update.url))
+    cacheConfiguration.cacheEvict()
+    log.info("Updated schedule {}", scheduleId)
+    return transform(saved)
   }
 
   @Transactional
@@ -307,6 +359,23 @@ class ScheduleService(
     TRANCHE_THREE_MURDER_SCHEDULE.code,
   )
 
+  fun getProgressionModelExclusionLists(): ProgressionModelExclusionLists = ProgressionModelExclusionLists(sentencingAct2026ProgressionModelExclusions = getSentencingAct2026ProgressionModelMappings().map { transform(it) }.sortedBy { it.code }.toSet())
+
+  fun getSentencingAct2026ProgressionModelMappings(): List<OffenceScheduleMapping> {
+    val schedule = scheduleRepository.findOneByActAndCode(
+      SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+      SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+    )
+    return if (schedule == null || schedule.status != ScheduleStatus.LIVE) {
+      emptyList()
+    } else {
+      offenceScheduleMappingRepository.findBySchedulePartScheduleActAndSchedulePartScheduleCode(
+        SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.act,
+        SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE.code,
+      )
+    }
+  }
+
   fun getSdsExclusionLists(): SdsExclusionLists {
     val (part1Mappings, part2Mappings) = getSchedule15Mappings()
     val (domesticViolenceMappings, trancheThreeDomesticViolenceMappings) = getDomesticViolenceScheduleMappings()
@@ -523,6 +592,10 @@ class ScheduleService(
     val SCHEDULE_13 = ScheduleInfo(
       act = "Sentencing Act 2020",
       code = "13",
+    )
+    val SENTENCING_ACT_2026_PROGRESSION_MODEL_EXCLUSION_SCHEDULE = ScheduleInfo(
+      act = "SA2026 Excluded Offences for Progression Model",
+      code = "SA2026 EOPM",
     )
   }
 }
