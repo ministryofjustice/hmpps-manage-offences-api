@@ -37,12 +37,12 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("org.springframework.security:spring-security-config")
 
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:7.8.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.8.0")
 
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.1.0")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
@@ -56,9 +56,9 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
   testImplementation("org.springframework.boot:spring-boot-webflux-test")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.45")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.46")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.64.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.65.0")
   testImplementation("org.testcontainers:postgresql:1.21.4")
   testImplementation("org.apache.commons:commons-csv:1.14.1")
 }
