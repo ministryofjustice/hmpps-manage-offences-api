@@ -21,13 +21,13 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.13")
 
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.30.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.31.1")
 
   implementation("io.jsonwebtoken:jjwt-api:0.13.0")
   runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
   runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.1")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
@@ -37,16 +37,16 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("org.springframework.security:spring-security-config")
 
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:7.7.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.7.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:7.9.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.9.0")
 
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.2")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.1.1")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test") {
     exclude(group = "junit")
@@ -56,9 +56,9 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
   testImplementation("org.springframework.boot:spring-boot-webflux-test")
 
-  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.45")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v2-converter:2.1.47")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.64.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.65.0")
   testImplementation("org.testcontainers:postgresql:1.21.4")
   testImplementation("org.apache.commons:commons-csv:1.14.1")
 }
