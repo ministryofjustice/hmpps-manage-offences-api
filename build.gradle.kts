@@ -37,10 +37,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("org.springframework.security:spring-security-config")
 
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:7.9.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.9.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:7.10.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.10.0")
 
   implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.1.1")
   implementation("software.amazon.awssdk:sts")
