@@ -42,7 +42,7 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-spring:7.10.1")
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.10.1")
 
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.1.1")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.2.0")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
