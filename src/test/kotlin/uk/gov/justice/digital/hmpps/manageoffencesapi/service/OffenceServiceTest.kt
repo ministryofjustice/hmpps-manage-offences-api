@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisChangeType.STATU
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.NomisSyncType
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_A
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache.OFFENCES_B
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSeverityRating
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RestResponsePage
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
@@ -657,6 +658,30 @@ class OffenceServiceTest {
             MODEL_OFFENCE_A123996A,
           ),
         )
+    }
+  }
+
+  @Nested
+  inner class SeverityRatingTests {
+    @Test
+    fun `Returns the severity ranking for matching offence codes and omits codes that are not found`() {
+      whenever(offenceRepository.findByCodeIgnoreCaseIn(setOf("HO06999", "HO09999", "AB14001", "ZERO001", "NOTFOUND"))).thenReturn(
+        listOf(
+          BASE_OFFENCE.copy(code = "HO06999", category = 1),
+          BASE_OFFENCE.copy(code = "HO09999", category = 2),
+          BASE_OFFENCE.copy(code = "AB14001", category = null),
+          BASE_OFFENCE.copy(code = "ZERO001", category = 0),
+        ),
+      )
+
+      val result = offenceService.findSeverityRatings(listOf("HO06999", "HO09999", "AB14001", "ZERO001", "NOTFOUND", " "))
+
+      assertThat(result).containsExactly(
+        OffenceSeverityRating(offenceCode = "HO06999", severityRating = "1"),
+        OffenceSeverityRating(offenceCode = "HO09999", severityRating = "2"),
+        OffenceSeverityRating(offenceCode = "AB14001", severityRating = "99"),
+        OffenceSeverityRating(offenceCode = "ZERO001", severityRating = "99"),
+      )
     }
   }
 
