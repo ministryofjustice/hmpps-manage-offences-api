@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.ScheduleStatus
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSeverityRating
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeDTO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.HoCode
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.external.prisonapi.Statute
@@ -412,6 +413,14 @@ class OffenceService(
   fun findOffenceByCodes(offenceCode: List<String>): List<Offence> {
     val offences = offenceRepository.findByCodeIgnoreCaseIn(offenceCode.toSet())
     return offences.map { populateOffence(it) }
+  }
+
+  fun findSeverityRatings(offenceCodes: List<String>): List<OffenceSeverityRating> {
+    val codes = offenceCodes.filter { it.isNotBlank() }.toSet()
+    if (codes.isEmpty()) return emptyList()
+    return offenceRepository.findByCodeIgnoreCaseIn(codes).map {
+      OffenceSeverityRating(offenceCode = it.code, severityRating = it.severityRanking)
+    }
   }
 
   private fun populateOffence(

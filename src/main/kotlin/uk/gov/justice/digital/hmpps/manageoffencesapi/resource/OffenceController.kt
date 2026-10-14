@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.manageoffencesapi.config.CacheConfiguration.Companion.OFFENCE_CODE_TO_HOME_OFFICE_CODE
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.Offence
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSeverityRating
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.RiskActuarialHoCodeDTO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.OffenceService
 
@@ -95,6 +96,19 @@ class OffenceController(
   ): List<Offence> {
     log.info("Request received to fetch offences for ${offenceCodes.size} offence codes")
     return offenceService.findOffenceByCodes(offenceCodes)
+  }
+
+  @GetMapping(value = ["/severity-ratings"])
+  @ResponseBody
+  @Operation(
+    summary = "Get the severity rating for each of the passed in offence codes",
+    description = "Returns the severity rating for each offence code that exists. Offence codes that are not found are omitted from the response.",
+  )
+  fun getSeverityRatings(
+    @RequestParam offenceCodes: List<String>,
+  ): List<OffenceSeverityRating> {
+    log.info("Request received to fetch severity ratings for ${offenceCodes.size} offence codes")
+    return offenceService.findSeverityRatings(offenceCodes)
   }
 
   @Cacheable(OFFENCE_CODE_TO_HOME_OFFICE_CODE)

@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.jdbc.Sql
+import org.springframework.test.web.reactive.server.expectBodyList
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.EITHER
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.NO
 import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.CustodialIndicator.YES
@@ -11,6 +12,7 @@ import uk.gov.justice.digital.hmpps.manageoffencesapi.enum.SdrsCache
 import uk.gov.justice.digital.hmpps.manageoffencesapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.LinkedScheduleDetails
 import uk.gov.justice.digital.hmpps.manageoffencesapi.model.MostRecentLoadResult
+import uk.gov.justice.digital.hmpps.manageoffencesapi.model.OffenceSeverityRating
 import uk.gov.justice.digital.hmpps.manageoffencesapi.service.SDRSService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -30,7 +32,7 @@ class OffencesControllerIntTest : IntegrationTestBase() {
       .headers(setAuthorisation())
       .exchange()
       .expectStatus().isOk
-      .expectBodyList(ModelOffence::class.java)
+      .expectBodyList<ModelOffence>()
       .returnResult().responseBody
 
     assertThat(result)
@@ -161,6 +163,33 @@ class OffencesControllerIntTest : IntegrationTestBase() {
             schedules = emptyList(),
             custodialIndicator = EITHER,
           ),
+        ),
+      )
+  }
+
+  @Test
+  @Sql(
+    "classpath:test_data/reset-all-data.sql",
+    "classpath:test_data/insert-offence-data.sql",
+    "classpath:test_data/insert-multiple-offences-with-ho-codes.sql",
+  )
+  fun `Get severity ratings for offence codes and omit codes that are not found`() {
+    val result = webTestClient.get()
+      .uri("/offences/severity-ratings?offenceCodes=ho06999,HO09999,AB14001,NOTFOUND")
+      .headers(setAuthorisation())
+      .exchange()
+      .expectStatus().isOk
+      .expectBodyList<OffenceSeverityRating>()
+      .returnResult().responseBody
+
+    assertThat(result)
+      .usingRecursiveComparison()
+      .ignoringCollectionOrder()
+      .isEqualTo(
+        listOf(
+          OffenceSeverityRating(offenceCode = "HO06999", severityRating = "1"),
+          OffenceSeverityRating(offenceCode = "HO09999", severityRating = "2"),
+          OffenceSeverityRating(offenceCode = "AB14001", severityRating = "99"),
         ),
       )
   }
