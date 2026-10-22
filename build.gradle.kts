@@ -61,7 +61,7 @@ dependencies {
     exclude(group = "io.swagger.parser.v3", module = "swagger-parser-v2-converter")
   }
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.66.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.67.0")
   testImplementation("org.testcontainers:postgresql:1.21.4")
   testImplementation("org.apache.commons:commons-csv:1.14.1")
 }
