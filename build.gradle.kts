@@ -21,7 +21,7 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.14")
 
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.32.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.33.0")
 
   implementation("io.jsonwebtoken:jjwt-api:0.13.0")
   runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
