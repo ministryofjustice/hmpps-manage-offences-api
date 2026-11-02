@@ -21,7 +21,7 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql:42.7.14")
 
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.33.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.33.1")
 
   implementation("io.jsonwebtoken:jjwt-api:0.13.0")
   runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
@@ -42,7 +42,7 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-spring:7.10.1")
   implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:7.10.1")
 
-  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.2.0")
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.2.1")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.awssdk:netty-nio-client")
 
