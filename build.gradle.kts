@@ -36,6 +36,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("org.springframework.security:spring-security-config")
+  // Temporarily pin swagger-ui for dompurify issues CVE-2026-11680(2-4)
+  constraints {
+    implementation("org.webjars:swagger-ui:5.34.1")
+  }
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
 
